@@ -1,7 +1,7 @@
 'use client'
-import { useState } from 'react'
+import { useCallback, useRef, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
-import { Check } from 'lucide-react'
+import { Check, Mic, MicOff } from 'lucide-react'
 import { useApp } from '@/lib/context'
 import type { FeedbackAnswer } from '@/lib/types'
 
@@ -28,7 +28,35 @@ export default function ClassroomModeFeedbackPage() {
   const taught = getTaughtTopicToday(classId)
 
   const [answers, setAnswers] = useState<Partial<Record<QuestionKey, FeedbackAnswer>>>({})
+  const [otherFeedback, setOtherFeedback] = useState('')
   const [saving, setSaving] = useState(false)
+
+  // Dictation for the free-text field — same Web Speech API pattern as VoiceEntry.tsx,
+  // just appending plain transcript instead of parsing structured data out of it.
+  const [listening, setListening] = useState(false)
+  const recogRef = useRef<SpeechRecognition | null>(null)
+
+  const startListening = useCallback(() => {
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition
+    if (!SR) return
+    const recog = new SR()
+    recog.lang = 'en-IN'
+    recog.continuous = false
+    recog.interimResults = false
+    recog.onstart = () => setListening(true)
+    recog.onend = () => setListening(false)
+    recog.onresult = (e: SpeechRecognitionEvent) => {
+      const text = e.results[0][0].transcript
+      setOtherFeedback(prev => (prev.trim() ? `${prev.trim()} ${text}` : text))
+    }
+    recog.start()
+    recogRef.current = recog
+  }, [])
+
+  const stopListening = () => {
+    recogRef.current?.stop()
+    setListening(false)
+  }
 
   const allAnswered = QUESTIONS.every(q => answers[q.key])
 
@@ -43,6 +71,7 @@ export default function ClassroomModeFeedbackPage() {
           engagement: answers.engagement!,
           comprehension: answers.comprehension!,
           pacing: answers.pacing!,
+          otherFeedback: otherFeedback.trim() || undefined,
         })
       } catch { /* best-effort — teacher shouldn't be blocked from finishing */ }
     }
@@ -86,6 +115,31 @@ export default function ClassroomModeFeedbackPage() {
             </div>
           </div>
         ))}
+
+        <div className="paper-card p-4">
+          <div className="flex items-center justify-between mb-2">
+            <p className="text-sm font-semibold text-ink">Anything else? <span className="font-medium text-ink-faint">(optional)</span></p>
+            <button
+              type="button"
+              onClick={listening ? stopListening : startListening}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-colors shrink-0"
+              style={{
+                background: listening ? '#FEE2E2' : 'rgba(58,44,30,0.05)',
+                color: listening ? '#B91C1C' : 'var(--ink-soft)',
+              }}
+            >
+              {listening ? <MicOff size={13} /> : <Mic size={13} />}
+              {listening ? 'Stop' : 'Voice'}
+            </button>
+          </div>
+          <textarea
+            value={otherFeedback}
+            onChange={e => setOtherFeedback(e.target.value)}
+            placeholder="Type or use voice — anything else worth remembering for next time…"
+            rows={3}
+            className="w-full text-sm text-ink placeholder-ink-faint bg-black/[0.03] rounded-2xl px-3 py-2.5 border border-black/5 resize-none focus:outline-none focus:ring-2 focus:ring-[#AACDEA]"
+          />
+        </div>
       </div>
 
       <button

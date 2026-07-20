@@ -136,7 +136,6 @@ export const QuestionsSchema = z.object({
   // one exists — optional because most topics won't have a match, or none was generated yet.
   lessonContext: z.object({
     concepts: z.array(topicStr).max(5).optional(),
-    watchFor: topicStr.optional(),
   }).optional(),
 })
 
@@ -327,10 +326,9 @@ export const TestAnalysisSchema = z.object({
     percentage: z.number().min(0).max(100),
   })).min(1).max(300),
   // Grounds "Needs Help"/"Next Action" in what this class's Prep Material actually
-  // flagged as the hard part, when one exists for this topic.
+  // covered, when one exists for this topic.
   lessonContext: z.object({
     concepts: z.array(topicStr).max(5).optional(),
-    watchFor: topicStr.optional(),
   }).optional(),
 })
 

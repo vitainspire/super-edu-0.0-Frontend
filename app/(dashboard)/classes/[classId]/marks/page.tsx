@@ -146,9 +146,7 @@ export default function ClassMarksPage() {
           .filter(p => p.classId === classId && p.topic.trim().toLowerCase() === test.topic.trim().toLowerCase())
           .sort((a, b) => b.createdAt.localeCompare(a.createdAt))[0]
       const concepts = material?.lesson.concept?.map(c => c.text) ?? []
-      const lessonContext = concepts.length > 0 || material?.lesson.watchFor
-        ? { concepts, watchFor: material?.lesson.watchFor }
-        : undefined
+      const lessonContext = concepts.length > 0 ? { concepts } : undefined
       const res = await fetch('/api/test-analysis', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -175,9 +173,7 @@ export default function ClassMarksPage() {
           .filter(p => p.classId === classId && p.topic.trim().toLowerCase() === topic.trim().toLowerCase())
           .sort((a, b) => b.createdAt.localeCompare(a.createdAt))[0]
       const concepts = material?.lesson.concept?.map(c => c.text) ?? []
-      const lessonContext = concepts.length > 0 || material?.lesson.watchFor
-        ? { concepts, watchFor: material?.lesson.watchFor }
-        : undefined
+      const lessonContext = concepts.length > 0 ? { concepts } : undefined
       const groundingFingerprint = concepts.length > 0 ? concepts.join('|').slice(0, 40) : 'ungrounded'
       const ck = aiKey('questions', { v: 4, topic: topic.toLowerCase().trim(), grade: cls?.grade ?? teacher?.grade ?? '5', totalM, groundingFingerprint })
       const cached = getAiCache<AiQuestion[]>(ck)

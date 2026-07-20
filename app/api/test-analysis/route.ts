@@ -39,11 +39,10 @@ export async function POST(req: NextRequest) {
 
     // Ground "Needs Help"/"Next Action" in what was actually taught, when Prep Material
     // exists for this topic — otherwise the analysis reasons from scores alone.
-    const lessonLines = lessonContext?.concepts?.length || lessonContext?.watchFor
+    const lessonLines = lessonContext?.concepts?.length
       ? `\nWhat this class's lesson on "${topic}" covered:
-${(lessonContext.concepts ?? []).map(c => `- ${c}`).join('\n')}
-${lessonContext.watchFor ? `The teacher was told to watch for this common mistake: ${lessonContext.watchFor}` : ''}
-If low scorers' struggles line up with the watch-for point above, say so explicitly in "Needs Help" and "Next Action" instead of speaking generically.`
+${lessonContext.concepts.map(c => `- ${c}`).join('\n')}
+If low scorers' struggles line up with any of these points, say so explicitly in "Needs Help" and "Next Action" instead of speaking generically.`
       : ''
 
     const prompt = `You are an experienced Indian school teacher reviewing a class test.

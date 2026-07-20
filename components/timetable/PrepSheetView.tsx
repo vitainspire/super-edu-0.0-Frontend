@@ -1,8 +1,7 @@
 'use client'
 import { useState, type ReactNode } from 'react'
 import {
-  CheckCircle2, Database,
-  Target, ListChecks, MessageCircle, AlertTriangle, LifeBuoy, ArrowUpCircle,
+  Database, ListChecks, BookOpen, Gamepad2, Compass,
   ChevronLeft, ChevronRight, Plus,
 } from 'lucide-react'
 import type { SmartLesson } from '@/lib/types'
@@ -26,16 +25,20 @@ function SectionLabel({ icon, color, text }: { icon: ReactNode; color: string; t
   )
 }
 
+// 5 slides, sized to be readable by a teacher in ~15 minutes and taught straight from:
+// Concept (what) -> Activities (how, in class) -> Story (deepen it) -> Challenges (play with
+// it) -> Real-Life Application (why it matters outside class).
 const SLIDES = [
-  { key: 'overview', label: '1 · Overview', color: '#31215C' },
-  { key: 'concept', label: '2 · Concept', color: '#1E3A55' },
-  { key: 'flow', label: '3 · Flow', color: '#8A6A1E' },
-  { key: 'support', label: '4 · Support', color: '#234A1D' },
+  { key: 'concept', label: '1 · Concept', color: '#31215C' },
+  { key: 'activities', label: '2 · Activities', color: '#1E3A55' },
+  { key: 'story', label: '3 · Story', color: '#8A6A1E' },
+  { key: 'challenges', label: '4 · Challenges', color: '#234A1D' },
+  { key: 'application', label: '5 · Real Life', color: '#5C1F38' },
 ] as const
 
-// The read-only prep-sheet deck (Overview/Concept/Flow/Support), shared between
-// PrepMaterialModal's "done" state and the Classroom Mode / Preview surfaces —
-// all of which display the same already-generated SmartLesson, just in different contexts.
+// The read-only prep-sheet deck, shared between PrepMaterialModal's "done" state and the
+// Classroom Mode / Preview surfaces — all of which display the same already-generated
+// SmartLesson, just in different contexts.
 export default function PrepSheetView({ lesson, topic, subtopic, fromCache, headerAction }: PrepSheetViewProps) {
   const [expandedBullet, setExpandedBullet] = useState<number | null>(null)
   const [slideIndex, setSlideIndex] = useState(0)
@@ -86,28 +89,7 @@ export default function PrepSheetView({ lesson, topic, subtopic, fromCache, head
           {SLIDES[slideIndex].label}
         </p>
 
-        {SLIDES[slideIndex].key === 'overview' && (
-          <>
-            <section>
-              <SectionLabel icon={<Target size={11} />} color="#31215C" text="Today's Goal" />
-              <p style={{ fontSize: 14, fontWeight: 700, color: 'var(--ink)', lineHeight: 1.5, marginTop: 6 }}>{lesson.goal}</p>
-            </section>
-
-            {lesson.materials?.length > 0 && (
-              <section>
-                <SectionLabel icon={<ListChecks size={11} />} color="#1E3A55" text="Materials" />
-                <div className="flex flex-wrap gap-1.5" style={{ marginTop: 6 }}>
-                  {lesson.materials.map((m, i) => (
-                    <span key={i} className="flex items-center gap-1 text-[11.5px] font-semibold px-2.5 py-1 rounded-full" style={{ color: '#1E3A55', background: 'rgba(30,58,85,0.08)' }}>
-                      <CheckCircle2 size={10} /> {m}
-                    </span>
-                  ))}
-                </div>
-              </section>
-            )}
-          </>
-        )}
-
+        {/* 1 — Concept: unchanged from before, just first now */}
         {SLIDES[slideIndex].key === 'concept' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             {lesson.concept.map((bullet, i) => {
@@ -166,78 +148,57 @@ export default function PrepSheetView({ lesson, topic, subtopic, fromCache, head
           </div>
         )}
 
-        {/* Flow — the actual minute-by-minute plan, stage names/count vary per lesson */}
-        {SLIDES[slideIndex].key === 'flow' && (
+        {/* 2 — Activities: one real-life activity per concept point, doubling as the in-class plan */}
+        {SLIDES[slideIndex].key === 'activities' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-            {lesson.flow.map((step, i) => (
+            <SectionLabel icon={<ListChecks size={11} />} color="#1E3A55" text="Try These In Class" />
+            {(lesson.activities ?? []).map((activity, i) => (
               <div key={i} style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
-                <span className="flex items-center justify-center shrink-0" style={{ width: 20, height: 20, borderRadius: 999, background: 'rgba(138,106,30,0.12)', color: '#8A6A1E', fontSize: 10, fontWeight: 800, marginTop: 1 }}>
+                <span className="flex items-center justify-center shrink-0" style={{ width: 20, height: 20, borderRadius: 999, background: 'rgba(30,58,85,0.1)', color: '#1E3A55', fontSize: 10, fontWeight: 800, marginTop: 1 }}>
                   {i + 1}
                 </span>
                 <div style={{ flex: 1 }}>
-                  <p style={{ fontSize: 13, fontWeight: 800, color: '#8A6A1E' }}>
-                    {step.label}{step.minutes ? <span style={{ fontWeight: 600, color: 'var(--ink-faint)' }}> · {step.minutes} min</span> : null}
+                  <p style={{ fontSize: 13, fontWeight: 800, color: '#1E3A55' }}>
+                    {activity.title}{activity.minutes ? <span style={{ fontWeight: 600, color: 'var(--ink-faint)' }}> · {activity.minutes} min</span> : null}
                   </p>
-                  <p style={{ fontSize: 13, color: 'var(--ink)', lineHeight: 1.6, marginTop: 2 }}>{step.detail}</p>
+                  <p style={{ fontSize: 13, color: 'var(--ink)', lineHeight: 1.6, marginTop: 2 }}>{activity.detail}</p>
                 </div>
               </div>
             ))}
           </div>
         )}
 
-        {SLIDES[slideIndex].key === 'support' && (
-          <>
-            {/* Talking Points — wonder-aloud moments, not a quiz round */}
-            {lesson.talkingPoints?.length > 0 && (
-              <section>
-                <SectionLabel icon={<MessageCircle size={11} />} color="#5B87AD" text="Talking Points" />
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 8 }}>
-                  {lesson.talkingPoints.map((tp, i) => (
-                    <div key={i}>
-                      <p style={{ fontSize: 13, color: 'var(--ink)', lineHeight: 1.6 }}>&ldquo;{tp.say}&rdquo;</p>
-                      {tp.keepGoing && (
-                        <p style={{ fontSize: 12, color: 'var(--ink-soft)', lineHeight: 1.5, marginTop: 2 }}>
-                          <b style={{ color: '#5B87AD' }}>Keep it going: </b>{tp.keepGoing}
-                        </p>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </section>
-            )}
+        {/* 3 — Story: a flowing narrative weaving the concepts together */}
+        {SLIDES[slideIndex].key === 'story' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            <SectionLabel icon={<BookOpen size={11} />} color="#8A6A1E" text="Tell It Like A Story" />
+            <p style={{ fontSize: 14, color: 'var(--ink)', lineHeight: 1.85, fontStyle: 'italic' }}>
+              {lesson.storyExpansion}
+            </p>
+          </div>
+        )}
 
-            {/* Watch Out */}
-            {lesson.watchFor && (
-              <section className="flex items-start gap-2">
-                <AlertTriangle size={14} style={{ color: '#8A6A1E', flexShrink: 0, marginTop: 2 }} />
-                <p style={{ fontSize: 12.5, color: 'var(--ink-soft)', lineHeight: 1.6 }}>
-                  <b style={{ color: '#8A6A1E' }}>Watch out: </b>{lesson.watchFor}
-                </p>
-              </section>
-            )}
+        {/* 4 — Challenges: playful, game-like, never framed as a test */}
+        {SLIDES[slideIndex].key === 'challenges' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            <SectionLabel icon={<Gamepad2 size={11} />} color="#234A1D" text="Play With It" />
+            {(lesson.challenges ?? []).map((challenge, i) => (
+              <div key={i} style={{ padding: '12px 14px', borderRadius: 14, background: 'rgba(35,74,29,0.05)', border: '1px solid rgba(35,74,29,0.12)' }}>
+                <p style={{ fontSize: 13, fontWeight: 800, color: '#234A1D' }}>{challenge.title}</p>
+                <p style={{ fontSize: 12.5, color: 'var(--ink-soft)', lineHeight: 1.6, marginTop: 3 }}>{challenge.instructions}</p>
+              </div>
+            ))}
+          </div>
+        )}
 
-            {/* Differentiation */}
-            {lesson.differentiation && (lesson.differentiation.ifStruggling || lesson.differentiation.ifAhead) && (
-              <section style={{ paddingTop: 14, borderTop: '1px dashed rgba(58,44,30,0.15)', display: 'flex', flexDirection: 'column', gap: 8 }}>
-                {lesson.differentiation.ifStruggling && (
-                  <div className="flex items-start gap-2">
-                    <LifeBuoy size={13} style={{ color: '#234A1D', flexShrink: 0, marginTop: 1 }} />
-                    <p style={{ fontSize: 12.5, color: '#234A1D', lineHeight: 1.6 }}>
-                      <b>If they&apos;re stuck: </b><span style={{ color: 'var(--ink-soft)' }}>{lesson.differentiation.ifStruggling}</span>
-                    </p>
-                  </div>
-                )}
-                {lesson.differentiation.ifAhead && (
-                  <div className="flex items-start gap-2">
-                    <ArrowUpCircle size={13} style={{ color: '#5C8F52', flexShrink: 0, marginTop: 1 }} />
-                    <p style={{ fontSize: 12.5, color: '#5C8F52', lineHeight: 1.6 }}>
-                      <b>Extension: </b><span style={{ color: 'var(--ink-soft)' }}>{lesson.differentiation.ifAhead}</span>
-                    </p>
-                  </div>
-                )}
-              </section>
-            )}
-          </>
+        {/* 5 — Real-Life Application: closing nudge, told directly to students */}
+        {SLIDES[slideIndex].key === 'application' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            <SectionLabel icon={<Compass size={11} />} color="#5C1F38" text="Where You'll Use This" />
+            <div style={{ padding: '14px 16px', borderRadius: 14, background: 'rgba(92,31,56,0.06)', border: '1px solid rgba(92,31,56,0.14)' }}>
+              <p style={{ fontSize: 13.5, color: '#5C1F38', lineHeight: 1.7, fontWeight: 600 }}>{lesson.realLifeApplication}</p>
+            </div>
+          </div>
         )}
       </div>
 

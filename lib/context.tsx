@@ -113,6 +113,7 @@ interface AppContextType {
   saveLessonFeedback: (data: {
     classId: string; topic: string; subtopic?: string
     engagement: FeedbackAnswer; comprehension: FeedbackAnswer; pacing: FeedbackAnswer
+    otherFeedback?: string
   }) => Promise<void>
 
   worksheets: Worksheet[]
@@ -861,6 +862,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const saveLessonFeedback = useCallback(async (data: {
     classId: string; topic: string; subtopic?: string
     engagement: FeedbackAnswer; comprehension: FeedbackAnswer; pacing: FeedbackAnswer
+    otherFeedback?: string
   }): Promise<void> => {
     if (!teacher) return
     const record: LessonFeedback = {
@@ -873,6 +875,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       engagement: data.engagement,
       comprehension: data.comprehension,
       pacing: data.pacing,
+      otherFeedback: data.otherFeedback,
       createdAt: new Date().toISOString(),
     }
     await sbq.upsertLessonFeedback(record)

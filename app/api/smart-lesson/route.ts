@@ -184,17 +184,21 @@ ${grounding.sidebars.length > 0 ? `\nActual sidebar notes/tips printed alongside
     ? `Teacher's note for today: ${contextNote.trim()}`
     : ''
 
-  const systemPrompt = `You are an expert classroom teacher and instructional designer. You write extremely concise, classroom-ready prep sheets — never essays, never quiz questions, never generic filler. A teacher opens this five minutes before class and scans it; every field is short enough to read in seconds.
+  const systemPrompt = `You are an expert classroom teacher and instructional designer, writing for Indian government school teachers and students. Many of them are not comfortable with advanced English, so use simple, everyday words and short sentences everywhere — never complex or academic vocabulary. Write roughly at a Grade 2-3 English reading level, no matter what grade the actual lesson is for. If a simpler word says the same thing, always use the simpler word.
 
-Core belief: the teacher isn't trying to "engage" students — they're creating one concrete experience through which understanding naturally happens. Every "detail" in the flow must BE that experience (a scene, an activity, a task), not a description of teaching technique, and it must contain zero questions like "What is X?".
+You write an extremely concise prep sheet — a teacher reads it once, in about 15 minutes, and then teaches directly from it standing in front of the class. Every field must be usable in the classroom, not just readable at a desk.
 
-Two different teachers with different profiles teaching the same topic should produce lessons that feel designed by two different people — not the same activity with one noun swapped. The teacher's roles, goals, and preferred activities should change the actual sequence and shape of the lesson (what happens first, how it's framed, how it builds), not just decorate a fixed structure with a matching word. A storyteller-teacher's lesson doesn't just "add a story" to the same three steps — it moves through the topic AS a story. A debate-lover's lesson moves through it as a disagreement to resolve. A puzzle-lover's lesson moves through it as a mystery to crack.
+Core belief: the teacher isn't trying to "engage" students — they're creating one concrete experience through which understanding naturally happens. Every activity must BE that experience (a scene, a task, something students physically or verbally do), not a description of teaching technique, and it must contain zero questions like "What is X?".
 
-Materials are load-bearing, not decorative. "materials" must be a strict subset of what the teacher's classroom actually has (never invent equipment they don't have) — and the flow must visibly follow from what's on that list: a projector/internet available should get used for something a chalkboard can't do; an outdoor space available should get used for something a desk can't do; if the profile says to minimize hands-on activities, no flow stage may involve physical manipulation, building, moving materials, or walking around — use verbal, visual, or written stages instead. If you remove a resource from the list, the flow you'd write should visibly change.
+Two different teachers with different profiles teaching the same topic should produce prep sheets that feel designed by two different people — not the same activity with one noun swapped. The teacher's roles, goals, and preferred activities should change the actual shape of the activities and the story (what happens first, how it's framed, how it builds), not just decorate a fixed structure with a matching word. A storyteller-teacher's activities don't just "add a story" — they move through the topic AS a story. A debate-lover's activities move through it as a disagreement to resolve. A puzzle-lover's activities move through it as a mystery to crack.
 
-Vary the shape of the lesson itself. Do not default to a fixed "Hook → Teach → Activity → Wrap-up" template every time — sometimes 3 stages fit better, sometimes 5; sometimes the right opening is a story, sometimes a demonstration, sometimes a challenge, sometimes a puzzle. Choose stage count, order, and names based on what this specific teacher profile would actually do, not a template.
+Materials matter even though no materials list is shown to the teacher: every activity must only require what the teacher's classroom actually has (see preferences below) — never invent equipment they don't have. If the profile says to minimize hands-on activities, keep activities verbal, visual, or written instead of physical.
 
-Talking points are not a quiz round. Students should never feel checked, tested, or called on to produce a correct answer — that turns the lesson into an evaluation, which is exactly what this is not. Instead, each talking point is a moment where the teacher wonders something out loud WITH the class, mid-activity, the way a curious person thinks aloud ("Hmm, I wonder if...", "Notice that...", "What would happen if..."). If the class is quiet or unsure, the teacher's next move is to keep exploring together, not to mark the silence as a wrong answer or supply "the correct answer" like an answer key.`
+The Story Expansion is a genuine story, not a bulleted explanation. Write it the way a teacher would tell it out loud to the class — a beginning, a middle, an end — weaving all 3 concepts into one narrative a student could follow the way they'd follow a story being read to them. No lists, no headings, no "Concept 1:" labels inside it.
+
+Challenges must feel like games, never like remedial work or a test. A student reading one should think "that sounds fun," never "I'm being assessed" or "I'm behind." Frame them as a dare, a mini competition, a puzzle, or a race against the clock — never as evaluation.
+
+Real-Life Application must point at one specific, concrete situation the student will actually run into outside class — never a vague "this is useful in life" statement.`
 
   const userPrompt = `Write a Prep Sheet for:
 
@@ -211,38 +215,32 @@ ${contextNoteLine}
 
 Return ONLY valid JSON (no markdown, no extra text), matching this exact shape:
 {
-  "goal": "One sentence: what students should understand by the end of this lesson.",
-  "materials": ["only items drawn from the teacher's actual classroom resources above (or generic locally-available items like slate/chalk/pebbles if no profile is on file) — nothing invented, nothing the flow doesn't actually use"],
   "concept": [
     { "text": "one syllabus-aligned idea, no fluff, one short sentence" },
     { "text": "..." },
     { "text": "..." }
   ],
-  "flow": [
-    { "label": "a stage name YOU choose to fit this teacher and this lesson (not always Hook/Teach/Activity/Wrap-up)", "minutes": 2, "detail": "direct instructions to the teacher for this stage — what THEY do and say, one to two short sentences" },
-    { "label": "...", "minutes": 8, "detail": "..." },
-    { "label": "...", "minutes": 10, "detail": "..." }
+  "activities": [
+    { "title": "short, concrete activity name", "minutes": 10, "detail": "what the teacher actually does and says for concept 1 — a real-life activity every student can follow, using only the teacher's actual classroom resources" },
+    { "title": "...", "minutes": 12, "detail": "... for concept 2 ..." },
+    { "title": "...", "minutes": 10, "detail": "... for concept 3 ..." }
   ],
-  "talkingPoints": [
-    { "say": "something to wonder aloud WITH the class mid-activity — curious, informal, never a stop-and-answer quiz question", "keepGoing": "how to keep the moment alive if the class is quiet or unsure — never framed as marking their answer right or wrong" },
-    { "say": "...", "keepGoing": "..." }
+  "storyExpansion": "A 6-10 sentence story, told the way a teacher would tell it aloud, weaving all 3 concepts into one narrative — flowing prose only, no bullet points, no lists, just a story a student could follow like they're being told a tale.",
+  "challenges": [
+    { "title": "a playful, game-like name", "instructions": "what students do — framed as fun, never as a test" },
+    { "title": "...", "instructions": "..." }
   ],
-  "differentiation": {
-    "ifStruggling": "a concrete simpler version of the SAME flow activity, using only the materials listed, for students who are lost",
-    "ifAhead": "a concrete harder extension for students who finish early"
-  },
-  "watchFor": "the single biggest mistake or misconception to watch for while students do the flow activity"
+  "realLifeApplication": "2-3 sentences, speaking directly to students, naming one specific real situation outside class where they'll use this."
 }
 
 Rules:
-- "flow" has 3 to 5 stages — choose the count, order, and labels to fit this profile; do not always produce the same stage names or the same number of stages across different teachers/topics.
-- Every flow stage's "detail" must only require items in "materials". No stage may need equipment not listed there.
-- If the profile says to minimize hands-on activities, zero flow stages may involve physical manipulation, building, or moving around the room.
 - Exactly 3 concept bullets. Each MUST include at least one (up to two) of these extra keys — every bullet is expandable in the UI, so never leave one with none: "deeperExplanation", "misconception", "realLifeExample", "visualDemo". Pick whichever genuinely fits that specific bullet best.
-- "talkingPoints": exactly 2 or 3. Each "say" is woven into the flow's activity, phrased like the teacher wondering aloud with the class ("I wonder if...", "Notice how...", "What do you think happens if...") — never a direct interrogation like "What is X?" and never something that singles out one student to answer correctly. "keepGoing" is a way to sustain the moment, not a marking scheme.
-- "watchFor" is specific to the flow's activity, not a restatement of a concept bullet's misconception.
-- Never use the words "quiz", "test", "evaluate", "assess", "review", "recall", "prerequisite".
-- Everything must be scannable in under 2 minutes total — short sentences, no paragraphs.`
+- Exactly 3 activities, in the same order as the 3 concept bullets — one activity per concept. Each "detail" must only require items the teacher's classroom actually has (see preferences above). Minutes across all 3 activities should add up to a realistic single class period (roughly 30-40 minutes total).
+- "storyExpansion" must read as flowing prose — no bullet points, no numbered lists, no headings inside it.
+- Exactly 2 challenges. Never use the words "quiz", "test", "evaluate", "assess", "exam", "grade", "score" anywhere in the challenges — describe them only as games, dares, puzzles, or races.
+- "realLifeApplication" must name one concrete scenario (a place, activity, or situation) — never a generic platitude like "this is useful in life."
+- Everything must be readable by the teacher in about 15 minutes and directly usable in class — short sentences, no paragraphs longer than 3-4 sentences.
+- Use simple, everyday English throughout — short sentences, common words a Grade 2-3 student would already know. No complex or academic vocabulary anywhere, even in the concept explanations.`
 
   const apiKey = process.env.OPENROUTER_API_KEY
   if (!apiKey) return NextResponse.json({ error: 'AI not configured' }, { status: 500 })
@@ -261,7 +259,7 @@ Rules:
         { role: 'user', content: userPrompt },
       ],
       temperature: 0.75,
-      max_tokens: 1200,
+      max_tokens: 1400,
     }),
   })
 
@@ -281,23 +279,21 @@ Rules:
     visualDemo?: string
     image?: { url: string } | null
   }
-  interface LessonFlowStep {
-    label: string
+  interface LessonActivity {
+    title: string
     minutes?: number
     detail: string
   }
-  interface TalkingPoint {
-    say: string
-    keepGoing: string
+  interface LessonChallenge {
+    title: string
+    instructions: string
   }
   interface SmartLesson {
-    goal: string
-    materials: string[]
     concept: ConceptBullet[]
-    flow: LessonFlowStep[]
-    talkingPoints: TalkingPoint[]
-    differentiation: { ifStruggling: string; ifAhead: string }
-    watchFor: string
+    activities: LessonActivity[]
+    storyExpansion: string
+    challenges: LessonChallenge[]
+    realLifeApplication: string
   }
 
   let lesson: SmartLesson

@@ -603,25 +603,25 @@ export interface ConceptBullet {
   image?: { url: string } | null   // AI-generated board-sketch reference for this bullet; null if generation failed
 }
 
-export interface LessonFlowStep {
-  label: string        // stage name chosen by the model for THIS teacher/lesson — not a fixed vocabulary
+export interface LessonActivity {
+  title: string         // short, concrete activity name
   minutes?: number
-  detail: string        // direct instructions to the teacher for this stage
+  detail: string        // what the teacher actually does/says for this concept — a real-life activity every
+                         // student can follow, doable with only the classroom's actual resources
 }
 
-export interface TalkingPoint {
-  say: string           // something to wonder aloud WITH the class mid-activity — curiosity, not a quiz question
-  keepGoing: string      // how to keep the moment alive if students are quiet/unsure — never framed as marking an answer right or wrong
+export interface LessonChallenge {
+  title: string          // playful, game-like name — never framed as an assessment
+  instructions: string
 }
 
 export interface SmartLesson {
-  goal: string                       // one sentence: what students should understand by the end
-  materials: string[]                 // strict subset of the teacher's actual classroom resources
   concept: ConceptBullet[]            // exactly 3 bullets, reference notes
-  flow: LessonFlowStep[]              // 3-5 ordered stages — the actual lesson script, personalized in shape and content
-  talkingPoints: TalkingPoint[]       // 2-3 wonder-aloud moments woven into the flow, not a quiz round
-  differentiation: { ifStruggling: string; ifAhead: string }
-  watchFor: string                    // the single biggest mistake/misconception to watch for during the activity
+  activities: LessonActivity[]        // exactly 3, one per concept point — this IS the in-class teaching plan
+  storyExpansion: string              // a flowing narrative weaving all 3 concepts together, told the way a
+                                       // teacher would tell it aloud — no bullet points, no lists
+  challenges: LessonChallenge[]       // exactly 2 — playful, game-like, never framed as a test or quiz
+  realLifeApplication: string         // 2-3 sentences naming one concrete real-world use of what was learned
 }
 
 export interface TaughtTopic {
@@ -658,6 +658,7 @@ export interface LessonFeedback {
   engagement: FeedbackAnswer
   comprehension: FeedbackAnswer
   pacing: FeedbackAnswer
+  otherFeedback?: string
   createdAt: string
 }
 

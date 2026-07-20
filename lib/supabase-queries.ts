@@ -570,10 +570,13 @@ export async function upsertLessonFeedback(f: LessonFeedback) {
       id: f.id, teacher_id: f.teacherId, class_id: f.classId,
       date: f.date, topic: f.topic, subtopic: f.subtopic ?? null,
       engagement: f.engagement, comprehension: f.comprehension, pacing: f.pacing,
+      other_feedback: f.otherFeedback?.trim() || null,
       created_at: f.createdAt,
     })
     if (error) throw error
-  } catch { /* table may not exist yet */ }
+  } catch (err) {
+    console.error('upsertLessonFeedback failed:', err)
+  }
 }
 
 // ─── Interventions ────────────────────────────────────────────────────────────

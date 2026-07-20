@@ -73,10 +73,10 @@ export async function POST(req: NextRequest) {
 
     // Ground questions in what this class was actually taught, when Prep Material exists
     // for the topic — otherwise the paper is a generic topic-only exam as before.
-    const groundingLines = lessonContext?.concepts?.length || lessonContext?.watchFor
+    const groundingLines = lessonContext?.concepts?.length
       ? `\nThis class's lesson on "${topic}" specifically covered:
-${(lessonContext.concepts ?? []).map(c => `- ${c}`).join('\n')}
-${lessonContext.watchFor ? `The teacher was told to watch for this common mistake: ${lessonContext.watchFor}\n` : ''}Base at least half the questions on these specific points rather than the topic in general — this is what the class actually experienced.\n`
+${lessonContext.concepts.map(c => `- ${c}`).join('\n')}
+Base at least half the questions on these specific points rather than the topic in general — this is what the class actually experienced.\n`
       : ''
 
     const prompt = `Generate a ${total}-mark subjective exam paper for Grade ${grade} ${subject} on the topic: "${topic}".
