@@ -10,6 +10,7 @@ import {
 import { useApp } from '@/lib/context'
 import ScanAttendanceModal from './ScanAttendanceModal'
 import type { Student } from '@/lib/types'
+import { isCurrentSmartLesson } from '@/lib/types'
 import clsx from 'clsx'
 
 type Status = 'present' | 'absent' | 'late'
@@ -291,13 +292,11 @@ export default function AttendanceForm({ classId, postSaveAction }: AttendanceFo
     if (sessionId) {
       const material = getPrepMaterial(classId, topicText.trim(), subtopicJoined) ??
         [...prepMaterials]
-          .filter(p => p.classId === classId && p.topic.trim().toLowerCase() === topicText.trim().toLowerCase())
+          .filter(p => p.classId === classId && p.topic.trim().toLowerCase() === topicText.trim().toLowerCase() && isCurrentSmartLesson(p.lesson))
           .sort((a, b) => b.createdAt.localeCompare(a.createdAt))[0]
       if (material) {
-        const hook = material.lesson.activities?.[0]?.detail || material.lesson.storyExpansion
-        const realLifeExamples = material.lesson.concept
-          ?.map(c => c.realLifeExample)
-          .filter((e): e is string => !!e) ?? []
+        const hook = material.lesson.realLifeConnection || material.lesson.interactiveExploration?.steps?.[0]
+        const realLifeExamples = [material.lesson.levelSet?.extendPrompt].filter((e): e is string => !!e)
         if (hook) saveSessionSnapshot(sessionId, { hook, realLifeExamples }).catch(() => {})
       }
     }

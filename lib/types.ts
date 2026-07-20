@@ -585,43 +585,56 @@ export interface Worksheet {
   createdAt: string
 }
 
-// The Prep Sheet: Goal (what today is for) → Materials (only what's on hand) →
-// Concept (what to teach, reference notes) → Flow (the actual minute-by-minute plan,
-// whose stage names and count are chosen per-teacher so lessons don't all read as
-// Hook/Teach/Activity/Wrap-up) → Talking Points (wonder-aloud moments woven into the
-// activity — never a stop-and-check quiz) → Differentiation (struggling / early-finisher
-// branches) → Watch For (the one biggest mistake during the activity). Deliberately
-// small — a 2-minute scan before class, not a document, so every field is short and
-// there is no quiz/evaluation, and nothing that would make a student feel tested.
+// The Prep Sheet: Concept (2-3 short bullets) → Real-Life Connection (a curiosity-first
+// scenario from the child's world, not "today we will learn X") → Interactive Exploration
+// (ONE activity chosen — not invented — from a low-resource activity bank, adapted to this
+// topic, with guiding questions so understanding emerges from discussion) → Challenge (a
+// DIFFERENT chosen activity to apply/stretch the idea) → Level Set (returns to the SAME
+// opening scenario so students can now solve it, plus a couple of follow-up questions).
+// Deliberately built for resource-constrained classrooms (chalk/blackboard/notebooks/found
+// objects only) — see LOW_RESOURCE_PRINCIPLES / ACTIVITY_BANK in
+// frontend/app/api/smart-lesson/route.ts, ported 1:1 from backend/scripts/test_prep_material.py.
 
-export interface ConceptBullet {
-  text: string                    // the bullet itself — one syllabus-aligned idea, no fluff
-  deeperExplanation?: string       // only populated when genuinely useful, not for every bullet
-  misconception?: string
-  realLifeExample?: string
-  visualDemo?: string
-  image?: { url: string } | null   // AI-generated board-sketch reference for this bullet; null if generation failed
-}
-
-export interface LessonActivity {
-  title: string         // short, concrete activity name
-  minutes?: number
-  detail: string        // what the teacher actually does/says for this concept — a real-life activity every
-                         // student can follow, doable with only the classroom's actual resources
+export interface InteractiveExploration {
+  activity: string             // exact name of an activity chosen from the reference bank, not invented
+  steps: string[]               // 2-4 short steps, adapted with this topic's specific details
+  guidingQuestions: string[]    // 1-3 questions asked mid-activity so the concept emerges from discussion
 }
 
 export interface LessonChallenge {
-  title: string          // playful, game-like name — never framed as an assessment
-  instructions: string
+  activity: string   // a DIFFERENT activity name from the bank, used to apply/stretch the idea
+  steps: string[]     // 2-3 short steps
+}
+
+export interface LevelSet {
+  returnToScenario: string   // brings back the exact opening real-life scenario
+  questions: string[]         // 2-3 short questions tied to that scenario
+  extendPrompt?: string       // open-ended prompt inviting another real-life connection
 }
 
 export interface SmartLesson {
-  concept: ConceptBullet[]            // exactly 3 bullets, reference notes
-  activities: LessonActivity[]        // exactly 3, one per concept point — this IS the in-class teaching plan
-  storyExpansion: string              // a flowing narrative weaving all 3 concepts together, told the way a
-                                       // teacher would tell it aloud — no bullet points, no lists
-  challenges: LessonChallenge[]       // exactly 2 — playful, game-like, never framed as a test or quiz
-  realLifeApplication: string         // 2-3 sentences naming one concrete real-world use of what was learned
+  planningNote?: string                           // model's own brief reasoning, written first — internal only, never shown to the teacher
+  concept: string[]                              // exactly 2-3 short bullets introducing the idea
+  realLifeConnection: string                     // the opening curiosity-first scenario
+  interactiveExploration: InteractiveExploration
+  challenge: LessonChallenge
+  materialsUsed: string[]                         // everything actually referenced across the two activities' steps — validated server-side against the profile's resources
+  levelSet: LevelSet
+}
+
+// A PrepMaterial saved before the 5-part template (or before materialsUsed/
+// planningNote landed) still has an incompatible shape — getPrepMaterial()
+// uses this to treat those stale rows as a cache miss instead of handing them
+// to PrepSheetView, which only knows the current shape.
+export function isCurrentSmartLesson(lesson: unknown): lesson is SmartLesson {
+  if (!lesson || typeof lesson !== 'object') return false
+  const l = lesson as Record<string, unknown>
+  return Array.isArray(l.concept) &&
+    typeof l.realLifeConnection === 'string' &&
+    typeof l.interactiveExploration === 'object' && l.interactiveExploration !== null &&
+    typeof l.challenge === 'object' && l.challenge !== null &&
+    Array.isArray(l.materialsUsed) &&
+    typeof l.levelSet === 'object' && l.levelSet !== null
 }
 
 export interface TaughtTopic {

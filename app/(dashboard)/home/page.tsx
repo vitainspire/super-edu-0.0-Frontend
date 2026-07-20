@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react'
 import {
   Users, GraduationCap, Wifi, WifiOff,
   LogOut, Check, ClipboardList,
-  Sparkles, TrendingUp, PlayCircle,
+  Sparkles, TrendingUp, PlayCircle, Wand2,
 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useApp } from '@/lib/context'
@@ -270,17 +270,31 @@ export default function HomePage() {
                                   <Sparkles size={12} /> Preview Prep Material
                                 </button>
                               ) : (
-                                <button
-                                  type="button"
-                                  onClick={e => {
-                                    e.stopPropagation()
-                                    setPrepModal({ classId: entry.classId, subject: entry.label ?? classNameFor(entry.classId), grade: gradeFor(entry.classId), mode: 'custom' })
-                                  }}
-                                  className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-bold active:scale-95 transition-all"
-                                  style={{ background: 'rgba(255,255,255,0.7)', color: 'var(--ink)' }}
-                                >
-                                  <Sparkles size={12} /> Prep Material
-                                </button>
+                                <>
+                                  <button
+                                    type="button"
+                                    onClick={e => {
+                                      e.stopPropagation()
+                                      setPrepModal({ classId: entry.classId, subject: entry.label ?? classNameFor(entry.classId), grade: gradeFor(entry.classId), mode: 'auto' })
+                                    }}
+                                    className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-bold active:scale-95 transition-all"
+                                    style={{ background: 'rgba(255,255,255,0.7)', color: 'var(--ink)' }}
+                                  >
+                                    <Sparkles size={12} /> Prep Material
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={e => {
+                                      e.stopPropagation()
+                                      setPrepModal({ classId: entry.classId, subject: entry.label ?? classNameFor(entry.classId), grade: gradeFor(entry.classId), mode: 'custom' })
+                                    }}
+                                    title="Generate for a topic of your choice"
+                                    className="w-9 h-9 shrink-0 flex items-center justify-center rounded-xl active:scale-90 transition-all"
+                                    style={{ background: 'rgba(255,255,255,0.7)', color: 'var(--ink)' }}
+                                  >
+                                    <Wand2 size={14} />
+                                  </button>
+                                </>
                               )}
                               {isNow ? (
                                 <button

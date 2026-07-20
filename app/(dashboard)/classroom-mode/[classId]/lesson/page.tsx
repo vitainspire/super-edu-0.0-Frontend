@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useParams, useRouter, useSearchParams } from 'next/navigation'
 import { Flag, Sparkles, ArrowLeft, Clock } from 'lucide-react'
 import { useApp } from '@/lib/context'
+import { isCurrentSmartLesson } from '@/lib/types'
 import PrepSheetView from '@/components/timetable/PrepSheetView'
 
 function timeToMins(t: string) {
@@ -23,7 +24,7 @@ export default function ClassroomModeLessonPage() {
   const material = taught
     ? getPrepMaterial(classId, taught.topic, taught.subtopic) ??
       [...prepMaterials]
-        .filter(p => p.classId === classId && p.topic.trim().toLowerCase() === taught.topic.trim().toLowerCase())
+        .filter(p => p.classId === classId && p.topic.trim().toLowerCase() === taught.topic.trim().toLowerCase() && isCurrentSmartLesson(p.lesson))
         .sort((a, b) => b.createdAt.localeCompare(a.createdAt))[0] ??
       null
     : null

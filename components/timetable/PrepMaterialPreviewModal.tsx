@@ -2,6 +2,7 @@
 import { Sparkles, ClipboardList } from 'lucide-react'
 import Modal from '@/components/ui/Modal'
 import { useApp } from '@/lib/context'
+import { isCurrentSmartLesson } from '@/lib/types'
 import PrepSheetView from './PrepSheetView'
 
 interface PrepMaterialPreviewModalProps {
@@ -25,7 +26,7 @@ export default function PrepMaterialPreviewModal({
   const material = taught
     ? getPrepMaterial(classId, taught.topic, taught.subtopic) ??
       [...prepMaterials]
-        .filter(p => p.classId === classId && p.topic.trim().toLowerCase() === taught.topic.trim().toLowerCase())
+        .filter(p => p.classId === classId && p.topic.trim().toLowerCase() === taught.topic.trim().toLowerCase() && isCurrentSmartLesson(p.lesson))
         .sort((a, b) => b.createdAt.localeCompare(a.createdAt))[0] ??
       null
     : null
