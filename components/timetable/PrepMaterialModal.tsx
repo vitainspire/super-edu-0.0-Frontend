@@ -1,11 +1,12 @@
 'use client'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useApp } from '@/lib/context'
 import Modal from '@/components/ui/Modal'
 import { Sparkles, RotateCcw, AlertCircle, ClipboardList, Wand2 } from 'lucide-react'
-import type { SmartLesson } from '@/lib/types'
+import type { SmartLesson, AcademicEvent } from '@/lib/types'
 import { isTeachingProfileComplete } from '@/lib/logic/teaching-profile'
+import { getCurrentWeek } from '@/lib/logic/pacing'
 import PrepSheetView from './PrepSheetView'
 
 interface PrepMaterialModalProps {
@@ -14,14 +15,17 @@ interface PrepMaterialModalProps {
   classId: string
   subject: string
   grade: string
+  initialTopic?: string   // defaults the topic selection instead of "this week's first incomplete"
+  autoGenerate?: boolean  // fire generation immediately once topic/subtopic settle
 }
 
 type GenState = 'idle' | 'loading' | 'done' | 'error'
 
-export default function PrepMaterialModal({ open, onClose, classId, subject, grade }: PrepMaterialModalProps) {
+export default function PrepMaterialModal({ open, onClose, classId, subject, grade, initialTopic, autoGenerate }: PrepMaterialModalProps) {
   const router = useRouter()
   const {
     teacher, getClassSyllabus, getTopicSubTopics, getPrepMaterial, savePrepMaterial, saveTaughtTopic,
+    toggleSubTopicComplete, toggleTopicComplete,
   } = useApp()
 
   const [topic, setTopic] = useState('')
@@ -32,21 +36,50 @@ export default function PrepMaterialModal({ open, onClose, classId, subject, gra
   const [state, setState] = useState<GenState>('idle')
   const [lesson, setLesson] = useState<SmartLesson | null>(null)
   const [fromCache, setFromCache] = useState(false)
+  // Whether the topic/subtopic/context picker is shown. Hidden once a result
+  // is on screen so the prep sheet reads cleanly — the corner button on the
+  // result card brings it back to let the teacher choose a different topic.
+  const [formVisible, setFormVisible] = useState(!autoGenerate)
+  const autoFiredRef = useRef<string | null>(null)
 
-  // Reset topic/subtopic whenever a different class's modal is opened
+  // The admin's published "Academic Year" calendar entry — same source the
+  // syllabus tab uses — so "this week's topics" means the same thing everywhere.
+  const [academicEvents, setAcademicEvents] = useState<AcademicEvent[]>([])
+  useEffect(() => {
+    fetch('/api/teacher/academic-calendar')
+      .then(r => r.json())
+      .then(d => setAcademicEvents(d.events ?? []))
+      .catch(() => {})
+  }, [])
+  const academicYearStart = academicEvents.find(e => e.category === 'term' && e.title === 'Academic Year')?.startDate
+  const currentWeek = getCurrentWeek(academicYearStart)
+
+  // Reset topic/subtopic whenever a different class's modal is opened.
+  // Defaults to this week's first incomplete topic (falling back to the
+  // syllabus-wide first incomplete topic if there's no week data), unless an
+  // explicit initialTopic was passed in — plus that topic's own first
+  // incomplete subtopic, if it has any.
   useEffect(() => {
     if (!open || !classId) return
     const syllabus = getClassSyllabus(classId)
-    const next = syllabus.find(t => !t.isCompleted)?.topic ?? ''
+    const weekTopics = currentWeek != null ? syllabus.filter(t => t.weekNumber === currentWeek) : []
+    const next = initialTopic
+      ?? weekTopics.find(t => !t.isCompleted)?.topic
+      ?? syllabus.find(t => !t.isCompleted)?.topic
+      ?? ''
+    const nextEntry = syllabus.find(t => t.topic === next)
+    const nextSub = nextEntry ? getTopicSubTopics(nextEntry.id).find(s => !s.isCompleted)?.name ?? '' : ''
     setTopic(next)
     setTopicMode('dropdown')
-    setSubtopic('')
+    setSubtopic(nextSub)
     setSubMode('dropdown')
     setContextNote('')
     setState('idle')
     setLesson(null)
+    setFormVisible(!autoGenerate)
+    autoFiredRef.current = null
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open, classId])
+  }, [open, classId, initialTopic])
 
   // Whenever the topic/subtopic selection settles, check for saved prep material
   useEffect(() => {
@@ -56,6 +89,7 @@ export default function PrepMaterialModal({ open, onClose, classId, subject, gra
       setLesson(cached.lesson)
       setFromCache(true)
       setState('done')
+      setFormVisible(false)
     } else {
       setLesson(null)
       setFromCache(false)
@@ -64,11 +98,39 @@ export default function PrepMaterialModal({ open, onClose, classId, subject, gra
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, classId, topic, subtopic])
 
+  // Fire generation immediately once topic/subtopic settle, instead of waiting
+  // for a manual click — used for the one-click "generate this week" flow.
+  // Gated by a ref (not `state`) because the cache-check effect above sets
+  // `state` for the *next* render, so this effect would still see the stale
+  // value if it checked `state` in the same commit. generate() re-checks the
+  // cache itself, so a redundant call here is harmless.
+  useEffect(() => {
+    if (!open || !autoGenerate || !topic.trim()) return
+    const key = `${topic}|${subtopic}`
+    if (autoFiredRef.current === key) return
+    autoFiredRef.current = key
+    void generate()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, autoGenerate, topic, subtopic])
+
   // Recording that this topic/subtopic was covered today happens the moment
   // prep material becomes available — whether freshly generated or loaded from cache.
+  // The same moment also checks it off the syllabus: the subtopic if one was
+  // generated for, or the topic itself if that topic has no subtopics at all.
   useEffect(() => {
     if (!open || !classId || !lesson || !topic.trim()) return
     saveTaughtTopic({ classId, topic: topic.trim(), subtopic: subtopic.trim() || undefined }).catch(() => {})
+
+    const entry = getClassSyllabus(classId).find(t => t.topic === topic)
+    if (!entry) return
+    const trimmedSub = subtopic.trim()
+    const entrySubs = getTopicSubTopics(entry.id)
+    if (trimmedSub) {
+      const sub = entrySubs.find(s => s.name === trimmedSub)
+      if (sub && !sub.isCompleted) void toggleSubTopicComplete(sub.id, true)
+    } else if (entrySubs.length === 0 && !entry.isCompleted) {
+      void toggleTopicComplete(entry.id, true)
+    }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [lesson])
 
@@ -103,6 +165,7 @@ export default function PrepMaterialModal({ open, onClose, classId, subject, gra
         setLesson(cached.lesson)
         setFromCache(true)
         setState('done')
+        setFormVisible(false)
         return
       }
     }
@@ -133,8 +196,10 @@ export default function PrepMaterialModal({ open, onClose, classId, subject, gra
       setLesson(saved.lesson)
       setFromCache(false)
       setState('done')
+      setFormVisible(false)
     } catch {
       setState('error')
+      setFormVisible(true)
     }
   }
 
@@ -150,7 +215,7 @@ export default function PrepMaterialModal({ open, onClose, classId, subject, gra
         </div>
 
         {/* Teaching Profile nudge — only shown until the teacher sets it up once */}
-        {!hasProfile && (
+        {formVisible && !hasProfile && (
           <button
             type="button"
             onClick={() => { onClose(); router.push('/profile/teaching') }}
@@ -166,6 +231,8 @@ export default function PrepMaterialModal({ open, onClose, classId, subject, gra
         )}
 
         {/* Topic selector */}
+        {formVisible && (
+        <>
         <div>
           <label className="text-[11px] font-bold text-ink-soft uppercase tracking-wide mb-1.5 flex items-center justify-between">
             <span>Today&apos;s Topic</span>
@@ -313,10 +380,37 @@ export default function PrepMaterialModal({ open, onClose, classId, subject, gra
             <AlertCircle size={12} /> Failed to generate. Try again.
           </div>
         )}
+        </>
+        )}
 
-        {/* Result — a paginated slider, one part of the prep sheet per slide */}
+        {/* Compact status while auto-generating with the picker tucked away */}
+        {!formVisible && isLoading && (
+          <div className="w-full py-3 rounded-2xl text-sm font-bold flex items-center justify-center gap-2" style={{ background: '#C7B7E8', color: '#31215C' }}>
+            <span className="w-4 h-4 border-2 rounded-full animate-spin" style={{ borderColor: '#31215C', borderTopColor: 'transparent' }} /> Generating Prep Material…
+          </div>
+        )}
+
+        {/* Result — rendered by the shared PrepSheetView (also used by the Preview modal / Classroom Mode) */}
         {isDone && lesson && (
-          <PrepSheetView key={`${topic}-${subtopic}`} lesson={lesson} topic={topic} subtopic={subtopic} fromCache={fromCache} />
+          <PrepSheetView
+            key={`${topic}-${subtopic}`}
+            lesson={lesson}
+            topic={topic}
+            subtopic={subtopic}
+            fromCache={fromCache}
+            headerAction={
+              <button
+                type="button"
+                onClick={() => setFormVisible(true)}
+                aria-label="Choose a different topic"
+                title="Choose a different topic"
+                className="w-6 h-6 rounded-full flex items-center justify-center shrink-0 transition-colors"
+                style={{ background: 'rgba(255,255,255,0.12)', color: '#C7B7E8' }}
+              >
+                <RotateCcw size={11} />
+              </button>
+            }
+          />
         )}
 
         {classId && (

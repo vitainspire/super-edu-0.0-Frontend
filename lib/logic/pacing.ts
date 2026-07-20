@@ -13,18 +13,22 @@ export interface PacingResult {
   completionPct: number
 }
 
+export function getCurrentWeek(academicYearStart: string | undefined): number | null {
+  if (!academicYearStart) return null
+  const start = new Date(academicYearStart + 'T00:00:00')
+  const diffMs = new Date().getTime() - start.getTime()
+  if (diffMs < 0) return null  // year hasn't started yet
+  return Math.max(1, Math.floor(diffMs / (7 * 24 * 60 * 60 * 1000)) + 1)
+}
+
 export function computePacing(
   academicYearStart: string | undefined,
   topics: SyllabusTopic[],
 ): PacingResult | null {
-  if (!academicYearStart || topics.length === 0) return null
+  if (topics.length === 0) return null
 
-  const start = new Date(academicYearStart + 'T00:00:00')
-  const now   = new Date()
-  const diffMs = now.getTime() - start.getTime()
-  if (diffMs < 0) return null  // year hasn't started yet
-
-  const currentWeek = Math.max(1, Math.floor(diffMs / (7 * 24 * 60 * 60 * 1000)) + 1)
+  const currentWeek = getCurrentWeek(academicYearStart)
+  if (currentWeek == null) return null
 
   const sorted = [...topics].sort((a, b) => {
     if (a.weekNumber != null && b.weekNumber != null) return a.weekNumber - b.weekNumber

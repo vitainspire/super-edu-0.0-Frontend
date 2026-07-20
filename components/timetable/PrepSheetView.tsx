@@ -12,6 +12,7 @@ interface PrepSheetViewProps {
   topic: string
   subtopic?: string
   fromCache?: boolean
+  headerAction?: ReactNode   // optional control rendered in the doc header, next to the "Saved" badge
 }
 
 function SectionLabel({ icon, color, text }: { icon: ReactNode; color: string; text: string }) {
@@ -35,7 +36,7 @@ const SLIDES = [
 // The read-only prep-sheet deck (Overview/Concept/Flow/Support), shared between
 // PrepMaterialModal's "done" state and the Classroom Mode / Preview surfaces —
 // all of which display the same already-generated SmartLesson, just in different contexts.
-export default function PrepSheetView({ lesson, topic, subtopic, fromCache }: PrepSheetViewProps) {
+export default function PrepSheetView({ lesson, topic, subtopic, fromCache, headerAction }: PrepSheetViewProps) {
   const [expandedBullet, setExpandedBullet] = useState<number | null>(null)
   const [slideIndex, setSlideIndex] = useState(0)
   const [slideDir, setSlideDir] = useState(1)
@@ -58,11 +59,14 @@ export default function PrepSheetView({ lesson, topic, subtopic, fromCache }: Pr
           <p style={{ fontSize: 10, fontWeight: 800, color: '#C7B7E8', textTransform: 'uppercase', letterSpacing: '.12em' }}>
             Prep Sheet
           </p>
-          {fromCache && (
-            <span className="flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ color: '#AAD6A0', background: 'rgba(170,214,160,.15)' }}>
-              <Database size={10} /> Saved
-            </span>
-          )}
+          <div className="flex items-center gap-2">
+            {fromCache && (
+              <span className="flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ color: '#AAD6A0', background: 'rgba(170,214,160,.15)' }}>
+                <Database size={10} /> Saved
+              </span>
+            )}
+            {headerAction}
+          </div>
         </div>
         <p style={{ fontSize: 17, fontWeight: 900, color: '#fff', lineHeight: 1.2, marginTop: 2 }}>
           {topic}{subtopic ? ` — ${subtopic}` : ''}

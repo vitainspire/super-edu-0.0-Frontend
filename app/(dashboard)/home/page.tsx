@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react'
 import {
   Users, GraduationCap, Wifi, WifiOff,
   LogOut, Check, ClipboardList,
-  Sparkles, TrendingUp, PlayCircle,
+  Sparkles, TrendingUp, PlayCircle, Wand2,
 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useApp } from '@/lib/context'
@@ -68,7 +68,7 @@ export default function HomePage() {
   // Tap a Today's Schedule row to reveal its Prep Material / Take Attendance
   // actions — accordion-style, only one row expanded at a time.
   const [expandedEntryId, setExpandedEntryId] = useState<string | null>(null)
-  const [prepModal, setPrepModal] = useState<{ classId: string; subject: string; grade: string } | null>(null)
+  const [prepModal, setPrepModal] = useState<{ classId: string; subject: string; grade: string; mode: 'auto' | 'custom' } | null>(null)
   const [previewModal, setPreviewModal] = useState<{ classId: string; subject: string; grade: string } | null>(null)
 
   // Same per-student criteria the Alerts page itself uses, so this count
@@ -270,17 +270,31 @@ export default function HomePage() {
                                   <Sparkles size={12} /> Preview Prep Material
                                 </button>
                               ) : (
-                                <button
-                                  type="button"
-                                  onClick={e => {
-                                    e.stopPropagation()
-                                    setPrepModal({ classId: entry.classId, subject: entry.label ?? classNameFor(entry.classId), grade: gradeFor(entry.classId) })
-                                  }}
-                                  className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-bold active:scale-95 transition-all"
-                                  style={{ background: 'rgba(255,255,255,0.7)', color: 'var(--ink)' }}
-                                >
-                                  <Sparkles size={12} /> Prep Material
-                                </button>
+                                <>
+                                  <button
+                                    type="button"
+                                    onClick={e => {
+                                      e.stopPropagation()
+                                      setPrepModal({ classId: entry.classId, subject: entry.label ?? classNameFor(entry.classId), grade: gradeFor(entry.classId), mode: 'auto' })
+                                    }}
+                                    className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-bold active:scale-95 transition-all"
+                                    style={{ background: 'rgba(255,255,255,0.7)', color: 'var(--ink)' }}
+                                  >
+                                    <Sparkles size={12} /> Prep Material
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={e => {
+                                      e.stopPropagation()
+                                      setPrepModal({ classId: entry.classId, subject: entry.label ?? classNameFor(entry.classId), grade: gradeFor(entry.classId), mode: 'custom' })
+                                    }}
+                                    title="Generate for a topic of your choice"
+                                    className="w-9 h-9 shrink-0 flex items-center justify-center rounded-xl active:scale-90 transition-all"
+                                    style={{ background: 'rgba(255,255,255,0.7)', color: 'var(--ink)' }}
+                                  >
+                                    <Wand2 size={14} />
+                                  </button>
+                                </>
                               )}
                               {isNow ? (
                                 <button
@@ -369,6 +383,7 @@ export default function HomePage() {
         classId={prepModal?.classId ?? ''}
         subject={prepModal?.subject ?? ''}
         grade={prepModal?.grade ?? ''}
+        autoGenerate={prepModal?.mode === 'auto'}
       />
 
       <PrepMaterialPreviewModal
@@ -377,7 +392,7 @@ export default function HomePage() {
         classId={previewModal?.classId ?? ''}
         subject={previewModal?.subject ?? ''}
         grade={previewModal?.grade ?? ''}
-        onGenerateInstead={() => previewModal && setPrepModal(previewModal)}
+        onGenerateInstead={() => previewModal && setPrepModal({ ...previewModal, mode: 'auto' })}
       />
 
       {/* Floating attendance-status button — right above Morning Briefing */}

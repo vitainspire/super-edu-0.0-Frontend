@@ -8,6 +8,8 @@ import {
 } from 'lucide-react'
 import { useApp } from '@/lib/context'
 import { computePacing } from '@/lib/logic/pacing'
+import { buildWeekTabs, topicsForWeek, defaultSelectedWeek, type WeekKey } from '@/lib/logic/weeklyPlan'
+import type { AcademicEvent } from '@/lib/types'
 import clsx from 'clsx'
 
 interface WeekPlan { week: number; topics: string[]; tip: string; activity: string }
@@ -42,6 +44,18 @@ export default function ClassSyllabusPage() {
     void ensureClassSyllabus(classId)
   }, [classId, ensureClassSyllabus])
 
+  // The admin's published "Academic Year" calendar entry is the real source
+  // of truth for week numbering — teacher.academicYearStart is a separate,
+  // never-set field and must not be used for this.
+  const [academicEvents, setAcademicEvents] = useState<AcademicEvent[]>([])
+  useEffect(() => {
+    fetch('/api/teacher/academic-calendar')
+      .then(r => r.json())
+      .then(d => setAcademicEvents(d.events ?? []))
+      .catch(() => {})
+  }, [])
+  const academicYearStart = academicEvents.find(e => e.category === 'term' && e.title === 'Academic Year')?.startDate
+
   const currentClass = classes.find(c => c.id === classId)
   const grade = currentClass?.grade ?? ''
   const gradeSectionCount = classes.filter(c => (c.grade ?? '') === grade).length
@@ -58,11 +72,26 @@ export default function ClassSyllabusPage() {
   const [planWeeks, setPlanWeeks]     = useState<WeekPlan[]>([])
   const [planError, setPlanError]     = useState('')
 
+  // ── Weekly tabs ──────────────────────────────────────────
+  const [selectedWeek, setSelectedWeek] = useState<WeekKey | null>(null)
+
   const topics   = getClassSyllabus(classId)
   const students = getClassStudents(classId)
   const completed = topics.filter(t => t.isCompleted).length
   const pct       = topics.length ? Math.round((completed / topics.length) * 100) : 0
-  const pacing    = computePacing(teacher?.academicYearStart, topics)
+  const pacing    = computePacing(academicYearStart, topics)
+
+  const weekTabs = buildWeekTabs(topics, academicYearStart)
+  const visibleTopics = selectedWeek != null ? topicsForWeek(topics, selectedWeek) : topics
+
+  // Default to the current week once topics load, without overriding a manual tab click
+  useEffect(() => {
+    if (selectedWeek !== null || weekTabs.length === 0) return
+    setSelectedWeek(defaultSelectedWeek(weekTabs))
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [weekTabs.length])
+
+  const weekDoneCount  = visibleTopics.filter(t => t.isCompleted).length
 
   const interestCount: Record<string, number> = {}
   students.forEach(s => s.interests.forEach(i => { interestCount[i] = (interestCount[i] ?? 0) + 1 }))
@@ -169,6 +198,42 @@ export default function ClassSyllabusPage() {
         </div>
       )}
 
+      {/* ── Weekly tabs ─────────────────────────────────────── */}
+      {weekTabs.length > 0 && (
+        <>
+          <div className="flex overflow-x-auto no-scrollbar gap-2 mb-2 -mx-1 px-1">
+            {weekTabs.map(tab => {
+              const isSelected = selectedWeek === tab.key
+              return (
+                <button
+                  key={tab.key}
+                  type="button"
+                  onClick={() => setSelectedWeek(tab.key)}
+                  className={clsx(
+                    'shrink-0 flex items-center gap-1.5 px-3.5 py-2 rounded-2xl text-xs font-bold transition-colors',
+                    tab.isCurrent ? 'bg-[#5B87AD] text-white' : 'bg-black/[0.04] text-ink-soft opacity-60',
+                    isSelected && (tab.isCurrent ? 'ring-2 ring-[#1E3A55]' : 'ring-2 ring-black/20 opacity-100'),
+                  )}
+                >
+                  {tab.label}
+                  <span className={clsx('text-[10px] font-black', tab.isCurrent ? 'text-white/80' : 'text-ink-faint')}>
+                    {tab.completedCount}/{tab.totalCount}
+                  </span>
+                </button>
+              )
+            })}
+          </div>
+
+          {selectedWeek != null && (
+            <div className="mb-4">
+              <p className="text-xs text-ink-soft font-medium">
+                {weekDoneCount}/{visibleTopics.length} done this week
+              </p>
+            </div>
+          )}
+        </>
+      )}
+
       {/* ── AI Lesson Plan ──────────────────────────────────── */}
       {topics.length > 0 && (
         <button
@@ -230,7 +295,7 @@ export default function ClassSyllabusPage() {
 
       {/* ── Topic list ──────────────────────────────────────── */}
       <div className="space-y-2">
-        {topics.map((topic) => {
+        {visibleTopics.map((topic) => {
           const topicSessions  = getTopicSessions(topic.id)
           const sessionCount   = topicSessions.length
           const latestDate     = topicSessions[0]?.date
