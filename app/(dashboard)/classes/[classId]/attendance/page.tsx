@@ -1,11 +1,11 @@
 ﻿'use client'
 import { useState, useEffect, useMemo, useRef } from 'react'
-import { useParams, useRouter } from 'next/navigation'
+import { useParams, useRouter, useSearchParams } from 'next/navigation'
 import {
   BookOpen, Users, Save, Check, Sparkles,
   AlertTriangle,
   ChevronDown, ChevronUp, CheckCircle2,
-  GraduationCap, Play, Link2, Camera,
+  GraduationCap, Play, Link2, Camera, ArrowRight,
 } from 'lucide-react'
 import { useApp } from '@/lib/context'
 import ScanAttendanceModal from '@/components/attendance/ScanAttendanceModal'
@@ -22,6 +22,8 @@ const STATUS_CONFIG: Record<Status, { label: string; color: string; bg: string }
 export default function AttendancePage() {
   const { classId } = useParams<{ classId: string }>()
   const router      = useRouter()
+  const searchParams = useSearchParams()
+  const isClassroomMode = searchParams.get('mode') === 'classroom'
   const {
     classes,
     students: rawStudents,
@@ -669,6 +671,16 @@ export default function AttendancePage() {
               )}
             </div>
           </div>
+
+          {/* Classroom Mode — attendance was just step one; move on to the lesson reference view */}
+          {isClassroomMode && (
+            <button type="button"
+              onClick={() => router.push(`/classes/${classId}/classroom-mode/lesson`)}
+              className="w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl text-white font-bold text-sm active:scale-[0.98] transition-all"
+              style={{ background: 'var(--ink)' }}>
+              Continue to Lesson <ArrowRight size={16} />
+            </button>
+          )}
 
           {/* Absent students — with late-arrival toggle */}
           {(absentCount > 0 || lateCount > 0) && (

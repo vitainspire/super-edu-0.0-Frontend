@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react'
 import {
   Users, GraduationCap, Wifi, WifiOff,
   LogOut, Check, ClipboardList,
-  Sparkles, TrendingUp,
+  Sparkles, TrendingUp, PlayCircle,
 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useApp } from '@/lib/context'
@@ -17,6 +17,7 @@ import PageHeader from '@/components/theme/PageHeader'
 import SubstituteBanner from '@/components/timetable/SubstituteBanner'
 import AttendanceCircle from '@/components/home/AttendanceCircle'
 import PrepMaterialModal from '@/components/timetable/PrepMaterialModal'
+import PrepMaterialPreviewModal from '@/components/timetable/PrepMaterialPreviewModal'
 import { Sticker, ClipboardCheckSticker, QuillBookSticker, BellSticker } from '@/components/theme/StickerIcon'
 import { countStudentsNeedingAttention } from '@/lib/logic/home-alerts'
 import clsx from 'clsx'
@@ -68,6 +69,7 @@ export default function HomePage() {
   // actions — accordion-style, only one row expanded at a time.
   const [expandedEntryId, setExpandedEntryId] = useState<string | null>(null)
   const [prepModal, setPrepModal] = useState<{ classId: string; subject: string; grade: string } | null>(null)
+  const [previewModal, setPreviewModal] = useState<{ classId: string; subject: string; grade: string } | null>(null)
 
   // Same per-student criteria the Alerts page itself uses, so this count
   // always matches what tapping "View" reveals.
@@ -252,28 +254,53 @@ export default function HomePage() {
                             {entry.startTime}–{entry.endTime} · {classNameFor(entry.classId)}
                           </p>
 
-                          {/* Revealed on tap — Prep Material / Take Attendance for this period */}
+                          {/* Revealed on tap — swaps to Classroom Mode's own actions once the period is live */}
                           {expandedEntryId === entry.id && (
                             <div className="flex gap-2 mt-2.5 animate-fade-up">
-                              <button
-                                type="button"
-                                onClick={e => {
-                                  e.stopPropagation()
-                                  setPrepModal({ classId: entry.classId, subject: entry.label ?? classNameFor(entry.classId), grade: gradeFor(entry.classId) })
-                                }}
-                                className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-bold active:scale-95 transition-all"
-                                style={{ background: 'rgba(255,255,255,0.7)', color: isNow ? color.text : 'var(--ink)' }}
-                              >
-                                <Sparkles size={12} /> Prep Material
-                              </button>
-                              <button
-                                type="button"
-                                onClick={e => { e.stopPropagation(); router.push(`/classes/${entry.classId}/attendance`) }}
-                                className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-bold text-white active:scale-95 transition-all"
-                                style={{ background: 'var(--ink)' }}
-                              >
-                                <ClipboardList size={12} /> Take Attendance
-                              </button>
+                              {isNow ? (
+                                <button
+                                  type="button"
+                                  onClick={e => {
+                                    e.stopPropagation()
+                                    setPreviewModal({ classId: entry.classId, subject: entry.label ?? classNameFor(entry.classId), grade: gradeFor(entry.classId) })
+                                  }}
+                                  className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-bold active:scale-95 transition-all"
+                                  style={{ background: 'rgba(255,255,255,0.7)', color: color.text }}
+                                >
+                                  <Sparkles size={12} /> Preview Prep Material
+                                </button>
+                              ) : (
+                                <button
+                                  type="button"
+                                  onClick={e => {
+                                    e.stopPropagation()
+                                    setPrepModal({ classId: entry.classId, subject: entry.label ?? classNameFor(entry.classId), grade: gradeFor(entry.classId) })
+                                  }}
+                                  className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-bold active:scale-95 transition-all"
+                                  style={{ background: 'rgba(255,255,255,0.7)', color: 'var(--ink)' }}
+                                >
+                                  <Sparkles size={12} /> Prep Material
+                                </button>
+                              )}
+                              {isNow ? (
+                                <button
+                                  type="button"
+                                  onClick={e => { e.stopPropagation(); router.push(`/classes/${entry.classId}/attendance?mode=classroom`) }}
+                                  className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-bold text-white active:scale-95 transition-all"
+                                  style={{ background: 'var(--ink)' }}
+                                >
+                                  <PlayCircle size={12} /> Enter Classroom Mode
+                                </button>
+                              ) : (
+                                <button
+                                  type="button"
+                                  onClick={e => { e.stopPropagation(); router.push(`/classes/${entry.classId}/attendance`) }}
+                                  className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-bold text-white active:scale-95 transition-all"
+                                  style={{ background: 'var(--ink)' }}
+                                >
+                                  <ClipboardList size={12} /> Take Attendance
+                                </button>
+                              )}
                             </div>
                           )}
                         </div>
@@ -342,6 +369,15 @@ export default function HomePage() {
         classId={prepModal?.classId ?? ''}
         subject={prepModal?.subject ?? ''}
         grade={prepModal?.grade ?? ''}
+      />
+
+      <PrepMaterialPreviewModal
+        open={!!previewModal}
+        onClose={() => setPreviewModal(null)}
+        classId={previewModal?.classId ?? ''}
+        subject={previewModal?.subject ?? ''}
+        grade={previewModal?.grade ?? ''}
+        onGenerateInstead={() => previewModal && setPrepModal(previewModal)}
       />
 
       {/* Floating attendance-status button — right above Morning Briefing */}

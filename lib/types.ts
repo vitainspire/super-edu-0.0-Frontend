@@ -646,6 +646,21 @@ export interface PrepMaterial {
   createdAt: string
 }
 
+export type FeedbackAnswer = 'yes' | 'somewhat' | 'no'
+
+export interface LessonFeedback {
+  id: string
+  teacherId: string
+  classId: string
+  date: string   // YYYY-MM-DD
+  topic: string
+  subtopic?: string
+  engagement: FeedbackAnswer
+  comprehension: FeedbackAnswer
+  pacing: FeedbackAnswer
+  createdAt: string
+}
+
 export interface CatchupMaterial {
   id: string
   teacherId: string

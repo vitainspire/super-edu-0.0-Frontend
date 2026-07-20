@@ -20,6 +20,7 @@ import type {
   Class, SyllabusTopic, SyllabusSubTopic, TopicCoverageStatus, ClassBriefingData,
   Warning, Fingerprint, PotentialSignal, BriefingFinding, EnrichedMark, TimetableEntry, CatchupMaterial,
   TeacherClassAssignment, Worksheet, PrepMaterial, SmartLesson, TaughtTopic, TeachingProfile,
+  LessonFeedback, FeedbackAnswer,
 } from './types'
 
 interface SignUpData {
@@ -108,6 +109,11 @@ interface AppContextType {
   taughtTopics: TaughtTopic[]
   saveTaughtTopic: (data: { classId: string; topic: string; subtopic?: string }) => Promise<TaughtTopic>
   getTaughtTopicToday: (classId: string) => TaughtTopic | null
+
+  saveLessonFeedback: (data: {
+    classId: string; topic: string; subtopic?: string
+    engagement: FeedbackAnswer; comprehension: FeedbackAnswer; pacing: FeedbackAnswer
+  }) => Promise<void>
 
   worksheets: Worksheet[]
   saveWorksheet: (data: Omit<Worksheet, 'id' | 'teacherId' | 'createdAt'>) => Promise<string>
@@ -358,8 +364,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
           if (parsed.id && parsed.id !== 'teacher-001') {
             setTeacher(parsed)
             document.cookie = `edu-session=1; path=/; SameSite=Strict; max-age=604800${secure}`
-            await loadFromSupabase(parsed.id, parsed.schoolId, parsed.schoolName)
+            // Identity is known — unblock the UI now. The full data set (classes,
+            // students, marks, ...) streams in afterward via setState, instead of
+            // making every page wait on 14+ parallel Supabase queries to render.
             setIsLoading(false)
+            setSyncStatus('syncing')
+            loadFromSupabase(parsed.id, parsed.schoolId, parsed.schoolName)
+              .finally(() => setSyncStatus(navigator.onLine ? 'online' : 'offline'))
             return
           }
         } catch { /* bad JSON */ }
@@ -384,8 +395,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
             setTeacher(fresh)
             localStorage.setItem('eduteach_teacher', JSON.stringify(fresh))
             document.cookie = `edu-session=1; path=/; SameSite=Strict; max-age=604800${secure}`
-            await loadFromSupabase(fresh.id, fresh.schoolId, fresh.schoolName)
             setIsLoading(false)
+            setSyncStatus('syncing')
+            loadFromSupabase(fresh.id, fresh.schoolId, fresh.schoolName)
+              .finally(() => setSyncStatus(navigator.onLine ? 'online' : 'offline'))
             return
           }
         }
@@ -843,6 +856,28 @@ export function AppProvider({ children }: { children: ReactNode }) {
     return record
   }, [teacher, getTaughtTopicToday])
 
+  // Post-Classroom-Mode reflection — not surfaced elsewhere in the app yet, so it's
+  // write-only for now: saved for future prep-material generation to draw on.
+  const saveLessonFeedback = useCallback(async (data: {
+    classId: string; topic: string; subtopic?: string
+    engagement: FeedbackAnswer; comprehension: FeedbackAnswer; pacing: FeedbackAnswer
+  }): Promise<void> => {
+    if (!teacher) return
+    const record: LessonFeedback = {
+      id: crypto.randomUUID(),
+      teacherId: teacher.id,
+      classId: data.classId,
+      date: new Date().toISOString().split('T')[0],
+      topic: data.topic,
+      subtopic: data.subtopic,
+      engagement: data.engagement,
+      comprehension: data.comprehension,
+      pacing: data.pacing,
+      createdAt: new Date().toISOString(),
+    }
+    await sbq.upsertLessonFeedback(record)
+  }, [teacher])
+
   const forceSync = useCallback(async () => {
     if (!teacher) return
     setSyncStatus('syncing')
@@ -864,7 +899,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       ...scheduleActions,
       syllabusSubTopics, timetableEntries, catchupMaterials,
       prepMaterials, savePrepMaterial, getPrepMaterial,
-      taughtTopics, saveTaughtTopic, getTaughtTopicToday,
+      taughtTopics, saveTaughtTopic, getTaughtTopicToday, saveLessonFeedback,
       worksheets, saveWorksheet, updateWorksheetAnswerKey, removeWorksheet,
       clearAllData, updateTeacherSettings, forceSync,
       getStudentMastery, getStudentWarnings, getStudentMarks,

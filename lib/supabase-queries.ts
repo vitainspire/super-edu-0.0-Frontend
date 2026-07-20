@@ -2,7 +2,7 @@ import { supabase } from './supabase'
 import type {
   Teacher, Student, Test, Mark, TopicMastery, RecoveryAttempt,
   Class, SyllabusTopic, Attendance, Session, SyllabusSubTopic, TimetableEntry, CatchupMaterial, InterventionNote,
-  TeacherClassAssignment, School, StudentDoubt, TopicPoll, Worksheet, PrepMaterial, TaughtTopic,
+  TeacherClassAssignment, School, StudentDoubt, TopicPoll, Worksheet, PrepMaterial, TaughtTopic, LessonFeedback,
 } from './types'
 
 // ─── Schools ──────────────────────────────────────────────────────────────────
@@ -555,6 +555,20 @@ export async function fetchTaughtTopics(teacherId: string): Promise<TaughtTopic[
       createdAt: r.created_at,
     }))
   } catch { return [] }
+}
+
+// ─── Lesson Feedback (post-Classroom-Mode reflection) ─────────────────────────
+
+export async function upsertLessonFeedback(f: LessonFeedback) {
+  try {
+    const { error } = await supabase.from('lesson_feedback').upsert({
+      id: f.id, teacher_id: f.teacherId, class_id: f.classId,
+      date: f.date, topic: f.topic, subtopic: f.subtopic ?? null,
+      engagement: f.engagement, comprehension: f.comprehension, pacing: f.pacing,
+      created_at: f.createdAt,
+    })
+    if (error) throw error
+  } catch { /* table may not exist yet */ }
 }
 
 // ─── Interventions ────────────────────────────────────────────────────────────
