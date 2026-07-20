@@ -22,6 +22,7 @@ import type {
   TeacherClassAssignment, Worksheet, PrepMaterial, SmartLesson, TaughtTopic, TeachingProfile,
   LessonFeedback, FeedbackAnswer,
 } from './types'
+import { isCurrentSmartLesson } from './types'
 
 interface SignUpData {
   name: string
@@ -805,10 +806,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const getPrepMaterial = useCallback((classId: string, topic: string, subtopic?: string): PrepMaterial | null => {
     const sub = (subtopic ?? '').trim()
+    // isCurrentSmartLesson skips rows saved under the old (pre-5-part-template)
+    // schema — otherwise PrepSheetView would be handed a lesson shape it can't render.
     return prepMaterials.find(p =>
       p.classId === classId &&
       p.topic.trim().toLowerCase() === topic.trim().toLowerCase() &&
-      (p.subtopic ?? '').trim().toLowerCase() === sub.toLowerCase()
+      (p.subtopic ?? '').trim().toLowerCase() === sub.toLowerCase() &&
+      isCurrentSmartLesson(p.lesson)
     ) ?? null
   }, [prepMaterials])
 
