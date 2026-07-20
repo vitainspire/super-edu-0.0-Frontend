@@ -1,0 +1,340 @@
+/* Font loaded via next/font/google in app/layout.tsx */
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --nav-height: 72px;
+  --header-height: 64px;
+  --radius-card: 20px;
+  --radius-btn: 16px;
+  /* Matte theme — shadows are flat/off, depth comes from borders only */
+  --shadow-card: none;
+  --shadow-card-hover: none;
+  --shadow-btn: none;
+  --primary: #4f46e5;
+  --primary-dark: #3730a3;
+  --primary-light: #e0e7ff;
+
+  /* ── Paper / notebook theme ─────────────────────────────── */
+  --paper-bg: #FFFFFF;
+  --paper-soft: #FFFFFF;
+  --ink: #3A2C1E;
+  --ink-soft: #6B5A45;
+  --shadow-paper: none;
+  --shadow-paper-sm: none;
+}
+
+@layer base {
+  * {
+    -webkit-tap-highlight-color: transparent;
+    box-sizing: border-box;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: var(--font-jakarta), -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 16px;
+    line-height: 1.5;
+    background-color: #f1f5f9;
+    color: #0f172a;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  input[type='number'] { -moz-appearance: textfield; }
+  input::-webkit-outer-spin-button,
+  input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+
+  ::-webkit-scrollbar { width: 3px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 2px; }
+}
+
+/* ── No scrollbar ─────────────────────────────────────────── */
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* ── Layout ───────────────────────────────────────────────── */
+.page-container {
+  max-width: 480px;
+  margin: 0 auto;
+  padding-bottom: var(--nav-height);
+  min-height: 100vh;
+}
+
+@media (min-width: 768px) {
+  .page-container {
+    max-width: 100%;
+    margin: 0;
+    padding-bottom: 0;
+  }
+}
+.safe-bottom { padding-bottom: env(safe-area-inset-bottom, 0px); }
+
+/* ── Touch targets ────────────────────────────────────────── */
+button, a, [role='button'] { min-height: 44px; cursor: pointer; }
+:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+
+/* ── Page animation ───────────────────────────────────────── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.96); }
+  to   { opacity: 1; transform: scale(1); }
+}
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes pulse-ring {
+  0%   { transform: scale(1); opacity: 0.6; }
+  100% { transform: scale(1.5); opacity: 0; }
+}
+
+.animate-fade-up   { animation: fadeUp 0.3s ease-out both; }
+.animate-fade-in   { animation: fadeIn 0.2s ease-out both; }
+.animate-scale-in  { animation: scaleIn 0.25s ease-out both; }
+.animate-slide-up  { animation: slideUp 0.35s ease-out both; }
+
+.page-container > * { animation: fadeUp 0.2s ease-out; }
+
+/* ── Shimmer ──────────────────────────────────────────────── */
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+.skeleton {
+  background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s infinite;
+  border-radius: 12px;
+}
+
+@layer components {
+
+  /* ── BUTTONS ─────────────────────────────────────────────── */
+  .btn-primary {
+    @apply relative font-bold py-3.5 px-6 rounded-2xl text-sm text-white
+      active:scale-95 transition-all duration-150
+      disabled:opacity-40 disabled:cursor-not-allowed
+      min-h-[52px] flex items-center justify-center gap-2;
+    background: #4f46e5;
+  }
+
+  .btn-secondary {
+    @apply font-bold py-3.5 px-6 rounded-2xl text-sm
+      border-2 border-indigo-100 active:scale-95 transition-all duration-150
+      hover:bg-indigo-50 disabled:opacity-40
+      min-h-[52px] flex items-center justify-center gap-2;
+    color: #4f46e5;
+    background: white;
+  }
+  .btn-ghost {
+    @apply text-slate-600 font-semibold py-2 px-4 rounded-xl text-sm
+      active:bg-slate-100 transition-colors min-h-[44px] flex items-center justify-center;
+  }
+  .btn-danger {
+    @apply font-bold py-3.5 px-6 rounded-2xl text-sm text-white
+      active:scale-95 transition-all duration-150
+      disabled:opacity-40 disabled:cursor-not-allowed
+      min-h-[52px] flex items-center justify-center gap-2;
+    background: #dc2626;
+  }
+
+  /* ── CARDS ───────────────────────────────────────────────── */
+  .card {
+    @apply bg-white rounded-3xl p-4 border border-slate-100;
+  }
+  .card-interactive {
+    @apply bg-white rounded-3xl p-4 border border-slate-100
+      active:bg-slate-50 transition-all cursor-pointer;
+  }
+  .card-hover {
+    @apply bg-white rounded-3xl p-4 border border-slate-100
+      active:scale-[0.98] transition-all cursor-pointer;
+  }
+
+  /* ── GLASS CARD (flattened — no blur, solid tint) ─────────── */
+  .glass-card {
+    @apply rounded-3xl p-4;
+    background: rgba(255, 255, 255, 0.14);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+  }
+
+  /* ── INPUTS ──────────────────────────────────────────────── */
+  .input-field {
+    @apply w-full border-2 border-slate-100 rounded-2xl px-4 py-3 text-sm font-medium
+      focus:outline-none focus:border-indigo-400 focus:ring-0
+      placeholder:text-slate-400 bg-slate-50 min-h-[52px] transition-all;
+  }
+  .input-field:focus { background: white; }
+
+  /* ── LABELS ──────────────────────────────────────────────── */
+  .label {
+    @apply block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1.5;
+  }
+  .section-title { @apply text-xl font-black text-slate-900; }
+
+  /* ── PAGE HEADER ─────────────────────────────────────────── */
+  .page-header {
+    @apply bg-white px-4 pt-5 pb-4;
+    border-bottom: 1px solid rgba(226, 232, 240, 0.8);
+  }
+
+  /* ── BADGES ──────────────────────────────────────────────── */
+  .badge-green  { @apply text-xs font-bold px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700; }
+  .badge-yellow { @apply text-xs font-bold px-2.5 py-1 rounded-full bg-amber-50 text-amber-700; }
+  .badge-red    { @apply text-xs font-bold px-2.5 py-1 rounded-full bg-red-50 text-red-600; }
+  .badge-blue   { @apply text-xs font-bold px-2.5 py-1 rounded-full bg-indigo-50 text-indigo-700; }
+  .badge-purple { @apply text-xs font-bold px-2.5 py-1 rounded-full bg-violet-50 text-violet-700; }
+  .badge-gray   { @apply text-xs font-bold px-2.5 py-1 rounded-full bg-slate-100 text-slate-600; }
+
+  /* ── MASTERY ─────────────────────────────────────────────── */
+  .mastery-proficient { @apply bg-emerald-50 text-emerald-700; }
+  .mastery-developing { @apply bg-amber-50 text-amber-700; }
+  .mastery-struggling { @apply bg-red-50 text-red-600; }
+
+  .interest-chip {
+    @apply text-xs bg-indigo-50 text-indigo-600 px-3 py-1 rounded-full font-semibold;
+  }
+
+  .divider { @apply h-px bg-slate-100 my-2; }
+  .empty-state { @apply text-center py-16 px-4; }
+
+  /* ── STAT PILL ───────────────────────────────────────────── */
+  .stat-pill {
+    @apply flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full;
+    background: rgba(255, 255, 255, 0.16);
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    color: rgba(255, 255, 255, 0.85);
+  }
+
+  /* ── SECTION HEADER ──────────────────────────────────────── */
+  .section-label {
+    @apply text-[10px] font-black text-slate-400 uppercase tracking-widest;
+  }
+
+  /* ── PAPER THEME (notebook redesign) ────────────────────── */
+  .paper-page {
+    @apply min-h-screen relative;
+    background: transparent;
+  }
+  .paper-card {
+    @apply rounded-3xl bg-white;
+    border: 1.5px solid rgba(58, 44, 30, 0.16);
+  }
+  .paper-card-interactive {
+    @apply rounded-3xl bg-white active:scale-[0.98] transition-transform cursor-pointer;
+    border: 1.5px solid rgba(58, 44, 30, 0.16);
+  }
+  .paper-pill {
+    @apply text-xs font-bold px-3 py-1 rounded-full;
+    background: #F3F2F2;
+    color: var(--ink-soft);
+  }
+  .paper-btn-primary {
+    @apply font-bold py-3 px-6 rounded-2xl text-sm text-white active:scale-95 transition-transform
+      min-h-[48px] flex items-center justify-center gap-2;
+    background: var(--ink);
+  }
+  .menu-row {
+    @apply w-full flex items-center gap-4 px-5 py-4 bg-white text-left active:bg-black/[0.03] transition-colors;
+  }
+}
+
+/* ── Stat / class cards (solid pastel, "sticker note" style) ── */
+.stat-card {
+  border-radius: 26px;
+  padding: 18px 18px 16px;
+  border: 2px solid rgba(58, 44, 30, 0.22);
+  position: relative;
+}
+.stat-card-blue   { background: #AACDEA; }
+.stat-card-green  { background: #AAD6A0; }
+.stat-card-coral  { background: #F0A491; }
+.stat-card-gold   { background: #EAC968; }
+.stat-card-violet { background: #C7B7E8; }
+.stat-card-pink   { background: #F0AFC6; }
+
+.stat-progress-track {
+  width: 100%;
+  height: 8px;
+  border-radius: 99px;
+  background: rgba(255,255,255,0.55);
+  overflow: hidden;
+}
+.stat-progress-fill {
+  height: 100%;
+  border-radius: 99px;
+  background: rgba(58,44,30,0.85);
+}
+
+/* ── SOLID HEADERS (flattened — no gradient/gloss) ────────── */
+.gradient-header {
+  background: #0f2455;
+  position: relative;
+}
+.gradient-header-green  { background: #065f46; }
+.gradient-header-violet { background: #4c1d95; }
+.gradient-header-rose   { background: #be123c; }
+.gradient-header-amber  { background: #b45309; }
+
+/* ── SURFACE COLORS ───────────────────────────────────────── */
+.surface-1 { background: #ffffff; }
+.surface-2 { background: #f8fafc; }
+.surface-3 { background: #f1f5f9; }
+
+/* ── AVATAR RING (border instead of shadow) ───────────────── */
+.avatar-ring {
+  border: 3px solid white;
+  outline: 2px solid rgba(79, 70, 229, 0.25);
+}
+
+/* ── CARD GLOW (flattened to a plain border) ──────────────── */
+.card-glow-indigo  { border: 1px solid rgba(79, 70, 229, 0.25); }
+.card-glow-emerald { border: 1px solid rgba(5, 150, 105, 0.25); }
+.card-glow-rose    { border: 1px solid rgba(225, 29, 72, 0.25); }
+.card-glow-amber   { border: 1px solid rgba(217, 119, 6, 0.25); }
+
+/* ── FLOATING LABEL INPUT ─────────────────────────────────── */
+.input-elevated {
+  @apply w-full border-2 border-slate-200 rounded-2xl px-4 py-3.5 text-sm font-medium
+    focus:outline-none focus:border-indigo-400
+    placeholder:text-slate-400 bg-white min-h-[54px] transition-all;
+}
+
+/* ── PROGRESS BAR ─────────────────────────────────────────── */
+.progress-track {
+  @apply w-full bg-slate-100 rounded-full overflow-hidden;
+  height: 6px;
+}
+.progress-fill {
+  @apply h-full rounded-full transition-all duration-500;
+}
+
+/* ── BOTTOM NAV (flattened — solid, no blur) ──────────────── */
+.nav-blur {
+  background: #ffffff;
+  border-top: 1px solid rgba(226, 232, 240, 0.8);
+}
+
+/* ── ICON CONTAINER ───────────────────────────────────────── */
+.icon-box {
+  @apply w-10 h-10 rounded-2xl flex items-center justify-center shrink-0;
+}
+.icon-box-sm {
+  @apply w-8 h-8 rounded-xl flex items-center justify-center shrink-0;
+}
+.icon-box-lg {
+  @apply w-14 h-14 rounded-3xl flex items-center justify-center shrink-0;
+}
