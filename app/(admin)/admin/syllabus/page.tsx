@@ -353,6 +353,7 @@ export default function AdminSyllabusPage() {
         body: JSON.stringify({
           topics: topics.map(t => ({ id: t.id, topic: t.topic, description: t.description })),
           totalWeeks: weeksRemaining, sessionsPerWeek, subject: activeSubject, grade,
+          minSessionsPerTopic: 5,
         }),
       })
       const data = await res.json()
@@ -429,7 +430,15 @@ export default function AdminSyllabusPage() {
         method: 'POST',
         body: JSON.stringify({
           topics: subtopics.map(s => ({ id: s.id, topic: s.name, description: s.description })),
-          totalWeeks: 1, sessionsPerWeek: topic.estimatedSessions, subject: activeSubject, grade,
+          // totalWeeks/sessionsPerWeek are unused placeholders here — sessionsPerWeek is
+          // capped at 14 by the schema (a real weekly-period bound), so the actual pool
+          // (the parent topic's own session count, often >14) goes through totalSessions
+          // instead of being crammed into that field.
+          totalWeeks: 1, sessionsPerWeek: 1, totalSessions: topic.estimatedSessions,
+          subject: activeSubject, grade,
+          // The pool here is just the parent topic's own session count — far smaller than
+          // a whole-year plan, so the "at least N per item" floor must be much lower too.
+          minSessionsPerTopic: 1,
         }),
       })
       const data = await res.json()

@@ -22,7 +22,10 @@ const DIFF_COLOR = {
 
 export default function ClassMarksPage() {
   const { classId } = useParams<{ classId: string }>()
-  const { teacher, classes, tests, marks, getClassStudents, getClassSyllabus, getTopicSessions, createTest, saveMarks, forceSync, syncStatus } = useApp()
+  const {
+    teacher, classes, tests, marks, getClassStudents, getClassSyllabus, getTopicSessions, createTest, saveMarks, forceSync, syncStatus,
+    getPrepMaterial, prepMaterials,
+  } = useApp()
 
   const cls          = classes.find(c => c.id === classId)
   const searchParams = useSearchParams()
@@ -74,6 +77,16 @@ export default function ClassMarksPage() {
   const selectedSyllabusTopic = syllabus.find(t => t.id === topicId)
 
   const effectiveTopic = selectedSyllabusTopic?.topic ?? customTopic.trim()
+
+  // Prep Material linked to the current topic, if any was ever generated for this class —
+  // grounds the AI-generated question paper and gives the teacher a traceable reference
+  // back to the lesson this test is meant to cover.
+  const linkedMaterial = effectiveTopic
+    ? getPrepMaterial(classId, effectiveTopic) ??
+      [...prepMaterials]
+        .filter(p => p.classId === classId && p.topic.trim().toLowerCase() === effectiveTopic.trim().toLowerCase())
+        .sort((a, b) => b.createdAt.localeCompare(a.createdAt))[0]
+    : undefined
 
   const handleCreateTest = async () => {
     if (!effectiveTopic) return
@@ -128,10 +141,18 @@ export default function ClassMarksPage() {
         const student = classStudents.find(s => s.id === m.studentId)
         return { name: student?.name ?? 'Unknown', score: m.score, percentage: (m.score / test.totalMarks) * 100 }
       })
+      const material = getPrepMaterial(classId, test.topic) ??
+        [...prepMaterials]
+          .filter(p => p.classId === classId && p.topic.trim().toLowerCase() === test.topic.trim().toLowerCase())
+          .sort((a, b) => b.createdAt.localeCompare(a.createdAt))[0]
+      const concepts = material?.lesson.concept?.map(c => c.text) ?? []
+      const lessonContext = concepts.length > 0 || material?.lesson.watchFor
+        ? { concepts, watchFor: material?.lesson.watchFor }
+        : undefined
       const res = await fetch('/api/test-analysis', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ topic: test.topic, totalMarks: test.totalMarks, grade: cls?.grade ?? '', subject: teacher?.subject ?? '', results }),
+        body: JSON.stringify({ topic: test.topic, totalMarks: test.totalMarks, grade: cls?.grade ?? '', subject: teacher?.subject ?? '', results, lessonContext }),
       })
       if (res.ok) {
         const data = await res.json()
@@ -149,7 +170,16 @@ export default function ClassMarksPage() {
     setAiQuestions([])
     try {
       const totalM = parseInt(marks ?? totalMarks) || 10
-      const ck = aiKey('questions', { v: 3, topic: topic.toLowerCase().trim(), grade: cls?.grade ?? teacher?.grade ?? '5', totalM })
+      const material = getPrepMaterial(classId, topic) ??
+        [...prepMaterials]
+          .filter(p => p.classId === classId && p.topic.trim().toLowerCase() === topic.trim().toLowerCase())
+          .sort((a, b) => b.createdAt.localeCompare(a.createdAt))[0]
+      const concepts = material?.lesson.concept?.map(c => c.text) ?? []
+      const lessonContext = concepts.length > 0 || material?.lesson.watchFor
+        ? { concepts, watchFor: material?.lesson.watchFor }
+        : undefined
+      const groundingFingerprint = concepts.length > 0 ? concepts.join('|').slice(0, 40) : 'ungrounded'
+      const ck = aiKey('questions', { v: 4, topic: topic.toLowerCase().trim(), grade: cls?.grade ?? teacher?.grade ?? '5', totalM, groundingFingerprint })
       const cached = getAiCache<AiQuestion[]>(ck)
       if (cached) { setAiQuestions(cached); setAiQLoading(false); return }
       const res = await fetch('/api/questions', {
@@ -160,6 +190,7 @@ export default function ClassMarksPage() {
           topic,
           grade: cls?.grade ?? teacher?.grade ?? '5',
           totalMarks: totalM,
+          lessonContext,
         }),
         signal,
       })
@@ -336,6 +367,12 @@ export default function ClassMarksPage() {
                   </button>
                 </div>
               </div>
+
+              {linkedMaterial && (
+                <p className="text-[11px] font-semibold text-[#8069B0] mb-2 flex items-center gap-1">
+                  <Sparkles size={10} /> Grounded in the Prep Material generated for this topic
+                </p>
+              )}
 
               {aiQLoading && (
                 <div className="space-y-2 mt-2">

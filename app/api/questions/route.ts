@@ -62,7 +62,7 @@ export async function POST(req: NextRequest) {
     try { rawBody = await req.json() } catch { return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 }) }
     const parsed_ = parseBody(QuestionsSchema, rawBody)
     if (!parsed_.ok) return parsed_.response
-    const { subject, topic, grade, totalMarks } = parsed_.data
+    const { subject, topic, grade, totalMarks, lessonContext } = parsed_.data
     const marks   = parseInt(String(totalMarks)) || 10
     const pattern = getPattern(marks)
     const total   = pattern.reduce((s, p) => s + p.marks * p.count, 0)
@@ -71,8 +71,16 @@ export async function POST(req: NextRequest) {
       `  Section ${String.fromCharCode(65 + i)} — ${s.label}: ${s.count} question${s.count > 1 ? 's' : ''} × ${s.marks} mark${s.marks > 1 ? 's' : ''} each (${s.type}, difficulty: ${s.difficulty})`
     ).join('\n')
 
-    const prompt = `Generate a ${total}-mark subjective exam paper for Grade ${grade} ${subject} on the topic: "${topic}".
+    // Ground questions in what this class was actually taught, when Prep Material exists
+    // for the topic — otherwise the paper is a generic topic-only exam as before.
+    const groundingLines = lessonContext?.concepts?.length || lessonContext?.watchFor
+      ? `\nThis class's lesson on "${topic}" specifically covered:
+${(lessonContext.concepts ?? []).map(c => `- ${c}`).join('\n')}
+${lessonContext.watchFor ? `The teacher was told to watch for this common mistake: ${lessonContext.watchFor}\n` : ''}Base at least half the questions on these specific points rather than the topic in general — this is what the class actually experienced.\n`
+      : ''
 
+    const prompt = `Generate a ${total}-mark subjective exam paper for Grade ${grade} ${subject} on the topic: "${topic}".
+${groundingLines}
 Paper structure — follow EXACTLY (correct count and marks per section):
 ${sectionLines}
 Total: ${total} marks
@@ -93,8 +101,11 @@ Return valid JSON only — no markdown, no extra text:
   ]
 }`
 
+    const groundingFingerprint = lessonContext?.concepts?.length
+      ? lessonContext.concepts.join('|').slice(0, 40)
+      : 'ungrounded'
     const { value: parsed, fromCache } = await withCache(
-      ck('questions', 'v4-subj', topic.toLowerCase().trim(), grade, total),
+      ck('questions', 'v4-subj', topic.toLowerCase().trim(), grade, total, groundingFingerprint),
       2592000,
       async () => {
         const result = await callOpenRouter([{ role: 'user', content: prompt }])

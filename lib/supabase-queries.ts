@@ -513,7 +513,12 @@ export async function upsertPrepMaterial(m: PrepMaterial) {
       created_at: m.createdAt,
     })
     if (error) throw error
-  } catch { /* table may not exist yet */ }
+  } catch (err) {
+    // Best-effort — the teacher already has the generated lesson on screen, so a save
+    // failure shouldn't block them. But it must not disappear silently either, or a
+    // schema mismatch like the missing `lesson` column bug can hide indefinitely.
+    console.error('upsertPrepMaterial failed:', err)
+  }
 }
 
 export async function fetchPrepMaterials(teacherId: string): Promise<PrepMaterial[]> {

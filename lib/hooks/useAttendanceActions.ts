@@ -18,8 +18,8 @@ export function useAttendanceActions(
     classId: string, date: string, syllabusTopicId: string, topic: string,
     entries: Array<{ studentId: string; status: 'present' | 'absent' | 'late' }>,
     sessionNote?: string,
-  ) => {
-    if (!teacher) return
+  ): Promise<string | undefined> => {
+    if (!teacher) return undefined
     const existing = sessionsRef.current!.find(
       s => s.classId === classId && s.syllabusTopicId === syllabusTopicId && s.date === date
     )
@@ -44,6 +44,7 @@ export function useAttendanceActions(
     }))
     setAttendance(prev => [...prev.filter(a => a.sessionId !== session.id), ...newRecords])
     newRecords.forEach(a => sbq.upsertAttendanceRecord(a).catch(console.error))
+    return session.id
   }, [teacher, sessionsRef, setSessions, setAttendance])
 
   const getClassSessions = useCallback((classId: string) =>

@@ -1,7 +1,7 @@
 'use client'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LayoutDashboard, Users, BookOpen, Library, CalendarDays, CalendarRange, LogOut, GraduationCap, ScanLine, Megaphone, Repeat } from 'lucide-react'
+import { LayoutDashboard, Users, BookOpen, Library, CalendarDays, CalendarRange, LogOut, GraduationCap, ScanLine, Megaphone, Repeat, ClipboardList } from 'lucide-react'
 import clsx from 'clsx'
 import { useAdmin } from '@/lib/admin-context'
 
@@ -10,6 +10,7 @@ const NAV = [
   { href: '/admin/teachers',         label: 'Teachers',         icon: Users },
   { href: '/admin/classes',          label: 'Classes',          icon: BookOpen },
   { href: '/admin/syllabus',         label: 'Syllabus',         icon: Library },
+  { href: '/admin/prep-materials',   label: 'Prep Materials',   icon: ClipboardList },
   { href: '/admin/timetable',        label: 'Timetable',        icon: CalendarDays },
   { href: '/admin/academic-calendar', label: 'Academic Calendar', icon: CalendarRange },
   { href: '/admin/substitutes',      label: 'Substitutes',      icon: Repeat },

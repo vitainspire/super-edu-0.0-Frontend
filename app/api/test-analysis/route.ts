@@ -28,7 +28,7 @@ export async function POST(req: NextRequest) {
     apiLog({ route: 'test-analysis', ip, userId: user.id, durationMs: Date.now() - t, fromCache: false, status: 'bad_request' })
     return parsed.response
   }
-  const { topic, totalMarks, grade, subject, results } = parsed.data
+  const { topic, totalMarks, grade, subject, results, lessonContext } = parsed.data
 
   try {
     const avg = results.reduce((s, r) => s + r.percentage, 0) / results.length
@@ -37,13 +37,22 @@ export async function POST(req: NextRequest) {
       .map(r => `  ${r.name}: ${r.score}/${totalMarks} (${Math.round(r.percentage)}%)`)
       .join('\n')
 
+    // Ground "Needs Help"/"Next Action" in what was actually taught, when Prep Material
+    // exists for this topic — otherwise the analysis reasons from scores alone.
+    const lessonLines = lessonContext?.concepts?.length || lessonContext?.watchFor
+      ? `\nWhat this class's lesson on "${topic}" covered:
+${(lessonContext.concepts ?? []).map(c => `- ${c}`).join('\n')}
+${lessonContext.watchFor ? `The teacher was told to watch for this common mistake: ${lessonContext.watchFor}` : ''}
+If low scorers' struggles line up with the watch-for point above, say so explicitly in "Needs Help" and "Next Action" instead of speaking generically.`
+      : ''
+
     const prompt = `You are an experienced Indian school teacher reviewing a class test.
 
 Subject: ${subject}, Grade: ${grade}
 Topic: ${topic}
 Total Marks: ${totalMarks}
 Class Average: ${Math.round(avg)}%
-
+${lessonLines}
 Student Results (best to lowest):
 ${resultLines}
 

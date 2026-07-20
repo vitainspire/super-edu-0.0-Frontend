@@ -33,6 +33,7 @@ export default function AttendancePage() {
     recordSession, toggleTopicComplete,
     syllabusSubTopics, toggleSubTopicComplete,
     getTaughtTopicToday, saveTaughtTopic,
+    getPrepMaterial, prepMaterials, saveSessionSnapshot,
   } = useApp()
 
   const cls      = classes.find(c => c.id === classId)
@@ -268,14 +269,33 @@ export default function AttendancePage() {
     }
     setSaving(true)
     const topicId = selectedTopicId || ''
-    await recordSession(
+    const subtopicJoined = selectedSubTopics.map(s => s.name).join(', ') || undefined
+    const sessionId = await recordSession(
       classId, today, topicId, topicText,
       students.map(s => ({ studentId: s.id, status: statusMap[s.id] ?? 'present' })),
       sessionNote.trim() || undefined,
     )
     // Keep the Timetable's "taught today" record in sync, even if the teacher
     // never opened the Prep Material popup for this class.
-    saveTaughtTopic({ classId, topic: topicText.trim(), subtopic: selectedSubTopics.map(s => s.name).join(', ') || undefined }).catch(() => {})
+    saveTaughtTopic({ classId, topic: topicText.trim(), subtopic: subtopicJoined }).catch(() => {})
+
+    // Feed the catchup-plan pipeline: if prep material exists for this topic, attach a
+    // snapshot of it to the session so CatchupModal can open a missed lesson the same
+    // way the class experienced it, instead of generating blind. Best-effort — a missing
+    // or non-matching snapshot just means catchup plans fall back to their generic path.
+    if (sessionId) {
+      const material = getPrepMaterial(classId, topicText.trim(), subtopicJoined) ??
+        [...prepMaterials]
+          .filter(p => p.classId === classId && p.topic.trim().toLowerCase() === topicText.trim().toLowerCase())
+          .sort((a, b) => b.createdAt.localeCompare(a.createdAt))[0]
+      if (material) {
+        const hook = material.lesson.flow?.[0]?.detail || material.lesson.goal
+        const realLifeExamples = material.lesson.concept
+          ?.map(c => c.realLifeExample)
+          .filter((e): e is string => !!e) ?? []
+        if (hook) saveSessionSnapshot(sessionId, { hook, realLifeExamples }).catch(() => {})
+      }
+    }
     setSaving(false)
     setManuallyReset(false)   // let todaySession be found → isSaved becomes true
   }

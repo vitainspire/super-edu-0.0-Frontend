@@ -132,6 +132,12 @@ export const QuestionsSchema = z.object({
   topic:      reqStr(LEN.topic),
   grade:      anyStr(LEN.short),
   totalMarks: z.union([z.number().positive().max(200), z.string().max(5)]),
+  // Grounds generated questions in the class's actual Prep Material for this topic, when
+  // one exists — optional because most topics won't have a match, or none was generated yet.
+  lessonContext: z.object({
+    concepts: z.array(topicStr).max(5).optional(),
+    watchFor: topicStr.optional(),
+  }).optional(),
 })
 
 export const RecoverySchema = z.object({
@@ -320,6 +326,12 @@ export const TestAnalysisSchema = z.object({
     score:      z.number().nonnegative(),
     percentage: z.number().min(0).max(100),
   })).min(1).max(300),
+  // Grounds "Needs Help"/"Next Action" in what this class's Prep Material actually
+  // flagged as the hard part, when one exists for this topic.
+  lessonContext: z.object({
+    concepts: z.array(topicStr).max(5).optional(),
+    watchFor: topicStr.optional(),
+  }).optional(),
 })
 
 export const YearPlanSchema = z.object({

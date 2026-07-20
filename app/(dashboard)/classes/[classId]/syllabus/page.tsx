@@ -4,7 +4,7 @@ import { useParams } from 'next/navigation'
 import {
   Plus, CheckCircle2, Circle, BookOpen,
   Calendar, Users, Sparkles, ChevronDown, ChevronUp,
-  RefreshCw, X, CalendarDays,
+  RefreshCw, X, CalendarDays, PlayCircle, List,
 } from 'lucide-react'
 import { useApp } from '@/lib/context'
 import { computePacing } from '@/lib/logic/pacing'
@@ -34,7 +34,7 @@ export default function ClassSyllabusPage() {
   const {
     teacher, classes, getClassSyllabus,
     updateSyllabusTopicPrerequisite, getTopicSessions, getClassStudents, getClassAttendance,
-    syllabusSubTopics, addSubTopic, deleteSubTopic, toggleSubTopicComplete,
+    syllabusSubTopics, addSubTopic, deleteSubTopic, toggleSubTopicComplete, toggleTopicComplete,
     ensureClassSyllabus,
   } = useApp()
 
@@ -75,6 +75,9 @@ export default function ClassSyllabusPage() {
   // ── Weekly tabs ──────────────────────────────────────────
   const [selectedWeek, setSelectedWeek] = useState<WeekKey | null>(null)
 
+  // ── Today's Topic (sequential, no manual picking) ───────
+  const [focusMode, setFocusMode] = useState(false)
+
   const topics   = getClassSyllabus(classId)
   const students = getClassStudents(classId)
   const completed = topics.filter(t => t.isCompleted).length
@@ -92,6 +95,35 @@ export default function ClassSyllabusPage() {
   }, [weekTabs.length])
 
   const weekDoneCount  = visibleTopics.filter(t => t.isCompleted).length
+
+  // Walks the whole ordered syllabus (topics, then each one's sub-topics) and stops at
+  // the first incomplete unit — that's "today's topic". Marking it done recomputes this
+  // on next render, so the view auto-advances without the teacher picking anything.
+  let currentTopic: typeof topics[number] | null = null
+  let currentSub: (typeof syllabusSubTopics)[number] | null = null
+  let totalUnits = 0
+  let doneUnits = 0
+  for (const t of topics) {
+    const subs = syllabusSubTopics.filter(s => s.topicId === t.id).sort((a, b) => a.orderIndex - b.orderIndex)
+    if (subs.length > 0) {
+      totalUnits += subs.length
+      doneUnits += subs.filter(s => s.isCompleted).length
+      if (!currentTopic) {
+        const nextSub = subs.find(s => !s.isCompleted)
+        if (nextSub) { currentTopic = t; currentSub = nextSub }
+        else if (!t.isCompleted) { currentTopic = t }   // every sub-topic done, but topic itself not closed out yet
+      }
+    } else {
+      totalUnits += 1
+      if (t.isCompleted) doneUnits += 1
+      else if (!currentTopic) currentTopic = t
+    }
+  }
+
+  const markCurrentDone = async () => {
+    if (currentSub) await toggleSubTopicComplete(currentSub.id, true)
+    else if (currentTopic) await toggleTopicComplete(currentTopic.id, true)
+  }
 
   const interestCount: Record<string, number> = {}
   students.forEach(s => s.interests.forEach(i => { interestCount[i] = (interestCount[i] ?? 0) + 1 }))
@@ -149,6 +181,21 @@ export default function ClassSyllabusPage() {
         </div>
       )}
 
+      {/* ── Today's Topic toggle ─────────────────────────────── */}
+      {topics.length > 0 && (
+        <button
+          type="button"
+          onClick={() => setFocusMode(f => !f)}
+          className="w-full flex items-center justify-center gap-2 py-2.5 rounded-2xl text-xs font-bold mb-4 active:scale-[0.98] transition-all"
+          style={{
+            background: focusMode ? 'var(--ink)' : 'rgba(58,44,30,0.06)',
+            color: focusMode ? '#fff' : 'var(--ink-soft)',
+          }}
+        >
+          {focusMode ? <><List size={14} /> Show All Topics</> : <><PlayCircle size={14} /> Today&apos;s Topic</>}
+        </button>
+      )}
+
       {/* ── Pacing indicator ───────────────────────────────── */}
       {pacing && pacing.status !== 'not-started' && (
         <div className={clsx(
@@ -198,6 +245,41 @@ export default function ClassSyllabusPage() {
         </div>
       )}
 
+      {/* ── Today's Topic — one at a time, no manual picking ──── */}
+      {focusMode && (
+        currentTopic ? (
+          <div className="paper-card p-6 text-center space-y-4 mb-4">
+            <p className="text-xs font-bold uppercase tracking-wide text-ink-faint">{doneUnits} of {totalUnits} done</p>
+            <div>
+              <p className="font-display font-black text-xl text-ink">{currentTopic.topic}</p>
+              {currentSub ? (
+                <p className="text-sm font-semibold text-[#5B87AD] mt-1">{currentSub.name}</p>
+              ) : currentTopic.description ? (
+                <p className="text-sm text-ink-soft mt-2 leading-relaxed">{currentTopic.description}</p>
+              ) : null}
+              {currentTopic.weekNumber != null && (
+                <p className="text-xs text-ink-soft mt-2 font-medium">Week {currentTopic.weekNumber}</p>
+              )}
+            </div>
+            <button
+              type="button"
+              onClick={markCurrentDone}
+              className="w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl text-white font-bold text-sm active:scale-[0.98] transition-all"
+              style={{ background: 'var(--ink)' }}
+            >
+              <CheckCircle2 size={18} /> Mark Complete
+            </button>
+          </div>
+        ) : (
+          <div className="text-center py-14 paper-card mb-4 space-y-2">
+            <CheckCircle2 size={32} className="mx-auto text-emerald-500" />
+            <p className="font-semibold text-ink">All topics completed!</p>
+          </div>
+        )
+      )}
+
+      {!focusMode && (
+      <>
       {/* ── Weekly tabs ─────────────────────────────────────── */}
       {weekTabs.length > 0 && (
         <>
@@ -506,6 +588,8 @@ export default function ClassSyllabusPage() {
           )
         })}
       </div>
+      </>
+      )}
     </div>
   )
 }

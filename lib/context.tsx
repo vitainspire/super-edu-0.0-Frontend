@@ -70,7 +70,7 @@ interface AppContextType {
     classId: string, date: string, syllabusTopicId: string, topic: string,
     entries: Array<{ studentId: string; status: 'present' | 'absent' | 'late' }>,
     sessionNote?: string,
-  ) => Promise<void>
+  ) => Promise<string | undefined>
   getClassSessions: (classId: string) => Session[]
   getTopicSessions: (syllabusTopicId: string) => Session[]
   getClassAttendance: (classId: string, date?: string) => Attendance[]
