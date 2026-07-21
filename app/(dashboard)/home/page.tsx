@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react'
 import {
   Users, GraduationCap, Wifi, WifiOff,
   LogOut, Check, ClipboardList,
-  Sparkles, TrendingUp, PlayCircle, Wand2,
+  Sparkles, TrendingUp, Wand2,
 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useApp } from '@/lib/context'
@@ -69,7 +69,7 @@ export default function HomePage() {
   // actions — accordion-style, only one row expanded at a time.
   const [expandedEntryId, setExpandedEntryId] = useState<string | null>(null)
   const [prepModal, setPrepModal] = useState<{ classId: string; subject: string; grade: string; mode: 'auto' | 'custom' } | null>(null)
-  const [previewModal, setPreviewModal] = useState<{ classId: string; subject: string; grade: string } | null>(null)
+  const [previewModal, setPreviewModal] = useState<{ classId: string; subject: string; grade: string; endTime: string } | null>(null)
 
   // Same per-student criteria the Alerts page itself uses, so this count
   // always matches what tapping "View" reveals.
@@ -262,7 +262,7 @@ export default function HomePage() {
                                   type="button"
                                   onClick={e => {
                                     e.stopPropagation()
-                                    setPreviewModal({ classId: entry.classId, subject: entry.label ?? classNameFor(entry.classId), grade: gradeFor(entry.classId) })
+                                    setPreviewModal({ classId: entry.classId, subject: entry.label ?? classNameFor(entry.classId), grade: gradeFor(entry.classId), endTime: entry.endTime })
                                   }}
                                   className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-bold active:scale-95 transition-all"
                                   style={{ background: 'rgba(255,255,255,0.7)', color: color.text }}
@@ -294,26 +294,15 @@ export default function HomePage() {
                                   >
                                     <Wand2 size={14} />
                                   </button>
+                                  <button
+                                    type="button"
+                                    onClick={e => { e.stopPropagation(); router.push(`/classes/${entry.classId}/attendance`) }}
+                                    className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-bold text-white active:scale-95 transition-all"
+                                    style={{ background: 'var(--ink)' }}
+                                  >
+                                    <ClipboardList size={12} /> Take Attendance
+                                  </button>
                                 </>
-                              )}
-                              {isNow ? (
-                                <button
-                                  type="button"
-                                  onClick={e => { e.stopPropagation(); router.push(`/classroom-mode/${entry.classId}?endTime=${encodeURIComponent(entry.endTime)}`) }}
-                                  className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-bold text-white active:scale-95 transition-all"
-                                  style={{ background: 'var(--ink)' }}
-                                >
-                                  <PlayCircle size={12} /> Enter Classroom Mode
-                                </button>
-                              ) : (
-                                <button
-                                  type="button"
-                                  onClick={e => { e.stopPropagation(); router.push(`/classes/${entry.classId}/attendance`) }}
-                                  className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-bold text-white active:scale-95 transition-all"
-                                  style={{ background: 'var(--ink)' }}
-                                >
-                                  <ClipboardList size={12} /> Take Attendance
-                                </button>
                               )}
                             </div>
                           )}
@@ -392,7 +381,8 @@ export default function HomePage() {
         classId={previewModal?.classId ?? ''}
         subject={previewModal?.subject ?? ''}
         grade={previewModal?.grade ?? ''}
-        onGenerateInstead={() => previewModal && setPrepModal({ ...previewModal, mode: 'auto' })}
+        endTime={previewModal?.endTime ?? ''}
+        onGenerateInstead={() => previewModal && setPrepModal({ classId: previewModal.classId, subject: previewModal.subject, grade: previewModal.grade, mode: 'auto' })}
       />
 
       {/* Floating attendance-status button — right above Morning Briefing */}

@@ -1,5 +1,6 @@
 'use client'
-import { Sparkles, ClipboardList } from 'lucide-react'
+import { Sparkles, ClipboardList, PlayCircle } from 'lucide-react'
+import { useRouter } from 'next/navigation'
 import Modal from '@/components/ui/Modal'
 import { useApp } from '@/lib/context'
 import { isCurrentSmartLesson } from '@/lib/types'
@@ -11,6 +12,7 @@ interface PrepMaterialPreviewModalProps {
   classId: string
   subject: string
   grade: string
+  endTime?: string   // this period's end time, e.g. "14:30" — passed through to Classroom Mode's countdown
   onGenerateInstead: () => void
 }
 
@@ -18,8 +20,9 @@ interface PrepMaterialPreviewModalProps {
 // used during a live period, where the teacher wants a quick glance, not the
 // full topic-picker/generate form that PrepMaterialModal shows outside class time.
 export default function PrepMaterialPreviewModal({
-  open, onClose, classId, subject, grade, onGenerateInstead,
+  open, onClose, classId, subject, grade, endTime, onGenerateInstead,
 }: PrepMaterialPreviewModalProps) {
+  const router = useRouter()
   const { getTaughtTopicToday, getPrepMaterial, prepMaterials } = useApp()
 
   const taught = classId ? getTaughtTopicToday(classId) : null
@@ -34,9 +37,22 @@ export default function PrepMaterialPreviewModal({
   return (
     <Modal open={open} onClose={onClose} title="Prep Material">
       <div className="space-y-4">
-        <div className="flex items-center gap-2 text-sm text-ink-soft font-medium">
-          <ClipboardList size={14} style={{ color: '#31215C' }} className="shrink-0" />
-          <span>{subject}{grade ? ` · Grade ${grade}` : ''}</span>
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2 text-sm text-ink-soft font-medium min-w-0">
+            <ClipboardList size={14} style={{ color: '#31215C' }} className="shrink-0" />
+            <span className="truncate">{subject}{grade ? ` · Grade ${grade}` : ''}</span>
+          </div>
+          {classId && (
+            <button
+              type="button"
+              onClick={() => { onClose(); router.push(`/classroom-mode/${classId}${endTime ? `?endTime=${encodeURIComponent(endTime)}` : ''}`) }}
+              title="Enter Classroom Mode"
+              className="w-8 h-8 shrink-0 flex items-center justify-center rounded-full text-white active:scale-90 transition-all"
+              style={{ background: 'var(--ink)' }}
+            >
+              <PlayCircle size={15} />
+            </button>
+          )}
         </div>
 
         {material ? (
