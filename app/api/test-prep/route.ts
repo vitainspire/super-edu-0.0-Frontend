@@ -3,6 +3,7 @@ import { callAI, generateIllustration } from '@/lib/ai'
 import { withCache, ck } from '@/lib/server-cache'
 import { getClientIp, checkVisionRateLimit } from '@/lib/rate-limit'
 import { TestPrepSchema, parseBody } from '@/lib/schemas'
+import { interestExamplesLine, gradeLevelRule, subjectVisualGuidance, subjectDefaultsToImage } from '@/lib/prompt-fragments'
 
 // Generates an illustration on every cache miss — image generation is 5-10x
 // costlier than text, so this uses the tighter vision rate limit, and the
@@ -21,9 +22,7 @@ export async function POST(req: NextRequest) {
   if (!parsed_.ok) return parsed_.response
   const { topic, subject, grade, interests } = parsed_.data
 
-  const interestHint = interests?.length
-    ? `Where natural, use examples from: ${interests.slice(0, 2).join(', ')}.`
-    : 'Use simple Indian everyday examples (cricket, market, cooking, farming) where helpful.'
+  const interestHint = interestExamplesLine(interests)
 
   const prompt =
 `You are helping a Grade ${grade} student in an Indian government school prepare for an upcoming test in ${subject}.
@@ -34,11 +33,12 @@ Produce focused revision material to help them prepare, organized as 3–5 short
 - The first section must be a brief intro: { "heading": short 2–4 word heading, "body": 1–2 simple sentences recapping what this topic is about }.
 - Later sections should cover the key facts, parts, or steps as: { "heading": short 2–4 word heading, "bullets": 3–6 short points (each under 15 words) }.
 - Each section has EITHER "body" OR "bullets", never both.
-- "imageQuery": the single best Wikipedia article title for a helpful diagram or photo of this concept (e.g. "Human heart", "Water cycle", "Human body"). 1–3 words, a real encyclopedia topic.
-- "diagramLabels": 3–6 short labels (1–2 words each, e.g. "Roots", "Stem", "Leaves") for the main visible parts/steps of this concept that a labelled diagram should point to. Use plain English words a Grade ${grade} student knows. If this concept has no distinct visual parts to label (e.g. an abstract idea), return an empty array.
+
+Visual — choose the image that fits THIS subject:
+${subjectVisualGuidance(subject)}
 
 Rules:
-- Match Grade ${grade} level — simple language, no jargon.
+- ${gradeLevelRule(grade)}
 
 Return ONLY valid JSON, no markdown, no extra text:
 {
@@ -53,22 +53,32 @@ Return ONLY valid JSON, no markdown, no extra text:
   try {
     const topInterest = interests?.[0]?.slice(0, 20).toLowerCase().replace(/\s+/g, '_') ?? 'none'
     const { value } = await withCache(
-      ck('test-prep-v9', topic.toLowerCase().trim(), subject.toLowerCase().trim(), grade, topInterest),
+      ck('test-prep-v10', topic.toLowerCase().trim(), subject.toLowerCase().trim(), grade, topInterest),
       604800, // 7 days
       async () => {
         const text = await callAI([{ role: 'user', content: prompt }], { maxTokens: 1100 })
         const cleaned = text.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, '').trim()
         const match   = cleaned.match(/\{[\s\S]*\}/)
         const parsed  = JSON.parse(match?.[0] ?? cleaned)
-        const imageSubject = typeof parsed?.imageQuery === 'string' && parsed.imageQuery.trim() ? parsed.imageQuery.trim() : topic
+        // Only generate an image when there's a useful subject for it. An empty
+        // imageQuery means "a picture wouldn't help here" (common for abstract
+        // Math or Language topics) — skip generation rather than draw a
+        // meaningless diagram, which also saves a costly image call. For
+        // science/EVS, where a diagram nearly always helps and the model
+        // occasionally opts out anyway, fall back to the topic so it's not lost.
+        const rawImageQuery = typeof parsed?.imageQuery === 'string' ? parsed.imageQuery.trim() : ''
+        const imageQuery = rawImageQuery || (subjectDefaultsToImage(subject) ? topic : '')
         const diagramLabels = Array.isArray(parsed?.diagramLabels)
           ? (parsed.diagramLabels as unknown[]).filter((l): l is string => typeof l === 'string' && l.trim().length > 0).slice(0, 6)
           : []
-        const imagePrompt = diagramLabels.length > 0
-          ? `A clean, simple, colorful flat-vector educational diagram for a Grade ${grade} school student, depicting: ${imageSubject} (${subject}). Clearly label these parts on the diagram: ${diagramLabels.join(', ')} — each label in bold black sans-serif text, spelled exactly as given, connected to its part with a thin leader line. No other text in the image. Friendly, age-appropriate, plain light background.`
-          : `A clean, simple, colorful flat-vector educational illustration for a Grade ${grade} school student, depicting: ${imageSubject} (${subject}). No text or labels in the image. Friendly, age-appropriate, plain light background.`
-        const generated = await generateIllustration(imagePrompt)
-        const image = generated ? { url: generated.url, caption: imageSubject } : null
+        let image: { url: string; caption: string } | null = null
+        if (imageQuery) {
+          const imagePrompt = diagramLabels.length > 0
+            ? `A clean, simple, colorful flat-vector educational diagram for a Grade ${grade} school student, depicting: ${imageQuery} (${subject}). Clearly label these parts on the diagram: ${diagramLabels.join(', ')} — each label in bold black sans-serif text, spelled exactly as given, connected to its part with a thin leader line. No other text in the image. Friendly, age-appropriate, plain light background.`
+            : `A clean, simple, colorful flat-vector educational illustration for a Grade ${grade} school student, depicting: ${imageQuery} (${subject}). No text or labels in the image. Friendly, age-appropriate, plain light background.`
+          const generated = await generateIllustration(imagePrompt)
+          image = generated ? { url: generated.url, caption: imageQuery } : null
+        }
         return { ...parsed, image }
       },
     )

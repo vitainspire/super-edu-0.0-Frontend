@@ -83,7 +83,7 @@ ${styleRule}
 Write the explanation as if you are SPEAKING DIRECTLY to ${studentName} — warm, simple, conversational. A Grade ${grade} student must be able to follow every sentence.
 
 ━━ OUTPUT ━━
-Return ONLY valid JSON with exactly these 4 fields:
+Return ONLY valid JSON with exactly these 4 fields, no markdown, no extra text:
 
 {
   "explanation": "${absenteeType === 'chronic'

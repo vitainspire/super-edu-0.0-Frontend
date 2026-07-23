@@ -3,6 +3,7 @@ import { callAI } from '@/lib/ai'
 import { withCache, ck } from '@/lib/server-cache'
 import { getClientIp, checkRateLimit } from '@/lib/rate-limit'
 import { PracticeQuizSchema, parseBody } from '@/lib/schemas'
+import { interestExamplesLine } from '@/lib/prompt-fragments'
 
 // callAI's primary+fallback retry chain can take up to ~90s on failure.
 export const maxDuration = 60
@@ -32,9 +33,7 @@ export async function POST(req: NextRequest) {
   if (!parsed_.ok) return parsed_.response
   const { topic, subject, grade, interests } = parsed_.data
 
-  const interestHint = interests?.length
-    ? `Use examples from: ${interests.slice(0, 2).join(', ')}.`
-    : 'Use simple Indian everyday examples (cricket, market, cooking, farming).'
+  const interestHint = interestExamplesLine(interests)
 
   const prompt =
 `You are creating an adaptive practice-quiz question bank for a Grade ${grade} student in an Indian government school studying ${subject}.
@@ -48,6 +47,7 @@ Write THREE difficulty tiers of multiple-choice questions on this exact topic:
 
 Rules for every question:
 - Exactly 4 options (A, B, C, D). Only ONE is correct.
+- The 3 wrong options must be plausible mistakes a student at this level could genuinely make (a common misconception, a close miscalculation, a mixed-up term) — never random, silly, or obviously wrong.
 - No "All of the above" / "None of the above".
 - "explanation": 1 sentence, explains WHY the answer is correct in simple terms.
 - Simple language throughout — no jargon beyond what's needed for the topic.
@@ -58,7 +58,8 @@ Return ONLY valid JSON, no markdown, no extra text:
   "medium": [ { "text": "string", "options": ["a","b","c","d"], "answerIndex": 0, "explanation": "string" } ],
   "hard":   [ { "text": "string", "options": ["a","b","c","d"], "answerIndex": 0, "explanation": "string" } ]
 }
-("easy" must contain exactly 3, "medium" exactly 4, "hard" exactly 3)`
+("easy" must contain exactly 3, "medium" exactly 4, "hard" exactly 3)
+Before returning: count each array and confirm "easy" has exactly 3, "medium" exactly 4, "hard" exactly 3, each question has exactly 4 options.`
 
   try {
     const topInterest = interests?.[0]?.slice(0, 20).toLowerCase().replace(/\s+/g, '_') ?? 'none'

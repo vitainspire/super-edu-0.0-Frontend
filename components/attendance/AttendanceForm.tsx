@@ -295,8 +295,8 @@ export default function AttendanceForm({ classId, postSaveAction }: AttendanceFo
           .filter(p => p.classId === classId && p.topic.trim().toLowerCase() === topicText.trim().toLowerCase() && isCurrentSmartLesson(p.lesson))
           .sort((a, b) => b.createdAt.localeCompare(a.createdAt))[0]
       if (material) {
-        const hook = material.lesson.realLifeConnection || material.lesson.interactiveExploration?.steps?.[0]
-        const realLifeExamples = [material.lesson.levelSet?.extendPrompt].filter((e): e is string => !!e)
+        const hook = material.lesson.explore?.points?.[0]?.text
+        const realLifeExamples = (material.lesson.levelSet?.points ?? []).map(p => p.text).filter(Boolean)
         if (hook) saveSessionSnapshot(sessionId, { hook, realLifeExamples }).catch(() => {})
       }
     }

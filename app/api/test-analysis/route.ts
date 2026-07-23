@@ -55,7 +55,7 @@ ${lessonLines}
 Student Results (best to lowest):
 ${resultLines}
 
-Write a short analysis in 4 parts. Be specific — use student names. Be warm and practical.
+Write a short analysis in 4 parts. Be specific — use student names and tie every claim to their actual numbers, not general impressions. Bad: "The class did okay overall." Good: "12 of 18 students scored above 60%, with the class strongest on [topic]." Be warm and practical.
 1. Summary: How did the class do overall? (1-2 sentences)
 2. Top Performers: Which 2-3 students did well and what did they demonstrate?
 3. Needs Help: Which students scored below 50%? What should the teacher watch for?

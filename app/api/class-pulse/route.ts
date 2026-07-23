@@ -61,6 +61,7 @@ Write a concise CLASS PULSE REPORT with these FOUR sections:
 2. Concern Areas (which topics or which students need the most attention and why)
 3. Wins to Celebrate (something positive — even small — to acknowledge)
 4. This Week's Focus (one specific, actionable priority for the teacher this week)
+Tie every section to the actual data above — name real topics and students. Bad: "Some students need extra support." Good: "3 students scored below 50% on Fractions — pair them with a peer who scored above 80%."
 
 Be warm, specific, and encouraging. No jargon. Suitable for an Indian school context.
 

@@ -3,6 +3,7 @@ import { callAI } from '@/lib/ai'
 import { withCache, ck } from '@/lib/server-cache'
 import { getClientIp, checkRateLimit } from '@/lib/rate-limit'
 import { FlashcardsSchema, parseBody } from '@/lib/schemas'
+import { interestExamplesLine, gradeLevelRule } from '@/lib/prompt-fragments'
 
 // callAI's primary+fallback retry chain can take up to ~90s on failure.
 export const maxDuration = 60
@@ -19,9 +20,7 @@ export async function POST(req: NextRequest) {
   if (!parsed_.ok) return parsed_.response
   const { topic, subject, grade, interests } = parsed_.data
 
-  const interestHint = interests?.length
-    ? `Where natural, relate examples to: ${interests.slice(0, 2).join(', ')}.`
-    : 'Use simple Indian everyday examples (cricket, market, cooking, farming) where helpful.'
+  const interestHint = interestExamplesLine(interests)
 
   const prompt =
 `You are creating a set of 8 revision flashcards for a Grade ${grade} student in an Indian government school studying ${subject}.
@@ -30,16 +29,18 @@ ${interestHint}
 
 Rules:
 - Each flashcard has a FRONT (a short prompt: a term, question, or "What is…?") and a BACK (a clear, correct answer in 1–2 simple sentences).
-- Match Grade ${grade} level — simple language, no jargon.
+- ${gradeLevelRule(grade)}
 - Cover the key ideas of the topic: definitions, one worked example, and one "why it matters".
 - Keep the front under 12 words. Keep the back under 40 words.
+- No two cards test the same fact from a different angle.
 
 Return ONLY valid JSON, no markdown, no extra text:
 {
   "cards": [
     { "front": "front text here", "back": "back text here" }
   ]
-}`
+}
+Before returning: confirm "cards" has exactly 8 entries.`
 
   try {
     const topInterest = interests?.[0]?.slice(0, 20).toLowerCase().replace(/\s+/g, '_') ?? 'none'

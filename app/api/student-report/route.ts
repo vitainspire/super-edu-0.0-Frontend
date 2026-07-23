@@ -54,6 +54,7 @@ Write a warm, encouraging student progress report with these FOUR sections:
 2. Strengths (1-2 specific topics or skills where the student is doing well)
 3. Areas for Growth (1-2 topics that need more practice — be encouraging, not harsh)
 4. Recommendation (one actionable suggestion for teacher or student, linking to the student's interests/goal if possible)
+Ground every claim in the actual numbers above — never write a generic line like "shows good potential" without naming the specific topic or result behind it.
 
 Keep it simple, clear, and suitable for an Indian school context. No jargon.
 

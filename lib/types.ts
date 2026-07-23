@@ -585,56 +585,88 @@ export interface Worksheet {
   createdAt: string
 }
 
-// The Prep Sheet: Concept (2-3 short bullets) → Real-Life Connection (a curiosity-first
-// scenario from the child's world, not "today we will learn X") → Interactive Exploration
-// (ONE activity chosen — not invented — from a low-resource activity bank, adapted to this
-// topic, with guiding questions so understanding emerges from discussion) → Challenge (a
-// DIFFERENT chosen activity to apply/stretch the idea) → Level Set (returns to the SAME
-// opening scenario so students can now solve it, plus a couple of follow-up questions).
-// Deliberately built for resource-constrained classrooms (chalk/blackboard/notebooks/found
-// objects only) — see LOW_RESOURCE_PRINCIPLES / ACTIVITY_BANK in
-// frontend/app/api/smart-lesson/route.ts, ported 1:1 from backend/scripts/test_prep_material.py.
+// The Prep Sheet (v2): Previous Topic Refresher (recap of whatever was taught
+// right before this, omitted if there's no earlier topic) → Concept (short
+// bullets) → Explore (a free-form, highly creative real-life scenario + activity,
+// NOT limited to the activity bank, with one AI-generated board-sketch image) →
+// Challenge (ONE activity chosen from the low-resource activity bank, rotated so
+// it doesn't repeat this class's recent picks) → Level Set (returns to Explore's
+// scenario so students can now solve it). Every section is at most 3 short
+// bullets, each optionally expandable via a "detail" field (a "+" in the UI) —
+// populated only when genuinely useful, never padding. See LOW_RESOURCE_PRINCIPLES
+// / ACTIVITY_BANK in frontend/app/api/smart-lesson/route.ts, ported 1:1 from
+// backend/scripts/test_prep_material.py.
 
-export interface InteractiveExploration {
-  activity: string             // exact name of an activity chosen from the reference bank, not invented
-  steps: string[]               // 2-4 short steps, adapted with this topic's specific details
-  guidingQuestions: string[]    // 1-3 questions asked mid-activity so the concept emerges from discussion
+// The whole lesson is bullets, everywhere. Each bullet's `text` is brief but
+// self-explanatory; anything that *elaborates* on it — the fuller explanation,
+// a worked example, or the board sketch — lives behind the "+" (detail/image),
+// never in the always-visible line. A bullet shows a "+" iff it has a detail
+// or an image.
+export interface ExpandableBullet {
+  text: string                     // brief but explanatory — readable on its own
+  detail?: string                  // the deeper explanation, revealed by the "+"; omit if it'd just be padding
+  image?: { url: string } | null   // optional board sketch, shown inside the "+" expansion
+}
+
+export interface PreviousTopicRefresher {
+  previousTopic: string          // name of the topic studied right before this one
+  recap: ExpandableBullet[]      // 1-3 bullets
+}
+
+export interface Explore {
+  points: ExpandableBullet[]       // 1-3 bullets — the real-life connection + creative activity; one bullet may carry the board sketch in its "+"
+  imageFocus?: string              // what the AI-generated sketch should depict (attached to a bullet server-side)
 }
 
 export interface LessonChallenge {
-  activity: string   // a DIFFERENT activity name from the bank, used to apply/stretch the idea
-  steps: string[]     // 2-3 short steps
+  activity: string             // exact name of an activity from the official bank, rotated against recent picks
+  points: ExpandableBullet[]   // 1-3 bullets
 }
 
 export interface LevelSet {
-  returnToScenario: string   // brings back the exact opening real-life scenario
-  questions: string[]         // 2-3 short questions tied to that scenario
-  extendPrompt?: string       // open-ended prompt inviting another real-life connection
+  points: ExpandableBullet[]   // 1-3 bullets, tied back to Explore
+}
+
+// Rough minutes to spend on each section — shown as an at-a-glance pacing chip
+// on the banner. Optional: a lesson saved before this field existed simply has
+// none, and the UI just omits the chips.
+export interface LessonTimings {
+  refresher?: number
+  concept?: number
+  explore?: number
+  challenge?: number
+  levelSet?: number
 }
 
 export interface SmartLesson {
-  planningNote?: string                           // model's own brief reasoning, written first — internal only, never shown to the teacher
-  concept: string[]                              // exactly 2-3 short bullets introducing the idea
-  realLifeConnection: string                     // the opening curiosity-first scenario
-  interactiveExploration: InteractiveExploration
+  planningNote?: string                                    // model's own brief reasoning, written first — internal only, never shown to the teacher
+  objective?: string                                        // one-sentence "what students should be able to do by the end" — shown as the Today's Goal ribbon
+  successCriteria?: string[]                                // 2-4 checkable "students can…" outcomes for the end-of-class check
+  previousTopicRefresher?: PreviousTopicRefresher | null    // null when this is the first topic in the syllabus
+  concept: ExpandableBullet[]                               // 1-3 bullets introducing the idea
+  explore: Explore
   challenge: LessonChallenge
-  materialsUsed: string[]                         // everything actually referenced across the two activities' steps — validated server-side against the profile's resources
+  watchFor?: ExpandableBullet[]  // 2-3 predictable misconceptions (text) + how the teacher should respond (detail)
+  materialsUsed: string[]    // everything actually referenced across explore/challenge — validated server-side against the profile's resources
   levelSet: LevelSet
+  timings?: LessonTimings    // optional per-section minutes for pacing
 }
 
-// A PrepMaterial saved before the 5-part template (or before materialsUsed/
-// planningNote landed) still has an incompatible shape — getPrepMaterial()
-// uses this to treat those stale rows as a cache miss instead of handing them
-// to PrepSheetView, which only knows the current shape.
+// A PrepMaterial saved before this shape landed (any earlier schema iteration)
+// is incompatible — getPrepMaterial() uses this to treat those stale rows as a
+// cache miss instead of handing them to PrepSheetView, which only knows the
+// current shape.
 export function isCurrentSmartLesson(lesson: unknown): lesson is SmartLesson {
   if (!lesson || typeof lesson !== 'object') return false
   const l = lesson as Record<string, unknown>
+  const explore = l.explore as Record<string, unknown> | undefined
+  const challenge = l.challenge as Record<string, unknown> | undefined
+  const levelSet = l.levelSet as Record<string, unknown> | undefined
   return Array.isArray(l.concept) &&
-    typeof l.realLifeConnection === 'string' &&
-    typeof l.interactiveExploration === 'object' && l.interactiveExploration !== null &&
-    typeof l.challenge === 'object' && l.challenge !== null &&
+    typeof explore === 'object' && explore !== null && Array.isArray(explore.points) &&
+    typeof challenge === 'object' && challenge !== null && Array.isArray(challenge.points) &&
     Array.isArray(l.materialsUsed) &&
-    typeof l.levelSet === 'object' && l.levelSet !== null
+    typeof levelSet === 'object' && levelSet !== null && Array.isArray(levelSet.points)
 }
 
 export interface TaughtTopic {

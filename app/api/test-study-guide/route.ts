@@ -3,6 +3,7 @@ import { callAI, generateIllustration } from '@/lib/ai'
 import { withCache, ck } from '@/lib/server-cache'
 import { getClientIp, checkVisionRateLimit } from '@/lib/rate-limit'
 import { TestStudyGuideSchema, parseBody } from '@/lib/schemas'
+import { interestExamplesLine, gradeLevelRule, subjectVisualGuidance, subjectDefaultsToImage } from '@/lib/prompt-fragments'
 
 // Breaks a test's topic into several focus-area "tabs" and writes comprehensive
 // revision material for each in a single AI call, so the student portal can
@@ -34,9 +35,7 @@ export async function POST(req: NextRequest) {
   if (!parsed_.ok) return parsed_.response
   const { topic, subject, grade, totalMarks, interests } = parsed_.data
 
-  const interestHint = interests?.length
-    ? `Where natural, use examples from: ${interests.slice(0, 2).join(', ')}.`
-    : 'Use simple Indian everyday examples (cricket, market, cooking, farming) where helpful.'
+  const interestHint = interestExamplesLine(interests)
 
   const prompt =
 `You are building a complete study guide for a Grade ${grade} student in an Indian government school preparing for an upcoming ${subject} test${totalMarks ? ` worth ${totalMarks} marks` : ''}.
@@ -50,11 +49,11 @@ Break this topic into 3-5 focus areas that together comprehensively cover everyt
 - "examples": 2-3 short worked examples or real-life illustrations of this focus area.
 - "commonMistakes": 2-3 short mistakes students often make with this focus area, and how to avoid them.
 - "practiceQuestions": exactly 3 practice questions with their answers, ordered easy → medium → hard, matching what could appear on this test.
-- "imageQuery": the single best Wikipedia article title for a helpful diagram or photo of this focus area (e.g. "Human heart", "Water cycle"). 1-3 words, a real encyclopedia topic.
-- "diagramLabels": 3-6 short labels (1-2 words each) for the main visible parts/steps of this focus area that a labelled diagram should point to. Use plain English words a Grade ${grade} student knows. If this focus area has no distinct visual parts to label (e.g. an abstract idea), return an empty array.
+- Visual — choose the image that fits THIS subject (apply per focus area):
+${subjectVisualGuidance(subject)}
 
 Rules:
-- Match Grade ${grade} level — simple language, no jargon.
+- ${gradeLevelRule(grade)}
 - Every focus area must be genuinely distinct — do not repeat the same content across focus areas.
 - Together, the focus areas should let a student revise this ENTIRE topic without missing anything important.
 
@@ -77,7 +76,7 @@ Return ONLY valid JSON, no markdown, no extra text:
   try {
     const topInterest = interests?.[0]?.slice(0, 20).toLowerCase().replace(/\s+/g, '_') ?? 'none'
     const { value } = await withCache(
-      ck('test-study-guide-v2', topic.toLowerCase().trim(), subject.toLowerCase().trim(), grade, totalMarks ?? 0, topInterest),
+      ck('test-study-guide-v3', topic.toLowerCase().trim(), subject.toLowerCase().trim(), grade, totalMarks ?? 0, topInterest),
       604800, // 7 days
       async () => {
         // 5 focus areas × (summary + keyPoints + examples + commonMistakes + 3 Q&A pairs)
@@ -96,10 +95,17 @@ Return ONLY valid JSON, no markdown, no extra text:
         const topicsWithImages = await Promise.all(rawTopics.map(async (t) => {
           if (t == null || typeof t !== 'object') return t
           const rec = t as Record<string, unknown>
-          const imageSubject = typeof rec.imageQuery === 'string' && rec.imageQuery.trim() ? rec.imageQuery.trim() : (typeof rec.name === 'string' ? rec.name : topic)
+          const focusName = typeof rec.name === 'string' && rec.name.trim() ? rec.name.trim() : topic
+          // Same rule as test-prep: only draw when there's a useful subject. An
+          // empty imageQuery means no picture helps (common for Math/Language
+          // focus areas) → skip. For science/EVS, fall back to this focus area's
+          // name so a diagram isn't lost when the model opts out.
+          const rawImageQuery = typeof rec.imageQuery === 'string' ? rec.imageQuery.trim() : ''
+          const imageSubject = rawImageQuery || (subjectDefaultsToImage(subject) ? focusName : '')
           const diagramLabels = Array.isArray(rec.diagramLabels)
             ? (rec.diagramLabels as unknown[]).filter((l): l is string => typeof l === 'string' && l.trim().length > 0).slice(0, 6)
             : []
+          if (!imageSubject) return { ...rec, image: null }
           const imagePrompt = diagramLabels.length > 0
             ? `A clean, simple, colorful flat-vector educational diagram for a Grade ${grade} school student, depicting: ${imageSubject} (${subject}). Clearly label these parts on the diagram: ${diagramLabels.join(', ')} — each label in bold black sans-serif text, spelled exactly as given, connected to its part with a thin leader line. No other text in the image. Friendly, age-appropriate, plain light background.`
             : `A clean, simple, colorful flat-vector educational illustration for a Grade ${grade} school student, depicting: ${imageSubject} (${subject}). No text or labels in the image. Friendly, age-appropriate, plain light background.`

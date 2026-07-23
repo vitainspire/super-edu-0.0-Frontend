@@ -91,6 +91,7 @@ Rules:
 - Simple language for Grade ${grade} students in Indian schools
 - Use Indian contexts (farming, cricket, food, festivals, Indian cities, rupees)
 - Self-contained questions only — no "refer to diagram" or "as discussed"
+- No two questions should test the same specific fact, even across sections
 - Follow section counts exactly — no MCQ, no fill-in-the-blank
 
 Return valid JSON only — no markdown, no extra text:
@@ -99,7 +100,8 @@ Return valid JSON only — no markdown, no extra text:
     { "text": "Why is the Sun important for life on Earth?", "type": "short-answer", "difficulty": "easy", "marks": 2, "options": [], "answer": "The Sun provides light and heat needed for plants to grow and for humans to stay warm. Without the Sun, life on Earth would not be possible.", "keywords": ["light", "heat", "energy", "plants"] },
     { "text": "Describe the water cycle and explain why it is important for living things.", "type": "long-answer", "difficulty": "hard", "marks": 4, "options": [], "answer": "The water cycle is the continuous movement of water...", "keywords": [] }
   ]
-}`
+}
+Before returning: count the questions per section and confirm they match ${sectionLines} exactly, and confirm the sum of all "marks" equals ${total}.`
 
     const groundingFingerprint = lessonContext?.concepts?.length
       ? lessonContext.concepts.join('|').slice(0, 40)

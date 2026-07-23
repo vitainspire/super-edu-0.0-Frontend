@@ -3,6 +3,7 @@ import { callAI } from '@/lib/ai'
 import { withCache, ck } from '@/lib/server-cache'
 import { getClientIp, checkRateLimit } from '@/lib/rate-limit'
 import { PracticeQuizSchema, parseBody } from '@/lib/schemas'
+import { interestExamplesLine } from '@/lib/prompt-fragments'
 
 // callAI's primary+fallback retry chain can take up to ~90s on failure.
 export const maxDuration = 60
@@ -19,9 +20,7 @@ export async function POST(req: NextRequest) {
   if (!parsed_.ok) return parsed_.response
   const { topic, subject, grade, interests } = parsed_.data
 
-  const interestHint = interests?.length
-    ? `Use examples from: ${interests.slice(0, 2).join(', ')}.`
-    : 'Use simple Indian everyday examples (cricket, market, cooking, farming).'
+  const interestHint = interestExamplesLine(interests)
 
   const prompt =
 `You are creating a 4-question multiple-choice practice quiz for a Grade ${grade} student in an Indian government school studying ${subject}.
@@ -31,6 +30,7 @@ ${interestHint}
 Rules:
 - Questions must match Grade ${grade} level — simple language, no jargon.
 - Each question has exactly 4 options (A, B, C, D). Only ONE is correct.
+- The 3 wrong options must be plausible mistakes a student at this level could genuinely make (a common misconception, a close miscalculation, a mixed-up term) — never random, silly, or obviously wrong.
 - Vary difficulty: Q1 easy, Q2 easy-medium, Q3 medium, Q4 slightly harder.
 - The explanation must be 1 sentence — explain WHY the answer is correct in simple terms.
 - Do NOT use "All of the above" or "None of the above" options.
@@ -45,7 +45,8 @@ Return ONLY valid JSON, no markdown, no extra text:
       "explanation": "one sentence explanation"
     }
   ]
-}`
+}
+Before returning: confirm there are exactly 4 questions, each with exactly 4 options, and "answerIndex" correctly points to the right one.`
 
   try {
     const topInterest = interests?.[0]?.slice(0, 20).toLowerCase().replace(/\s+/g, '_') ?? 'none'

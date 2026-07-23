@@ -55,7 +55,8 @@ Return ONLY a valid JSON array in this exact order (same order as the topics abo
 [
   { "id": "${topics[0]?.id ?? 'id'}", "estimatedSessions": 15, "rationale": "one short sentence why" },
   ...
-]`
+]
+Before returning: add up every "estimatedSessions" value. If the sum is not exactly ${totalSessions}, adjust the largest one or two allocations up or down (never below 5) until it matches exactly, then return the corrected array.`
 
     const raw = await callOpenRouter([{ role: 'user', content: prompt }])
 

@@ -94,7 +94,13 @@ export async function POST(req: NextRequest) {
       `- Extract what the student wrote for every question into "answers".\n` +
       `- Do NOT grade MCQ, fill-in-blank, or short-answer — only extract text.\n` +
       `- For long-answer questions, grade them in "longAnswerGrades".\n` +
-      `- Blank/unreadable → set text to "" in answers.\n\n` +
+      `- Blank/unreadable → set text to "" in answers. Never guess at illegible handwriting or invent an answer that isn't there.\n\n` +
+      `PARTIAL-CREDIT GUIDE for long-answer marksAwarded (out of the question's max marks):\n` +
+      `- errorType "careless" (mostly correct, minor slip): award 80-95% of max marks.\n` +
+      `- errorType "procedural" (right idea, wrong method/steps): award 40-70% of max marks.\n` +
+      `- errorType "conceptual" (misunderstands the core idea): award 0-30% of max marks.\n` +
+      `- errorType null (fully correct): award full marks.\n` +
+      `- If the answer is blank or truly illegible, award 0 marks with feedback "illegible" or "left blank" — never estimate a mark for something you can't read.\n\n` +
       `Return ONLY valid JSON:\n` +
       `{\n` +
       `  "answers": [{ "questionIndex": 0, "text": "C" }, ...],\n` +

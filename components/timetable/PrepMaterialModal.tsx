@@ -34,6 +34,7 @@ export default function PrepMaterialModal({ open, onClose, classId, subject, gra
   const [subMode, setSubMode] = useState<'dropdown' | 'custom'>('dropdown')
   const [contextNote, setContextNote] = useState('')   // ephemeral "anything for today?" hint, not persisted
   const [state, setState] = useState<GenState>('idle')
+  const [errorMsg, setErrorMsg] = useState('')
   const [lesson, setLesson] = useState<SmartLesson | null>(null)
   const [fromCache, setFromCache] = useState(false)
   // Whether the topic/subtopic/context picker is shown. Hidden once a result
@@ -75,6 +76,7 @@ export default function PrepMaterialModal({ open, onClose, classId, subject, gra
     setSubMode('dropdown')
     setContextNote('')
     setState('idle')
+    setErrorMsg('')
     setLesson(null)
     setFormVisible(!autoGenerate)
     autoFiredRef.current = null
@@ -170,6 +172,7 @@ export default function PrepMaterialModal({ open, onClose, classId, subject, gra
       }
     }
     setState('loading')
+    setErrorMsg('')
     try {
       const res = await fetch('/api/smart-lesson', {
         method: 'POST',
@@ -185,7 +188,10 @@ export default function PrepMaterialModal({ open, onClose, classId, subject, gra
           contextNote: contextNote.trim() || undefined,
         }),
       })
-      if (!res.ok) throw new Error('bad')
+      if (!res.ok) {
+        const body = await res.json().catch(() => null) as { error?: string } | null
+        throw new Error(body?.error || `Server returned ${res.status}`)
+      }
       const data = await res.json() as { lesson: SmartLesson }
       const saved = await savePrepMaterial({
         classId, subject, grade,
@@ -197,7 +203,9 @@ export default function PrepMaterialModal({ open, onClose, classId, subject, gra
       setFromCache(false)
       setState('done')
       setFormVisible(false)
-    } catch {
+    } catch (err) {
+      console.error('[PrepMaterialModal] generate failed:', err)
+      setErrorMsg(err instanceof Error ? err.message : 'Failed to generate. Try again.')
       setState('error')
       setFormVisible(true)
     }
@@ -377,7 +385,7 @@ export default function PrepMaterialModal({ open, onClose, classId, subject, gra
 
         {state === 'error' && (
           <div className="flex items-center gap-2 text-red-500 text-xs font-medium">
-            <AlertCircle size={12} /> Failed to generate. Try again.
+            <AlertCircle size={12} className="shrink-0" /> {errorMsg || 'Failed to generate. Try again.'}
           </div>
         )}
         </>

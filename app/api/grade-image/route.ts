@@ -43,6 +43,7 @@ Total marks: ${totalMarks}
 
 The image shows a mark sheet or student answer paper. Extract the score for each student listed below.
 Also add a short observation/feedback if anything is visible (e.g. "left Q3 blank", "calculation errors", "good work", "skipped last question"). Keep feedback under 10 words. If nothing notable, leave feedback as an empty string.
+Never estimate or guess a score you cannot clearly read — omit that student instead.
 
 Students:
 ${studentList}

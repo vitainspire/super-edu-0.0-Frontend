@@ -47,16 +47,35 @@ const PERSONALIZATION_LABELS: Record<keyof TeachingProfilePersonalization, strin
   exploration: 'independent exploration',
 }
 
-// "Often"/"Always" become an emphasis cue, "Never" a minimize cue — "Sometimes"
-// is neutral and omitted, so the prompt only mentions what actually matters.
-export function personalizationEmphasis(personalization?: TeachingProfilePersonalization | null) {
+// Keeps the always > often > sometimes > never gradient the teacher expressed
+// instead of collapsing it to a binary emphasize/minimize. Each tier lists the
+// styles at that frequency so the generator can lean *proportionally*: "rely
+// heavily" on always-styles, "avoid" never-styles, and everything between.
+// "sometimes" is intentionally omitted from the prompt — it's the neutral
+// default (see EMPTY_TEACHING_PROFILE) and mentioning it would just add noise.
+export function personalizationTiers(personalization?: TeachingProfilePersonalization | null) {
   const p = personalization ?? EMPTY_TEACHING_PROFILE.personalization
-  const emphasize: string[] = []
-  const minimize: string[] = []
+  const always: string[] = []
+  const often: string[] = []
+  const never: string[] = []
   for (const key of Object.keys(PERSONALIZATION_LABELS) as (keyof TeachingProfilePersonalization)[]) {
+    const label = PERSONALIZATION_LABELS[key]
     const value = p[key]
-    if (value === 'often' || value === 'always') emphasize.push(PERSONALIZATION_LABELS[key])
-    else if (value === 'never') minimize.push(PERSONALIZATION_LABELS[key])
+    if (value === 'always') always.push(label)
+    else if (value === 'often') often.push(label)
+    else if (value === 'never') never.push(label)
   }
-  return { emphasize, minimize }
+  return { always, often, never }
+}
+
+// Render the tiers as a single prompt line, or '' when the teacher left
+// everything neutral (all "sometimes"). Only non-empty tiers appear.
+export function personalizationTierLine(personalization?: TeachingProfilePersonalization | null): string {
+  const { always, often, never } = personalizationTiers(personalization)
+  const parts = [
+    always.length > 0 && `Rely heavily on: ${always.join(', ')}.`,
+    often.length > 0 && `Use regularly: ${often.join(', ')}.`,
+    never.length > 0 && `Avoid: ${never.join(', ')}.`,
+  ].filter(Boolean)
+  return parts.join(' ')
 }

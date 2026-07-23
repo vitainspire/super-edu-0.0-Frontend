@@ -20,6 +20,7 @@ Rules:
 - Extract only student/person names — ignore column headers, numbers, roll numbers, dates, subjects, marks
 - Return each name as a clean proper-case string (e.g. "Ravi Kumar", not "RAVI KUMAR" or "ravi kumar")
 - If a name has a roll number prefix like "01. Ravi Kumar", return only "Ravi Kumar"
+- Keep duplicate-looking names as separate entries if the document lists them as separate rows — do not merge or deduplicate; that decision belongs to the teacher, not the extraction.
 - If you cannot find any names, return { "names": [] }
 - Do not invent names — only extract what is visible in the image`
 
@@ -41,6 +42,7 @@ Rules:
 - Extract only student/person names — ignore column headers, numbers, roll numbers, dates, subjects, marks
 - Return each name as a clean proper-case string (e.g. "Ravi Kumar", not "RAVI KUMAR" or "ravi kumar")
 - If a name has a roll number prefix like "01. Ravi Kumar", return only "Ravi Kumar"
+- Keep duplicate-looking names as separate entries if the transcription lists them as separate rows — do not merge or deduplicate; that decision belongs to the teacher, not the extraction.
 - If you cannot find any names, return {"names":[]}
 - Do not invent names — only extract what is present in the transcription`
 }

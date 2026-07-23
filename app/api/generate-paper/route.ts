@@ -84,19 +84,21 @@ ${JSON.stringify({ subject, grade, title, topics, blocks }, null, 2)}
 Rules:
 - Strictly Grade ${grade || '5'} appropriate — simple, clear, age-appropriate language.
 - Honor each section's difficulty and any note.
-- MCQ: exactly 4 options ("A. …" … "D. …"); set "answer" to the correct option LETTER only (e.g. "B").
+- MCQ: exactly 4 options ("A. …" … "D. …"); set "answer" to the correct option LETTER only (e.g. "B"). The 3 wrong options must be plausible mistakes a student at this grade could actually make (a common misconception, a close numeric miscalculation, a confusable term) — never random, absurd, or obviously-wrong filler.
 - True or False: "text" is a statement; set "answer" to exactly "True" or "False".
 - Match the Following: provide "left" and "right" arrays of EQUAL length; "answer" maps each left index to a right letter, e.g. "1-C, 2-A, 3-B". Shuffle "right" so the order does not match "left".
 - Fill in the blank: embed "___" in the text where the answer goes.
 - Short answer: question only. Long answer: question only, add "(Write 3–4 sentences)".
 - Generate EXACTLY the count specified for each section — no more, no fewer.
+- No question anywhere in the paper repeats the same specific fact as another, even across sections or topics.
 
 Return ONLY valid JSON, no markdown, no extra text:
 {
   "sections": [
     ${schemas}
   ]
-}`
+}
+Before returning: for every section, count its "questions" array and confirm it matches the required count exactly; confirm the sections appear in the same order as specified above.`
 
   try {
     const text = await callAI([{ role: 'user', content: prompt }], { maxTokens: 4000 })

@@ -54,7 +54,8 @@ Return ONLY valid JSON:
       "activity": "one sentence activity suggestion"
     }
   ]
-}`
+}
+Before returning: confirm every student in the list above appears in exactly one pair (or the one group of 3, if the count is odd).`
 
     const studentKey = students.map(s => s.id).sort().join('~')
     const { value: parsed, fromCache } = await withCache(

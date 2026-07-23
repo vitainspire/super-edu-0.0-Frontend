@@ -21,7 +21,7 @@ export async function POST(req: NextRequest) {
     const { signal, studentName } = parsed_.data
 
     const prompt = `Write ONE short sentence for a teacher about this student's hidden potential.
-Be specific, positive, and encouraging. Maximum 20 words. No jargon.
+Be specific, positive, and encouraging. Maximum 20 words. No jargon. Tie the sentence directly to the data given — never a generic line like "has great potential" that could apply to any student.
 
 Student name: ${studentName}
 Signal type: ${signal.type}

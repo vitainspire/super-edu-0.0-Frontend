@@ -45,7 +45,7 @@ ${prevList}
 Generate ONE completely new explanation approach that:
 1. Uses a real-life Indian example — from cricket, food, farming, festivals, or daily village life
 2. Can be explained verbally in class — no materials or equipment needed
-3. Is genuinely different from all previous approaches listed above
+3. Is genuinely different from all previous approaches listed above — a different angle, medium, or entry point, not the same idea in new words
 4. If any previous approach partially or fully helped, note what worked and take it further from a fresh angle
 5. Ends with one short question the teacher can ask to immediately check if the student understood
 

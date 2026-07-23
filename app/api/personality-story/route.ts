@@ -148,6 +148,7 @@ Return ONLY valid JSON, no markdown, no extra text:
   "personalityAnalysis": { "wise": "string", "mixed": "string", "regret": "string" },
   "learningSummary": { "wise": "string", "mixed": "string", "regret": "string" }
 }
+Before returning: confirm "steps" has exactly 3 entries and every step has exactly 3 options; confirm no scene text reveals or reacts to a specific earlier choice.
 (steps must contain exactly 3 entries, each with exactly 3 options)`
 
   try {

@@ -38,7 +38,7 @@ ${focus}
 
 Give a quick lesson prep guide. Use familiar Indian contexts (cricket, chai, markets, festivals, auto-rickshaw, mobile data, Bollywood) for examples.
 
-Respond ONLY as valid JSON:
+Respond ONLY as valid JSON, no markdown, no extra text:
 {
   "explanation": "A clear 2-sentence explanation of ${displayTopic} in simple language a student can understand",
   "examples": ["Indian real-life example 1", "Indian real-life example 2", "Indian real-life example 3"],

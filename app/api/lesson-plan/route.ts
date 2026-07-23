@@ -48,7 +48,7 @@ ${topicList || 'No pending topics'}
 Create a practical week-by-week lesson plan for the NEXT 4 weeks covering the pending topics above.
 For each week:
 - Assign 1-2 topics
-- Write one short teaching tip (max 20 words) connecting the topic to the students' interests
+- Write one short teaching tip (max 20 words) connecting the topic to the students' interests — a concrete action, not encouragement (e.g. "Use cricket run-totals to introduce addition of 2-digit numbers", not "Make it fun and relatable")
 - Suggest one quick activity or example (max 15 words)
 
 Be warm, practical, and specific. No jargon.
@@ -63,7 +63,8 @@ Return ONLY valid JSON:
       "activity": "quick activity or example"
     }
   ]
-}`
+}
+Before returning: confirm there are exactly 4 week entries, weeks numbered 1-4, and every pending topic above is assigned to exactly one week.`
 
     const raw = await callOpenRouter([{ role: 'user', content: prompt }])
 

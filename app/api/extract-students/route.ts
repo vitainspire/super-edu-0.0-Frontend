@@ -24,6 +24,7 @@ Return ONLY valid JSON (no markdown, no code fences):
 Rules:
 - List students in the order they appear on the page (top to bottom).
 - If a roll number isn't clearly visible for an entry, use an empty string for rollNumber — don't invent a number that isn't there.
+- If two entries have the same or a very similar name, keep them as separate entries and rely on their (possibly empty) roll numbers to distinguish them — never merge two rows into one because the names look alike.
 - Correct obvious spelling/OCR issues in names only where you're confident — don't invent names that aren't there.
 - Skip headers, titles, and column labels (e.g. "Class 5A Roster", "Name", "Roll No.") — only actual student entries.
 - If handwriting for an entry is fully illegible, skip that entry rather than guessing.`

@@ -55,7 +55,8 @@ Return ONLY valid JSON, no markdown:
     { "key": "${items[0]?.key ?? '0-0'}", "answer": "..." },
     ...
   ]
-}`
+}
+Before returning: confirm "answers" has exactly one entry per question listed above, in the same order.`
 
   try {
     const text = await callAI([{ role: 'user', content: prompt }], { maxTokens: 1500 })

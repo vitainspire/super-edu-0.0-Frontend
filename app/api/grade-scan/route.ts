@@ -101,8 +101,14 @@ function buildPrompt(
     (isPreSelected ? `` : `1. Read the student's name from the top of the paper.\n`) +
     `${isPreSelected ? `1` : `2`}. For every question, find what the student wrote and return it in "answers".\n` +
     (hasLong ? `${isPreSelected ? `2` : `3`}. For long-answer questions, award marks and write feedback in "longAnswerGrades".\n` : '') +
+    `\nPARTIAL-CREDIT GUIDE for long-answer marksAwarded (out of the question's max marks):\n` +
+    `- errorType "careless" (mostly correct, minor slip): award 80-95% of max marks.\n` +
+    `- errorType "procedural" (right idea, wrong method/steps): award 40-70% of max marks.\n` +
+    `- errorType "conceptual" (misunderstands the core idea): award 0-30% of max marks.\n` +
+    `- errorType null (fully correct): award full marks.\n` +
+    `- If the answer is blank or truly illegible, award 0 marks with feedback "illegible" or "left blank" — never estimate a mark for something you can't read.\n` +
     `\nRules:\n` +
-    `- If a question is blank or unreadable, set text to "" in answers.\n` +
+    `- If a question is blank or unreadable, set text to "" in answers. — never guess or invent what might be there.\n` +
     `- Keep feedback under 10 words.\n` +
     `- Do NOT grade MCQ, fill-in-blank, or short-answer questions — only extract their text.\n\n` +
     `Return ONLY valid JSON — no markdown, no extra text:\n` +

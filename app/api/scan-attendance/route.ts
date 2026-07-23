@@ -45,6 +45,8 @@ For each student, work out whether they were marked present, absent, or late. Ha
 - "L" or a note about arriving late means late
 - Some sheets only list the names of ABSENT students (no full roster) — in that case, mark only those listed names as absent
 
+If two students in the list share the same or a very similar name, use roll number (if visible on the register) to tell them apart — do not guess which one a mark belongs to if it's genuinely ambiguous; omit that entry instead.
+
 Return ONLY valid JSON (no markdown, no extra text):
 {
   "entries": [

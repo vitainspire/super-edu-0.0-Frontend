@@ -54,18 +54,20 @@ ${distLines}
 
 Rules:
 - Strictly Grade ${grade} difficulty — simple, clear language.
-- MCQ: exactly 4 options each (A, B, C, D). Set "answer" to the correct option letter only (e.g. "B").
+- MCQ: exactly 4 options each (A, B, C, D). Set "answer" to the correct option letter only (e.g. "B"). The 3 wrong options must be plausible mistakes a student at this grade could actually make — never random or obviously-wrong filler.
 - Fill in blank: embed "___" in the question text where the answer goes.
 - Short answer: question only, no answer needed.
 - Long answer: question only, add "(Write 3–4 sentences)" guidance in the text.
 - Generate EXACTLY the count specified for each section — no more, no fewer.
+- No question repeats the same specific fact as another, even across sections.
 
 Return ONLY valid JSON, no markdown, no extra text:
 {
   "sections": [
     ${sectionSchemas}
   ]
-}`
+}
+Before returning: for every section, count its "questions" array and confirm it matches the required count exactly.`
 
   try {
     const text = await callAI([{ role: 'user', content: prompt }], { maxTokens: 2500 })

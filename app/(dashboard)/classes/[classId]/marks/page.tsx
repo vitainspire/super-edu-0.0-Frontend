@@ -146,7 +146,7 @@ export default function ClassMarksPage() {
         [...prepMaterials]
           .filter(p => p.classId === classId && p.topic.trim().toLowerCase() === test.topic.trim().toLowerCase() && isCurrentSmartLesson(p.lesson))
           .sort((a, b) => b.createdAt.localeCompare(a.createdAt))[0]
-      const concepts = material?.lesson.concept ?? []
+      const concepts = (material?.lesson.concept ?? []).map(c => c.text)
       const lessonContext = concepts.length > 0 ? { concepts } : undefined
       const res = await fetch('/api/test-analysis', {
         method: 'POST',
@@ -173,7 +173,7 @@ export default function ClassMarksPage() {
         [...prepMaterials]
           .filter(p => p.classId === classId && p.topic.trim().toLowerCase() === topic.trim().toLowerCase() && isCurrentSmartLesson(p.lesson))
           .sort((a, b) => b.createdAt.localeCompare(a.createdAt))[0]
-      const concepts = material?.lesson.concept ?? []
+      const concepts = (material?.lesson.concept ?? []).map(c => c.text)
       const lessonContext = concepts.length > 0 ? { concepts } : undefined
       const groundingFingerprint = concepts.length > 0 ? concepts.join('|').slice(0, 40) : 'ungrounded'
       const ck = aiKey('questions', { v: 4, topic: topic.toLowerCase().trim(), grade: cls?.grade ?? teacher?.grade ?? '5', totalM, groundingFingerprint })

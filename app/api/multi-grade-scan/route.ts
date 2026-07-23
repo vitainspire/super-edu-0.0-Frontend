@@ -51,7 +51,7 @@ function buildPrompt(
       return `Q${i + 1} [Short answer, ${q.marks}m]: ${q.text}\n   → Extract the student's full written answer.`;
     }
     const modelAns = q.answer ? `\n   Model answer: ${q.answer}` : '';
-    return `Q${i + 1} [Long answer, ${q.marks}m — EXTRACT AND GRADE THIS]:${modelAns}\n   Question: ${q.text}\n   → Extract answer AND award marks (0–${q.marks}) with brief feedback AND set errorType:\n     "conceptual" = student misunderstands the core idea\n     "procedural" = understands idea but wrong method or steps\n     "careless" = mostly correct, minor slip\n     null = full marks`;
+    return `Q${i + 1} [Long answer, ${q.marks}m — EXTRACT AND GRADE THIS]:${modelAns}\n   Question: ${q.text}\n   → Extract answer AND award marks (0–${q.marks}) with brief feedback AND set errorType:\n     "conceptual" = student misunderstands the core idea\n     "procedural" = understands idea but wrong method or steps\n     "careless" = mostly correct, minor arithmetic or language slip\n     null = full marks`;
   }).join('\n\n');
 
   const hasLong = longAnswerIndices.size > 0;
@@ -66,8 +66,14 @@ function buildPrompt(
     `TASK:\n` +
     `1. For every question, find what the student wrote and return it in "answers".\n` +
     (hasLong ? `2. For long-answer questions, award marks and write feedback in "longAnswerGrades".\n` : '') +
+    `\nPARTIAL-CREDIT GUIDE for long-answer marksAwarded (out of the question's max marks):\n` +
+    `- errorType "careless" (mostly correct, minor slip): award 80-95% of max marks.\n` +
+    `- errorType "procedural" (right idea, wrong method/steps): award 40-70% of max marks.\n` +
+    `- errorType "conceptual" (misunderstands the core idea): award 0-30% of max marks.\n` +
+    `- errorType null (fully correct): award full marks.\n` +
+    `- If the answer is blank or truly illegible, award 0 marks with feedback "illegible" or "left blank" — never estimate a mark for something you can't read.\n` +
     `\nRules:\n` +
-    `- If a question is blank or unreadable, set text to "" in answers.\n` +
+    `- If a question is blank or unreadable, set text to "" in answers. — never guess or invent what might be there.\n` +
     `- Keep feedback under 10 words.\n` +
     `- Do NOT grade MCQ, fill-in-blank, or short-answer questions — only extract their text.\n\n` +
     `Return ONLY valid JSON — no markdown, no extra text:\n` +
