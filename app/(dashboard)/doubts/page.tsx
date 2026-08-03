@@ -1,6 +1,7 @@
 'use client'
 import { useState, useEffect } from 'react'
-import { MessageCircle, CheckCircle2, Clock, Send, ChevronDown, ChevronUp } from 'lucide-react'
+import { Clock, ChevronDown, ChevronUp } from '@/components/ui/icons'
+import { MessageCircle, CheckCircle2, Send } from 'lucide-react'
 import { useApp } from '@/lib/context'
 import * as sbq from '@/lib/supabase-queries'
 import type { StudentDoubt } from '@/lib/types'
@@ -157,8 +158,8 @@ export default function DoubtsPage() {
                             onChange={e => setAnswers(prev => ({ ...prev, [doubt.id]: e.target.value }))}
                             placeholder="Type your answer here…"
                             rows={2}
-                            className="w-full border-2 rounded-2xl px-4 py-2.5 text-sm text-ink placeholder-ink-faint focus:outline-none resize-none"
-                            style={{ borderColor: 'rgba(58,44,30,0.15)' }}
+                            className="w-full bg-white border-2 rounded-2xl px-4 py-2.5 text-sm text-ink placeholder-ink-faint focus:outline-none resize-none"
+                            style={{ borderColor: 'var(--card-border)' }}
                           />
                           <button
                             onClick={() => saveAnswer(doubt)}

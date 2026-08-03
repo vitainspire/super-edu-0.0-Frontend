@@ -80,8 +80,8 @@ export default function PersonalityCorner({ isMobile }: Props) {
         title="Today's Story"
         style={{
           position: 'fixed', right: 18, bottom: isMobile ? 84 : 24, zIndex: 90,
-          width: 56, height: 56, borderRadius: '50%', border: '2.5px solid rgba(30,42,68,0.22)',
-          background: '#3D6CB4', display: 'flex', alignItems: 'center', justifyContent: 'center',
+          width: 56, height: 56, borderRadius: '50%', border: '2.5px solid #1E2A44',
+          background: '#D9720F', display: 'flex', alignItems: 'center', justifyContent: 'center',
           cursor: 'pointer', boxShadow: '0 6px 16px rgba(30,42,68,0.25)',
         }}
       >
@@ -93,11 +93,11 @@ export default function PersonalityCorner({ isMobile }: Props) {
           style={{ position: 'fixed', inset: 0, zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(30,42,68,0.55)' }}
           onClick={e => { if (e.target === e.currentTarget) close() }}
         >
-          <div style={{ background: '#FFFFFF', border: '2.5px solid rgba(30,42,68,0.22)', borderRadius: 24, width: '100%', maxWidth: 480, margin: '0 16px', display: 'flex', flexDirection: 'column', maxHeight: '90vh', overflow: 'hidden' }}>
+          <div style={{ background: '#FFFFFF', border: '2.5px solid #1E2A44', borderRadius: 24, width: '100%', maxWidth: 480, margin: '0 16px', display: 'flex', flexDirection: 'column', maxHeight: '90vh', overflow: 'hidden' }}>
 
             {/* Header */}
             <div style={{ padding: '20px 24px 16px', borderBottom: '2.5px solid rgba(30,42,68,0.18)', display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0 }}>
-              <div style={{ width: 38, height: 38, borderRadius: 12, background: '#3D6CB4', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              <div style={{ width: 38, height: 38, borderRadius: 12, background: '#D9720F', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                 <Sprout size={18} color="#fff" />
               </div>
               <div style={{ flex: 1, minWidth: 0 }}>
@@ -114,7 +114,7 @@ export default function PersonalityCorner({ isMobile }: Props) {
             <div style={{ overflowY: 'auto', padding: '20px 24px', display: 'flex', flexDirection: 'column', gap: 16 }}>
               {loading && (
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10, padding: '24px 0' }}>
-                  <Loader2 size={26} color="#3D6CB4" className="animate-spin" />
+                  <Loader2 size={26} color="#D9720F" className="animate-spin" />
                   <p style={{ fontSize: 13, fontWeight: 600, color: '#5B6B87' }}>Getting today&apos;s story ready…</p>
                 </div>
               )}
@@ -124,7 +124,7 @@ export default function PersonalityCorner({ isMobile }: Props) {
                   <AlertTriangle size={26} color="#dc2626" />
                   <p style={{ fontSize: 13, fontWeight: 600, color: '#5B6B87' }}>Could not load today&apos;s story. Please try again.</p>
                   <button onClick={openCorner}
-                    style={{ marginTop: 4, padding: '9px 20px', borderRadius: 12, background: '#3D6CB4', border: 'none', color: '#fff', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
+                    style={{ marginTop: 4, padding: '9px 20px', borderRadius: 12, background: '#D9720F', border: 'none', color: '#fff', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
                     Retry
                   </button>
                 </div>
@@ -146,7 +146,7 @@ export default function PersonalityCorner({ isMobile }: Props) {
                           onClick={() => choose(opt.leadsToward)}
                           style={{
                             width: '100%', textAlign: 'left', padding: '11px 14px', borderRadius: 14,
-                            border: '2.5px solid rgba(30,42,68,0.22)', background: '#fff', color: '#1E2A44',
+                            border: '2.5px solid #1E2A44', background: '#fff', color: '#1E2A44',
                             fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', transition: 'all .12s',
                           }}
                         >
@@ -160,20 +160,20 @@ export default function PersonalityCorner({ isMobile }: Props) {
 
               {!loading && !error && story && finished && ending && (
                 <>
-                  <div style={{ padding: '16px 18px', borderRadius: 16, background: '#FFF7E6', border: '2px solid #F5DFA6' }}>
-                    <p style={{ fontSize: 14, color: '#5C4A1E', lineHeight: 1.65 }}>{ending}</p>
+                  <div style={{ padding: '16px 18px', borderRadius: 16, background: '#FFF2CC', border: '2px solid #FFC93C' }}>
+                    <p style={{ fontSize: 14, color: '#1E2A44', lineHeight: 1.65 }}>{ending}</p>
                   </div>
 
                   {analysis && (
-                    <div style={{ padding: '14px 18px', borderRadius: 16, background: '#F0F7EE', border: '2px solid #CDE7C4' }}>
-                      <p style={{ fontSize: 11, fontWeight: 800, color: '#2F6B3F', textTransform: 'uppercase', letterSpacing: 0.4, marginBottom: 6 }}>Why this happened</p>
-                      <p style={{ fontSize: 13.5, color: '#2F4A34', lineHeight: 1.6 }}>{analysis}</p>
+                    <div style={{ padding: '14px 18px', borderRadius: 16, background: '#FFE8D1', border: '2px solid #FF9F43' }}>
+                      <p style={{ fontSize: 11, fontWeight: 800, color: '#D9720F', textTransform: 'uppercase', letterSpacing: 0.4, marginBottom: 6 }}>Why this happened</p>
+                      <p style={{ fontSize: 13.5, color: '#1E2A44', lineHeight: 1.6 }}>{analysis}</p>
                     </div>
                   )}
 
                   {summary && (
-                    <div style={{ padding: '14px 18px', borderRadius: 16, background: '#EDF2FB', border: '2px solid #C7D6F0' }}>
-                      <p style={{ fontSize: 11, fontWeight: 800, color: '#2A4B8D', textTransform: 'uppercase', letterSpacing: 0.4, marginBottom: 6 }}>A better choice, for next time</p>
+                    <div style={{ padding: '14px 18px', borderRadius: 16, background: '#DCEBF8', border: '2px solid #2F8FE0' }}>
+                      <p style={{ fontSize: 11, fontWeight: 800, color: '#1E62A8', textTransform: 'uppercase', letterSpacing: 0.4, marginBottom: 6 }}>A better choice, for next time</p>
                       <p style={{ fontSize: 13.5, color: '#1E2A44', lineHeight: 1.6 }}>{summary}</p>
                     </div>
                   )}

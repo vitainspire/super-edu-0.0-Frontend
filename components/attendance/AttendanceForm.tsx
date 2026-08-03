@@ -370,7 +370,7 @@ export default function AttendanceForm({ classId, postSaveAction }: AttendanceFo
     <div className="p-4 space-y-4 pb-8">
 
       {/* ── Session header ── */}
-      <div className="rounded-3xl p-5" style={{ background: isSaved ? '#AAD6A0' : '#AACDEA', border: '2px solid rgba(58,44,30,0.12)' }}>
+      <div className="rounded-3xl p-5" style={{ background: isSaved ? '#DCEEE1' : '#fff', border: '2px solid var(--card-border)' }}>
         <div className="flex items-center gap-2 mb-3">
           {isSaved ? <Check size={12} style={{ color: '#234A1D' }} /> : <Sparkles size={12} style={{ color: '#1E3A55' }} />}
           <p className="text-xs font-bold uppercase tracking-wide" style={{ color: isSaved ? '#234A1D' : '#1E3A55', opacity: 0.75 }}>
@@ -537,7 +537,7 @@ export default function AttendanceForm({ classId, postSaveAction }: AttendanceFo
             onChange={e => setSessionNote(e.target.value)}
             placeholder="e.g. Taught 3-digit × 1-digit with worked examples (optional)"
             rows={2}
-            className="w-full text-sm text-ink placeholder-ink-faint bg-black/[0.03] rounded-2xl px-3 py-2.5 border border-black/5 resize-none focus:outline-none focus:ring-2 focus:ring-[#AACDEA]"
+            className="w-full text-sm text-ink placeholder-ink-faint bg-white rounded-2xl px-3 py-2.5 border-2 border-[#1B180F] resize-none focus:outline-none focus:ring-2 focus:ring-[#2C5540]"
           />
         </div>
       )}
@@ -554,7 +554,7 @@ export default function AttendanceForm({ classId, postSaveAction }: AttendanceFo
 
           {/* ── Compact inherited view: morning roll already taken, just confirm ── */}
           {!isSaved && isInheritedAttendance && !showFullAttendance && (
-            <div className="bg-[#DCEBF8] border border-[#AACDEA] rounded-2xl px-4 py-3">
+            <div className="bg-[#DCEEE1] border-2 border-[#1B180F] rounded-2xl px-4 py-3">
               <div className="flex items-center justify-between mb-1.5">
                 <div className="flex items-center gap-1.5">
                   <Check size={13} className="text-[#5B87AD]" />
@@ -618,7 +618,7 @@ export default function AttendanceForm({ classId, postSaveAction }: AttendanceFo
                 </button>
               </div>
               <button type="button" onClick={() => setScanOpen(true)}
-                className="w-full flex items-center justify-center gap-2 py-2.5 rounded-2xl text-sm font-bold text-[#8069B0] bg-[#E9E1F6] border border-[#C7B7E8] active:scale-95 transition-all">
+                className="w-full flex items-center justify-center gap-2 py-2.5 rounded-2xl text-sm font-bold text-forest bg-white border-2 border-[#1B180F] active:scale-95 transition-all">
                 <Camera size={14} /> Scan Attendance Sheet
               </button>
             </div>
@@ -753,7 +753,7 @@ export default function AttendanceForm({ classId, postSaveAction }: AttendanceFo
 
           {/* Next sub-topic suggestion */}
           {topicSubTopics.length > 0 && nextIncompleteSubTopic && !selectedSubTopicIds.has(nextIncompleteSubTopic.id) && (
-            <div className="bg-[#DCEBF8] border border-[#AACDEA] rounded-2xl px-4 py-3">
+            <div className="bg-[#DCEEE1] border-2 border-[#1B180F] rounded-2xl px-4 py-3">
               <p className="text-xs font-bold text-[#5B87AD] mb-1">Next sub-topic</p>
               <p className="text-sm font-semibold text-[#1E3A55]">{nextIncompleteSubTopic.name}</p>
               <button type="button" onClick={() => setSelectedSubTopicIds(prev => new Set(prev).add(nextIncompleteSubTopic.id))}
@@ -819,7 +819,7 @@ export default function AttendanceForm({ classId, postSaveAction }: AttendanceFo
               }
             }}
             className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl text-ink text-sm font-bold active:scale-95 transition-transform"
-            style={{ background: 'rgba(58,44,30,0.08)' }}>
+            style={{ background: '#fff', border: '1.75px solid var(--card-border)' }}>
             <Play size={13} fill="currentColor" /> Record Another Session
           </button>
         </div>

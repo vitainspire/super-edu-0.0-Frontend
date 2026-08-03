@@ -5,7 +5,8 @@ import { useApp } from '@/lib/context'
 import PageHeader from '@/components/theme/PageHeader'
 import { EMPTY_TEACHING_PROFILE, teachingProfileCompletion } from '@/lib/logic/teaching-profile'
 import type { TeachingProfile, ClassSize, PersonalizationFrequency } from '@/lib/types'
-import { Check, Plus, Sparkles, ChevronLeft, ChevronRight, BookOpen, GraduationCap, type LucideIcon } from 'lucide-react'
+import { ChevronLeft, type LucideIcon } from 'lucide-react'
+import { Check, Plus, Sparkles, ChevronRight, BookOpen, GraduationCap } from '@/components/ui/icons'
 import clsx from 'clsx'
 
 const LANGUAGE_OPTIONS = ['English', 'Telugu', 'Hindi', 'Bilingual']
@@ -14,7 +15,17 @@ const CLASS_SIZE_OPTIONS: { value: ClassSize; label: string }[] = [
   { value: '20-40', label: '20–40' },
   { value: '>40', label: 'More than 40' },
 ]
-const RESOURCE_OPTIONS = ['Chalkboard', 'Whiteboard', 'Projector', 'Internet', 'Worksheets', 'Activity Materials', 'Outdoor Space', 'Science Kit']
+// Physical materials/kits a classroom may have — including the Teaching-Learning
+// Materials (TLM) governments commonly supply to primary schools. Whatever the
+// teacher ticks becomes the ONLY materials prep-material activities may use, so
+// activities are always doable with what's actually in the room.
+const RESOURCE_OPTIONS = [
+  'Chalkboard', 'Whiteboard', 'Charts & Posters', 'Number / Place-value Charts',
+  'Abacus', 'Counting Sticks / Beads', 'Building Blocks', 'Geometry Box',
+  'Flashcards', 'Maps & Globe', 'Weighing Balance', 'Measuring Tape / Scale',
+  'Play Money (Notes & Coins)', 'Dice & Number Cards', 'Storybooks', 'Science Kit',
+  'Activity / Craft Materials', 'Projector', 'Outdoor Space',
+]
 
 const ROLE_OPTIONS = [
   { label: 'Educator', sub: 'Simplify concepts' },
@@ -122,6 +133,7 @@ export default function TeachingProfilePage() {
   const [stepIndex, setStepIndex] = useState(0)
   const [dir, setDir] = useState(1)
   const [customLanguage, setCustomLanguage] = useState('')
+  const [customResource, setCustomResource] = useState('')
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
   const [hydrated, setHydrated] = useState(false)
@@ -162,6 +174,13 @@ export default function TeachingProfilePage() {
     if (!v) return
     if (!profile.classroom.language.includes(v)) setClassroom('language', [...profile.classroom.language, v])
     setCustomLanguage('')
+  }
+
+  function addCustomResource() {
+    const v = customResource.trim()
+    if (!v) return
+    if (!profile.classroom.resources.includes(v)) setClassroom('resources', [...profile.classroom.resources, v])
+    setCustomResource('')
   }
 
   async function handleSave() {
@@ -224,7 +243,8 @@ export default function TeachingProfilePage() {
               <div className="flex gap-2">
                 <input value={customLanguage} onChange={e => setCustomLanguage(e.target.value)}
                   onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), addCustomLanguage())}
-                  placeholder="Other language…" className="input-field flex-1" />
+                  placeholder="Other language…" className="input-field flex-1"
+                  style={{ background: '#fff', border: '2px solid var(--card-border)' }} />
                 <button type="button" onClick={addCustomLanguage} disabled={!customLanguage.trim()}
                   className="px-3 py-2 rounded-xl disabled:opacity-40" style={{ background: 'rgba(58,44,30,0.06)', color: 'var(--ink-soft)' }}>
                   <Plus className="w-4 h-4" />
@@ -241,7 +261,7 @@ export default function TeachingProfilePage() {
                   <button key={opt.value} type="button"
                     onClick={() => { setClassroom('classSize', opt.value); setTimeout(next, 200) }}
                     className="flex items-center gap-3 px-4 py-2.5 rounded-2xl text-left transition-colors"
-                    style={{ background: profile.classroom.classSize === opt.value ? 'rgba(58,44,30,0.06)' : 'transparent', border: '1.5px solid rgba(58,44,30,0.12)' }}>
+                    style={{ background: profile.classroom.classSize === opt.value ? 'rgba(58,44,30,0.06)' : 'transparent', border: '2px solid var(--card-border)' }}>
                     <span className="w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0"
                       style={{ borderColor: profile.classroom.classSize === opt.value ? 'var(--ink)' : 'rgba(58,44,30,0.3)' }}>
                       {profile.classroom.classSize === opt.value && <span className="w-2 h-2 rounded-full" style={{ background: 'var(--ink)' }} />}
@@ -255,12 +275,26 @@ export default function TeachingProfilePage() {
 
           {stepId === 'resources' && (
             <div>
-              <p className="label mb-2">My classroom has</p>
-              <div className="flex flex-wrap gap-2">
+              <p className="label mb-1">Physical materials &amp; kits in my classroom</p>
+              <p className="text-xs text-ink-faint mb-3">Tick everything actually present — including anything the school or government provided. Lessons will build activities around exactly these, and never ask for anything you don&apos;t have.</p>
+              <div className="flex flex-wrap gap-2 mb-2">
                 {RESOURCE_OPTIONS.map(r => (
                   <Chip key={r} label={r} selected={profile.classroom.resources.includes(r)}
                     onClick={() => setClassroom('resources', toggle(profile.classroom.resources, r))} />
                 ))}
+                {profile.classroom.resources.filter(r => !RESOURCE_OPTIONS.includes(r)).map(r => (
+                  <Chip key={r} label={r} selected onClick={() => setClassroom('resources', profile.classroom.resources.filter(x => x !== r))} />
+                ))}
+              </div>
+              <div className="flex gap-2">
+                <input value={customResource} onChange={e => setCustomResource(e.target.value)}
+                  onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), addCustomResource())}
+                  placeholder="Add anything else you have (e.g. Dienes blocks, seed packets)…" className="input-field flex-1"
+                  style={{ background: '#fff', border: '2px solid var(--card-border)' }} />
+                <button type="button" onClick={addCustomResource} disabled={!customResource.trim()}
+                  className="px-3 py-2 rounded-xl disabled:opacity-40" style={{ background: 'rgba(58,44,30,0.06)', color: 'var(--ink-soft)' }}>
+                  <Plus className="w-4 h-4" />
+                </button>
               </div>
             </div>
           )}

@@ -17,10 +17,11 @@ export function Spinner({ className, size = "md" }: SpinnerProps) {
       role="status"
       aria-label="Loading"
       className={cn(
-        "rounded-full border-indigo-600 border-t-transparent animate-spin",
+        "rounded-full border-t-transparent animate-spin",
         sizeMap[size],
         className
       )}
+      style={{ borderColor: 'var(--scanner-blue)', borderTopColor: 'transparent' }}
     />
   );
 }

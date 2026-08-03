@@ -1,10 +1,8 @@
 ﻿'use client'
 import { useState, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
-import {
-  Trophy, TrendingUp, TrendingDown, Minus,
-  AlertTriangle, CheckCircle2, Users, RefreshCw,
-} from 'lucide-react'
+import { Trophy, AlertTriangle, Users } from '@/components/ui/icons'
+import { TrendingUp, TrendingDown, Minus, CheckCircle2, RefreshCw } from 'lucide-react'
 import { useApp } from '@/lib/context'
 import { getMasteryLabel, getMasteryColor } from '@/lib/logic/mastery'
 import PageHeader from '@/components/theme/PageHeader'
@@ -139,18 +137,18 @@ export default function YearSummaryPage() {
           <p className="text-xs font-bold text-ink-soft uppercase tracking-wide mb-2">Students</p>
           <div className="flex gap-2 overflow-x-auto pb-1">
             <button onClick={() => setFilterClass('all')}
-              className="shrink-0 px-3 py-1.5 rounded-xl text-xs font-bold border transition-all"
+              className="shrink-0 px-3 py-1.5 rounded-xl text-xs font-bold border-2 transition-all"
               style={filterClass === 'all'
                 ? { background: 'var(--ink)', color: '#fff', borderColor: 'var(--ink)' }
-                : { background: '#fff', color: 'var(--ink-soft)', borderColor: 'rgba(58,44,30,0.15)' }}>
+                : { background: '#fff', color: 'var(--ink-soft)', borderColor: 'var(--card-border)' }}>
               All
             </button>
             {classes.map(c => (
               <button key={c.id} onClick={() => setFilterClass(c.id)}
-                className="shrink-0 px-3 py-1.5 rounded-xl text-xs font-bold border transition-all"
+                className="shrink-0 px-3 py-1.5 rounded-xl text-xs font-bold border-2 transition-all"
                 style={filterClass === c.id
                   ? { background: 'var(--ink)', color: '#fff', borderColor: 'var(--ink)' }
-                  : { background: '#fff', color: 'var(--ink-soft)', borderColor: 'rgba(58,44,30,0.15)' }}>
+                  : { background: '#fff', color: 'var(--ink-soft)', borderColor: 'var(--card-border)' }}>
                 Gr {c.grade}·{c.section}
               </button>
             ))}
@@ -205,7 +203,7 @@ export default function YearSummaryPage() {
               {termAverages.length > 0 && (
                 <div className="flex gap-2 flex-wrap mt-1">
                   {termAverages.map(ta => (
-                    <span key={ta.term} className="text-[10px] bg-[#E9E1F6] text-[#8069B0] font-bold px-2 py-0.5 rounded-full">
+                    <span key={ta.term} className="text-[10px] bg-forest/10 text-forest font-bold px-2 py-0.5 rounded-full">
                       {ta.term}: {Math.round(ta.avg * 100)}%
                     </span>
                   ))}

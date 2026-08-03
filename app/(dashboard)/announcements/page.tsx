@@ -1,6 +1,7 @@
 'use client'
 import { useState, useEffect } from 'react'
-import { Megaphone, ClipboardList, AlertTriangle, PartyPopper } from 'lucide-react'
+import { PartyPopper } from 'lucide-react'
+import { Megaphone, ClipboardList, AlertTriangle } from '@/components/ui/icons'
 import type { Announcement } from '@/lib/types'
 import PageHeader from '@/components/theme/PageHeader'
 import { Sticker } from '@/components/theme/StickerIcon'

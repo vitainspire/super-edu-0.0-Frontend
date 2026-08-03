@@ -1,6 +1,7 @@
 'use client'
 import { useEffect, useMemo, useState } from 'react'
-import { CalendarDays, PartyPopper, ClipboardList, BookOpenCheck } from 'lucide-react'
+import { CalendarDays, ClipboardList } from '@/components/ui/icons'
+import { PartyPopper, BookOpenCheck } from 'lucide-react'
 import type { AcademicEvent } from '@/lib/types'
 import { CATEGORY_META, HOLIDAY_SUBTYPE_META } from '@/lib/academic-calendar'
 import PageHeader from '@/components/theme/PageHeader'

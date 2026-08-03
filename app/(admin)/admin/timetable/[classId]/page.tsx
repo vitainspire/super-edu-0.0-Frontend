@@ -9,6 +9,7 @@ import {
 import Link from 'next/link'
 import PageHeader from '@/components/theme/PageHeader'
 import type { Class, SchoolTimetablePeriod, ScheduleSlot, SchoolSchedule } from '@/lib/types'
+import { ADMIN_SUBJECT_COLORS as SUBJECT_COLORS } from '@/lib/admin-theme'
 
 const DAYS      = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
 const DAY_SHORT = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
@@ -396,9 +397,9 @@ export default function ClassTimetablePage() {
                 </tr>
 
                 {/* Row 2: Copy-day-to-all action row */}
-                <tr style={{ background: 'rgba(199,183,232,0.14)' }}>
-                  <td className="px-4 py-2 border-b border-r border-[rgba(128,105,176,0.2)]">
-                    <p className="text-[10px] font-bold uppercase tracking-widest" style={{ color: '#8069B0' }}>Copy day →</p>
+                <tr style={{ background: 'rgba(170,205,234,0.14)' }}>
+                  <td className="px-4 py-2 border-b border-r border-[rgba(91,135,173,0.2)]">
+                    <p className="text-[10px] font-bold uppercase tracking-widest" style={{ color: '#5B87AD' }}>Copy day →</p>
                     <p className="text-[9px] text-ink-faint leading-tight mt-0.5">
                       Fills all other days<br />with that day&apos;s schedule
                     </p>
@@ -408,14 +409,14 @@ export default function ClassTimetablePage() {
                     const dayFilled = periods.filter(p => p.dayOfWeek === dayNum).length
                     const isCopying = copyingDay === dayNum
                     return (
-                      <td key={day} className="px-2 py-2 text-center border-b border-r border-[rgba(128,105,176,0.2)] last:border-r-0">
+                      <td key={day} className="px-2 py-2 text-center border-b border-r border-[rgba(91,135,173,0.2)] last:border-r-0">
                         {dayFilled > 0 ? (
                           <button
                             onClick={() => copyDayToAll(dayNum)}
                             disabled={!!copyingDay}
                             title={`Copy all of ${day}'s schedule to the other 5 days`}
                             className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[10px] font-bold transition-colors disabled:opacity-40 hover:opacity-80"
-                            style={{ background: 'rgba(199,183,232,0.45)', color: '#31215C' }}
+                            style={{ background: 'rgba(170,205,234,0.45)', color: '#1E3A55' }}
                           >
                             {isCopying
                               ? <Loader2 className="w-3 h-3 animate-spin" />
@@ -732,12 +733,3 @@ export default function ClassTimetablePage() {
   )
 }
 
-// Pastel "sticker" palette — matches the sticker.* tones used across the paper theme
-const SUBJECT_COLORS = [
-  { bg: '#C7B7E8', text: '#31215C', border: '#8069B0' }, // violet
-  { bg: '#AACDEA', text: '#1E3A55', border: '#5B87AD' }, // blue
-  { bg: '#AAD6A0', text: '#234A1D', border: '#5C8F52' }, // green
-  { bg: '#EAC968', text: '#4A3809', border: '#AD8A2C' }, // gold
-  { bg: '#F0AFC6', text: '#5C1F38', border: '#BD6D8B' }, // pink
-  { bg: '#F0A491', text: '#5C2416', border: '#C46B54' }, // coral
-]

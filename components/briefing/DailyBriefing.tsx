@@ -1,6 +1,6 @@
 'use client'
 import { useApp } from '@/lib/context'
-import { AlertTriangle } from 'lucide-react'
+import { AlertTriangle } from '@/components/ui/icons'
 
 function relativeDate(dateStr: string): string {
   const d    = new Date(dateStr)
@@ -18,7 +18,7 @@ export default function DailyBriefing({ dark = false }: { dark?: boolean }) {
   const muted = dark ? 'text-white/50' : 'text-ink-soft'
   const card  = dark ? 'bg-white/8' : ''
   const cardStyle = dark ? undefined : { background: 'rgba(58,44,30,0.05)', border: '1px solid rgba(58,44,30,0.08)' }
-  const label = dark ? 'text-sticker-gold' : 'text-sticker-violetDark'
+  const label = dark ? 'text-sticker-gold' : 'text-forest'
 
   return (
     <div className="space-y-1.5">

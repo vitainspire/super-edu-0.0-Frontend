@@ -78,22 +78,22 @@ export function TopicPicker({
       {active.catchupTopics.length > 0 && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
-            <Hourglass size={13} color="#D97706" strokeWidth={2.25} />
-            <span style={{ fontSize: 11, fontWeight: 800, letterSpacing: '.06em', color: '#D97706', textTransform: 'uppercase' }}>Catch up — you were away</span>
+            <Hourglass size={13} color="#D9720F" strokeWidth={2.25} />
+            <span style={{ fontSize: 11, fontWeight: 800, letterSpacing: '.06em', color: '#D9720F', textTransform: 'uppercase' }}>Catch up — you were away</span>
           </div>
           {active.catchupTopics.map(({ topic, whenLabel }) => {
             const Icon = iconFor(topic)
             return (
               <button key={topic} onClick={() => onPick(active, topic)}
-                style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '14px 16px', borderRadius: 18, border: '1.5px solid #F3D19C', borderLeft: '5px solid #D97706', cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left', background: '#FDECD3', transition: 'background .12s' }}>
-                <span style={{ width: 44, height: 44, borderRadius: 13, background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                  <Icon size={21} color="#D97706" strokeWidth={2.25} />
+                style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '14px 16px', borderRadius: 18, border: '2.5px solid #1E2A44', borderLeft: '5px solid #D9720F', cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left', background: '#fff', transition: 'background .12s' }}>
+                <span style={{ width: 44, height: 44, borderRadius: 13, background: '#FFE8D1', border: '2px solid #FF9F43', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <Icon size={21} color="#D9720F" strokeWidth={2.25} />
                 </span>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <p style={{ fontSize: 15.5, fontWeight: 800, color: '#1E2A44' }}>{topic}</p>
-                  <p style={{ fontSize: 11.5, fontWeight: 700, color: '#B45309', marginTop: 2 }}>Absent · {whenLabel}</p>
+                  <p style={{ fontSize: 11.5, fontWeight: 700, color: '#D9720F', marginTop: 2 }}>Absent · {whenLabel}</p>
                 </div>
-                <ChevronRight size={18} color="#B45309" style={{ flexShrink: 0 }} />
+                <ChevronRight size={18} color="#D9720F" style={{ flexShrink: 0 }} />
               </button>
             )
           })}

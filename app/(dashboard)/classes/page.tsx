@@ -1,22 +1,24 @@
 'use client'
 import { useState, useEffect } from 'react'
-import { Plus, Users, GraduationCap, Clock, BookOpen, Activity, School, PlayCircle } from 'lucide-react'
+import { Plus, Users, GraduationCap, Clock, BookOpen, Activity } from '@/components/ui/icons'
+import { School, PlayCircle } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useApp } from '@/lib/context'
 import CreateClassModal from '@/components/classes/CreateClassModal'
 import ClassSelectionScreen from '@/components/classes/ClassSelectionScreen'
 import PageHeader from '@/components/theme/PageHeader'
 import { Sticker, FlaskSticker, AbacusSticker, QuillBookSticker, GlobeScrollSticker } from '@/components/theme/StickerIcon'
-import clsx from 'clsx'
 
 type Tone = 'blue' | 'green' | 'coral' | 'gold' | 'violet' | 'pink'
-const PALETTE: { tone: Tone; stat: string; ink: string }[] = [
-  { tone: 'blue',   stat: 'stat-card-blue',   ink: '#1E3A55' },
-  { tone: 'green',  stat: 'stat-card-green',  ink: '#234A1D' },
-  { tone: 'coral',  stat: 'stat-card-coral',  ink: '#5C2416' },
-  { tone: 'gold',   stat: 'stat-card-gold',   ink: '#4A3809' },
-  { tone: 'violet', stat: 'stat-card-violet', ink: '#31215C' },
-  { tone: 'pink',   stat: 'stat-card-pink',   ink: '#5C1F38' },
+// Each class keeps a small pastel identity accent (the subject-icon tile) on an
+// otherwise white bold-outlined paper card.
+const PALETTE: { tone: Tone; pastel: string }[] = [
+  { tone: 'blue',   pastel: '#D6E3F3' },
+  { tone: 'green',  pastel: '#DCEEE1' },
+  { tone: 'coral',  pastel: '#F4D6C0' },
+  { tone: 'gold',   pastel: '#F7EFC4' },
+  { tone: 'violet', pastel: '#DED3F2' },
+  { tone: 'pink',   pastel: '#F4D7E1' },
 ]
 
 function subjectIcon(subject?: string) {
@@ -125,42 +127,42 @@ export default function ClassesPage() {
               const lastSession  = clsSessions[0]
 
               return (
-                <div key={cls.id} className={clsx('stat-card', palette.stat)}>
+                <div key={cls.id} className="paper-card p-[18px]">
                   <button
                     onClick={() => router.push(`/classes/${cls.id}/students`)}
                     className="w-full text-left"
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div className="min-w-0">
-                        <p className="font-display font-bold text-xl leading-tight" style={{ color: palette.ink }}>
+                        <p className="font-display font-extrabold text-xl leading-tight text-ink">
                           {cls.name}{cls.section ? ` - ${cls.section}` : ''}
                         </p>
-                        <p className="text-sm font-semibold mt-1" style={{ color: palette.ink, opacity: 0.75 }}>
+                        <p className="text-sm font-semibold mt-1 text-ink-soft">
                           {count} student{count !== 1 ? 's' : ''}
                         </p>
                       </div>
-                      <Sticker tone="cream" size={48} radius={16} style={{ background: 'rgba(255,255,255,0.55)' }}>
+                      <Sticker tone="cream" size={48} radius={16} style={{ background: palette.pastel, border: '2px solid var(--card-border)' }}>
                         <SubjectIcon size={26} />
                       </Sticker>
                     </div>
 
                     {totalTopics > 0 ? (
                       <div className="mt-4">
-                        <div className="stat-progress-track">
-                          <div className="stat-progress-fill" style={{ width: `${pct}%` }} />
+                        <div className="w-full rounded-full h-2 overflow-hidden" style={{ background: 'rgba(27,24,15,0.08)' }}>
+                          <div className="h-full rounded-full" style={{ width: `${pct}%`, background: 'var(--forest)' }} />
                         </div>
                         <div className="flex items-center justify-between mt-2">
-                          <span className="text-xs font-semibold" style={{ color: palette.ink, opacity: 0.7 }}>
+                          <span className="text-xs font-semibold text-ink-soft">
                             {completed}/{totalTopics} topics done
                           </span>
-                          <span className="text-xs font-black underline underline-offset-2" style={{ color: palette.ink }}>
+                          <span className="text-xs font-black underline underline-offset-2" style={{ color: 'var(--forest)' }}>
                             View Class
                           </span>
                         </div>
                       </div>
                     ) : (
                       <div className="mt-3 flex items-center justify-end">
-                        <span className="text-xs font-black underline underline-offset-2" style={{ color: palette.ink }}>
+                        <span className="text-xs font-black underline underline-offset-2" style={{ color: 'var(--forest)' }}>
                           View Class
                         </span>
                       </div>
@@ -168,8 +170,8 @@ export default function ClassesPage() {
 
                     {lastSession && (
                       <div className="flex items-center gap-1 mt-2">
-                        <Clock size={10} style={{ color: palette.ink, opacity: 0.5 }} />
-                        <span className="text-[11px] truncate font-medium" style={{ color: palette.ink, opacity: 0.6 }}>
+                        <Clock size={10} className="text-ink-faint" />
+                        <span className="text-[11px] truncate font-medium text-ink-soft">
                           {formatRelativeDate(lastSession.date)} · {lastSession.topic}
                         </span>
                       </div>
@@ -179,15 +181,15 @@ export default function ClassesPage() {
                   <div className="flex gap-2 mt-3">
                     <button
                       onClick={() => router.push(`/classes/${cls.id}/attendance`)}
-                      className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-bold active:scale-95 transition-transform"
-                      style={{ background: 'rgba(255,255,255,0.55)', color: palette.ink }}
+                      className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-bold text-ink bg-white active:scale-95 transition-transform"
+                      style={{ border: '2px solid var(--card-border)' }}
                     >
                       <BookOpen size={12} /> Attendance
                     </button>
                     <button
                       onClick={() => router.push(`/classes/${cls.id}/pulse`)}
-                      className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-bold active:scale-95 transition-transform"
-                      style={{ background: 'rgba(255,255,255,0.35)', color: palette.ink }}
+                      className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-bold text-ink bg-white active:scale-95 transition-transform"
+                      style={{ border: '2px solid var(--card-border)' }}
                     >
                       <Activity size={12} /> Pulse
                     </button>

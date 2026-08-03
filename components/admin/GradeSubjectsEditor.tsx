@@ -12,8 +12,8 @@ interface GradeSubjectRow {
 }
 
 const CATEGORY_META: Record<'core' | 'special', { label: string; color: string; bg: string }> = {
-  core:    { label: 'Core',    color: '#31215C', bg: '#f5f3ff' },
-  special: { label: 'Special', color: '#0f766e', bg: '#f0fdfa' },
+  core:    { label: 'Core',    color: '#1E3A55', bg: '#DCEBF8' },
+  special: { label: 'Special', color: '#5C2416', bg: '#F4D6C0' },
 }
 
 interface Props {

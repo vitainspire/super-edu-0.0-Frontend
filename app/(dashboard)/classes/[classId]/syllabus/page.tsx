@@ -2,9 +2,11 @@
 import { useState, useEffect } from 'react'
 import { useParams } from 'next/navigation'
 import {
-  Plus, CheckCircle2, Circle, BookOpen,
-  Calendar, Users, Sparkles, ChevronDown, ChevronUp,
-  RefreshCw, X, CalendarDays, PlayCircle, List,
+  Plus, BookOpen, Users, Sparkles, ChevronDown, ChevronUp,
+  X, CalendarDays,
+} from '@/components/ui/icons'
+import {
+  CheckCircle2, Circle, Calendar, RefreshCw, PlayCircle, List,
 } from 'lucide-react'
 import { useApp } from '@/lib/context'
 import { computePacing } from '@/lib/logic/pacing'
@@ -32,7 +34,7 @@ function createsCycle(candidateDefId: string, currentDefId: string, allTopics: {
 export default function ClassSyllabusPage() {
   const { classId } = useParams<{ classId: string }>()
   const {
-    teacher, classes, getClassSyllabus,
+    teacher, classes, getClassSyllabus, getClassSubjects,
     updateSyllabusTopicPrerequisite, getTopicSessions, getClassStudents, getClassAttendance,
     syllabusSubTopics, addSubTopic, deleteSubTopic, toggleSubTopicComplete, toggleTopicComplete,
     ensureClassSyllabus,
@@ -72,13 +74,21 @@ export default function ClassSyllabusPage() {
   const [planWeeks, setPlanWeeks]     = useState<WeekPlan[]>([])
   const [planError, setPlanError]     = useState('')
 
+  // ── Subject scope ────────────────────────────────────────
+  // A class is graded+sectioned, never per-subject: its syllabus rows cover
+  // every subject taught to it. Show one subject at a time, defaulting to the
+  // first this teacher holds for the class, so Maths never lists EVS topics.
+  const classSubjects = getClassSubjects(classId)
+  const [pickedSubject, setPickedSubject] = useState<string | null>(null)
+  const activeSubject = pickedSubject ?? classSubjects[0] ?? null
+
   // ── Weekly tabs ──────────────────────────────────────────
   const [selectedWeek, setSelectedWeek] = useState<WeekKey | null>(null)
 
   // ── Today's Topic (sequential, no manual picking) ───────
   const [focusMode, setFocusMode] = useState(false)
 
-  const topics   = getClassSyllabus(classId)
+  const topics   = getClassSyllabus(classId, activeSubject)
   const students = getClassStudents(classId)
   const completed = topics.filter(t => t.isCompleted).length
   const pct       = topics.length ? Math.round((completed / topics.length) * 100) : 0
@@ -87,12 +97,16 @@ export default function ClassSyllabusPage() {
   const weekTabs = buildWeekTabs(topics, academicYearStart)
   const visibleTopics = selectedWeek != null ? topicsForWeek(topics, selectedWeek) : topics
 
+  // Switching subject switches syllabus, so the week tabs have to be re-picked
+  // for the new one rather than keeping a week that may not exist in it.
+  useEffect(() => { setSelectedWeek(null) }, [activeSubject])
+
   // Default to the current week once topics load, without overriding a manual tab click
   useEffect(() => {
     if (selectedWeek !== null || weekTabs.length === 0) return
     setSelectedWeek(defaultSelectedWeek(weekTabs))
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [weekTabs.length])
+  }, [weekTabs.length, selectedWeek])
 
   const weekDoneCount  = visibleTopics.filter(t => t.isCompleted).length
 
@@ -139,7 +153,7 @@ export default function ClassSyllabusPage() {
         body: JSON.stringify({
           topics: topics.map(t => ({ topic: t.topic, description: t.description, weekNumber: t.weekNumber, isCompleted: t.isCompleted })),
           className: classId,
-          subject: teacher?.subject ?? '',
+          subject: activeSubject ?? teacher?.subject ?? '',
           studentInterests: topInterests,
         }),
       })
@@ -154,14 +168,33 @@ export default function ClassSyllabusPage() {
   return (
     <div className="px-4 pt-4 pb-6">
 
+      {/* ── Subject switcher — only when this teacher holds more than one ──── */}
+      {classSubjects.length > 1 && (
+        <div className="flex gap-2 overflow-x-auto no-scrollbar mb-4 -mx-1 px-1">
+          {classSubjects.map(s => (
+            <button
+              key={s}
+              type="button"
+              onClick={() => setPickedSubject(s)}
+              className="shrink-0 px-3.5 py-2 rounded-2xl text-xs font-bold active:scale-95 transition-all"
+              style={s === activeSubject
+                ? { background: 'var(--ink)', color: '#fff' }
+                : { background: 'rgba(58,44,30,0.06)', color: 'var(--ink-soft)' }}
+            >
+              {s}
+            </button>
+          ))}
+        </div>
+      )}
+
       {/* ── Shared-across-grade note ──────────────────────── */}
       {gradeSectionCount > 1 && (
-        <div className="rounded-2xl px-4 py-3 mb-4 flex items-start gap-3 bg-[#DCEBF8] border border-[#AACDEA]">
-          <div className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0 mt-0.5 bg-[#AACDEA]/60">
-            <Users size={15} className="text-[#1E3A55]" />
+        <div className="rounded-2xl px-4 py-3 mb-4 flex items-start gap-3 bg-[#DCEEE1]" style={{ border: '2px solid var(--card-border)' }}>
+          <div className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0 mt-0.5" style={{ background: 'rgba(31,61,44,0.12)' }}>
+            <Users size={15} style={{ color: 'var(--forest)' }} />
           </div>
           <p className="text-xs text-ink-soft font-medium leading-relaxed">
-            This syllabus is shared across all <span className="font-bold text-[#1E3A55]">{gradeSectionCount} Grade {grade} sections</span>.
+            This syllabus is shared across all <span className="font-bold" style={{ color: 'var(--forest)' }}>{gradeSectionCount} Grade {grade} sections</span>.
             Adding or removing topics updates every section. Ticking a topic complete only affects <span className="font-bold">this section</span>.
           </p>
         </div>
@@ -172,10 +205,10 @@ export default function ClassSyllabusPage() {
         <div className="paper-card p-4 mb-4">
           <div className="flex items-center justify-between mb-2.5">
             <span className="font-bold text-ink">Syllabus Progress</span>
-            <span className="text-sm font-black text-[#1E3A55]">{pct}% done</span>
+            <span className="text-sm font-black" style={{ color: 'var(--forest)' }}>{pct}% done</span>
           </div>
           <div className="w-full rounded-full h-3" style={{ background: 'rgba(58,44,30,0.08)' }}>
-            <div className="bg-[#5B87AD] h-3 rounded-full transition-all duration-500" style={{ width: `${pct}%` }} />
+            <div className="h-3 rounded-full transition-all duration-500" style={{ width: `${pct}%`, background: 'var(--forest)' }} />
           </div>
           <p className="text-xs text-ink-soft mt-2 font-medium">{completed} of {topics.length} topics completed</p>
         </div>
@@ -202,18 +235,18 @@ export default function ClassSyllabusPage() {
           'rounded-2xl px-4 py-3 mb-4 flex items-start gap-3',
           pacing.status === 'behind'   && 'bg-red-50 border border-red-200',
           pacing.status === 'ahead'    && 'bg-emerald-50 border border-emerald-200',
-          pacing.status === 'on-track' && 'bg-[#DCEBF8] border border-[#AACDEA]',
+          pacing.status === 'on-track' && 'bg-[#DCEEE1] border-2 border-[color:var(--card-border)]',
         )}>
           <div className={clsx(
             'w-8 h-8 rounded-xl flex items-center justify-center shrink-0 mt-0.5',
             pacing.status === 'behind'   && 'bg-red-100',
             pacing.status === 'ahead'    && 'bg-emerald-100',
-            pacing.status === 'on-track' && 'bg-[#AACDEA]/60',
+            pacing.status === 'on-track' && 'bg-[#1F3D2C]/15',
           )}>
             <CalendarDays size={15} className={clsx(
               pacing.status === 'behind'   && 'text-red-500',
               pacing.status === 'ahead'    && 'text-emerald-600',
-              pacing.status === 'on-track' && 'text-[#5B87AD]',
+              pacing.status === 'on-track' && 'text-[#1F3D2C]',
             )} />
           </div>
           <div className="flex-1">
@@ -221,7 +254,7 @@ export default function ClassSyllabusPage() {
               'text-sm font-bold',
               pacing.status === 'behind'   && 'text-red-800',
               pacing.status === 'ahead'    && 'text-emerald-800',
-              pacing.status === 'on-track' && 'text-[#1E3A55]',
+              pacing.status === 'on-track' && 'text-[#1F3D2C]',
             )}>
               Week {pacing.currentWeek} · {
                 pacing.status === 'on-track' ? 'On track' :
@@ -233,7 +266,7 @@ export default function ClassSyllabusPage() {
               'text-xs mt-0.5',
               pacing.status === 'behind'   && 'text-red-600',
               pacing.status === 'ahead'    && 'text-emerald-600',
-              pacing.status === 'on-track' && 'text-[#5B87AD]',
+              pacing.status === 'on-track' && 'text-[#2C5540]',
             )}>
               {pacing.status === 'behind'
                 ? `Should be on "${pacing.expectedTopicName}" by now`
@@ -253,7 +286,7 @@ export default function ClassSyllabusPage() {
             <div>
               <p className="font-display font-black text-xl text-ink">{currentTopic.topic}</p>
               {currentSub ? (
-                <p className="text-sm font-semibold text-[#5B87AD] mt-1">{currentSub.name}</p>
+                <p className="text-sm font-semibold text-[#2C5540] mt-1">{currentSub.name}</p>
               ) : currentTopic.description ? (
                 <p className="text-sm text-ink-soft mt-2 leading-relaxed">{currentTopic.description}</p>
               ) : null}
@@ -293,8 +326,8 @@ export default function ClassSyllabusPage() {
                   onClick={() => setSelectedWeek(tab.key)}
                   className={clsx(
                     'shrink-0 flex items-center gap-1.5 px-3.5 py-2 rounded-2xl text-xs font-bold transition-colors',
-                    tab.isCurrent ? 'bg-[#5B87AD] text-white' : 'bg-black/[0.04] text-ink-soft opacity-60',
-                    isSelected && (tab.isCurrent ? 'ring-2 ring-[#1E3A55]' : 'ring-2 ring-black/20 opacity-100'),
+                    tab.isCurrent ? 'bg-[#1F3D2C] text-white' : 'bg-black/[0.04] text-ink-soft opacity-60',
+                    isSelected && (tab.isCurrent ? 'ring-2 ring-[#2C5540]' : 'ring-2 ring-black/20 opacity-100'),
                   )}
                 >
                   {tab.label}
@@ -321,39 +354,40 @@ export default function ClassSyllabusPage() {
         <button
           type="button"
           onClick={() => { setPlanOpen(p => !p); if (!planOpen && !planWeeks.length) generatePlan() }}
-          className="w-full flex items-center justify-between gap-2 bg-[#E9E1F6] border border-[#C7B7E8] rounded-2xl px-4 py-3 mb-4 active:scale-[0.98] transition-transform"
+          className="w-full flex items-center justify-between gap-2 bg-[#DCEEE1] rounded-2xl px-4 py-3 mb-4 active:scale-[0.98] transition-transform"
+          style={{ border: '2px solid var(--card-border)' }}
         >
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-[#C7B7E8]/50 rounded-xl flex items-center justify-center">
-              <Sparkles size={15} className="text-[#8069B0]" />
+            <div className="w-8 h-8 rounded-xl flex items-center justify-center" style={{ background: 'rgba(31,61,44,0.12)' }}>
+              <Sparkles size={15} style={{ color: 'var(--forest)' }} />
             </div>
             <div className="text-left">
-              <p className="text-sm font-bold text-[#31215C]">AI Lesson Plan</p>
-              <p className="text-xs text-[#8069B0]">4-week plan based on your syllabus</p>
+              <p className="text-sm font-bold" style={{ color: 'var(--forest)' }}>AI Lesson Plan</p>
+              <p className="text-xs text-[#2C5540]">4-week plan based on your syllabus</p>
             </div>
           </div>
-          {planOpen ? <ChevronUp size={16} className="text-[#8069B0]" /> : <ChevronDown size={16} className="text-[#8069B0]" />}
+          {planOpen ? <ChevronUp size={16} style={{ color: 'var(--forest)' }} /> : <ChevronDown size={16} style={{ color: 'var(--forest)' }} />}
         </button>
       )}
 
       {planOpen && (
-        <div className="rounded-3xl p-4 mb-4 border border-[#E9E1F6] bg-[#E9E1F6]/30 space-y-3">
+        <div className="rounded-3xl p-4 mb-4 bg-[#DCEEE1]/40 space-y-3" style={{ border: '2px solid var(--card-border)' }}>
           <div className="flex items-center justify-between">
-            <p className="text-sm font-bold text-[#31215C]">4-Week Plan</p>
+            <p className="text-sm font-bold" style={{ color: 'var(--forest)' }}>4-Week Plan</p>
             <button type="button" onClick={generatePlan} disabled={planLoading}
-              className="flex items-center gap-1 text-xs text-[#8069B0] font-semibold px-2 py-1 rounded-lg hover:bg-[#E9E1F6] transition-colors">
+              className="flex items-center gap-1 text-xs text-[#2C5540] font-semibold px-2 py-1 rounded-lg hover:bg-[#DCEEE1] transition-colors">
               <RefreshCw size={12} className={planLoading ? 'animate-spin' : ''} /> Regenerate
             </button>
           </div>
-          {planLoading && [1,2,3,4].map(i => <div key={i} className="h-16 bg-[#E9E1F6] rounded-2xl animate-pulse" />)}
+          {planLoading && [1,2,3,4].map(i => <div key={i} className="h-16 bg-[#DCEEE1] rounded-2xl animate-pulse" />)}
           {!planLoading && planError && <p className="text-sm text-red-600 bg-red-50 rounded-xl p-3">{planError}</p>}
           {!planLoading && planWeeks.map(w => (
-            <div key={w.week} className="bg-white rounded-2xl p-4 border border-[#E9E1F6]">
+            <div key={w.week} className="bg-white rounded-2xl p-4" style={{ border: '2px solid var(--card-border)' }}>
               <div className="flex items-center gap-2 mb-2">
-                <span className="w-6 h-6 bg-[#8069B0] text-white rounded-full text-xs font-black flex items-center justify-center shrink-0">{w.week}</span>
+                <span className="w-6 h-6 text-white rounded-full text-xs font-black flex items-center justify-center shrink-0" style={{ background: 'var(--forest)' }}>{w.week}</span>
                 <p className="font-bold text-ink text-sm">{w.topics.join(', ')}</p>
               </div>
-              <p className="text-xs text-[#8069B0] font-semibold mb-1">Teaching hook</p>
+              <p className="text-xs text-[#2C5540] font-semibold mb-1">Teaching hook</p>
               <p className="text-sm text-ink-soft mb-2">{w.tip}</p>
               <p className="text-xs text-emerald-700 font-semibold mb-1">Activity</p>
               <p className="text-sm text-ink-soft">{w.activity}</p>
@@ -365,12 +399,14 @@ export default function ClassSyllabusPage() {
       {/* ── Empty state ─────────────────────────────────────── */}
       {topics.length === 0 && (
         <div className="text-center py-14 paper-card">
-          <div className="w-14 h-14 bg-[#DCEBF8] rounded-full flex items-center justify-center mx-auto mb-4">
-            <BookOpen size={22} className="text-[#5B87AD]" />
+          <div className="w-14 h-14 bg-[#DCEEE1] rounded-full flex items-center justify-center mx-auto mb-4" style={{ border: '2px solid var(--card-border)' }}>
+            <BookOpen size={22} style={{ color: 'var(--forest)' }} />
           </div>
-          <p className="font-semibold text-ink">No syllabus set up yet</p>
+          <p className="font-semibold text-ink">
+            No {activeSubject ? `${activeSubject} ` : ''}syllabus set up yet
+          </p>
           <p className="text-sm text-ink-soft mt-1 max-w-xs mx-auto leading-relaxed">
-            Your school admin sets up the syllabus for this grade — check back once it's ready.
+            Your school admin sets up the syllabus for this grade{activeSubject ? ' and subject' : ''} — check back once it&apos;s ready.
           </p>
         </div>
       )}
@@ -400,9 +436,10 @@ export default function ClassSyllabusPage() {
             <div
               key={topic.id}
               className={clsx(
-                'rounded-3xl p-4 border transition-colors',
-                topic.isCompleted ? 'border-emerald-200 bg-emerald-50/50' : 'border-black/[0.06] bg-white',
+                'rounded-3xl p-4 transition-colors',
+                topic.isCompleted ? 'bg-emerald-50/50' : 'bg-white',
               )}
+              style={{ border: topic.isCompleted ? '2px solid #6ee7b7' : '2px solid var(--card-border)' }}
                          >
               {/* ── Topic header row ── */}
               <div className="flex items-start gap-3">
@@ -412,8 +449,8 @@ export default function ClassSyllabusPage() {
                     topic.isCompleted ? (
                       <CheckCircle2 size={22} className="text-emerald-500" />
                     ) : doneSubTopics > 0 ? (
-                      <div className="w-[22px] h-[22px] rounded-full bg-[#C7B7E8]/50 border-2 border-[#8069B0] flex items-center justify-center">
-                        <span className="text-[8px] font-black text-[#31215C] leading-none">{doneSubTopics}/{subTopics.length}</span>
+                      <div className="w-[22px] h-[22px] rounded-full bg-[#DCEEE1] border-2 border-[#1F3D2C] flex items-center justify-center">
+                        <span className="text-[8px] font-black text-[#1F3D2C] leading-none">{doneSubTopics}/{subTopics.length}</span>
                       </div>
                     ) : (
                       <Circle size={22} className="text-ink-faint" />
@@ -422,8 +459,8 @@ export default function ClassSyllabusPage() {
                     topic.isCompleted ? (
                       <CheckCircle2 size={22} className="text-emerald-500" />
                     ) : sessionCount > 0 ? (
-                      <div className="w-[22px] h-[22px] rounded-full bg-[#C7B7E8]/50 border-2 border-[#8069B0] flex items-center justify-center">
-                        <span className="text-[9px] font-black text-[#31215C]">{sessionCount}</span>
+                      <div className="w-[22px] h-[22px] rounded-full bg-[#DCEEE1] border-2 border-[#1F3D2C] flex items-center justify-center">
+                        <span className="text-[9px] font-black text-[#1F3D2C]">{sessionCount}</span>
                       </div>
                     ) : (
                       <Circle size={22} className="text-ink-faint" />
@@ -445,12 +482,12 @@ export default function ClassSyllabusPage() {
                     {subTopics.length > 0 ? (
                       <span className={clsx(
                         'text-xs px-2 py-0.5 rounded-full font-semibold',
-                        topic.isCompleted ? 'bg-emerald-50 text-emerald-700' : 'bg-[#E9E1F6] text-[#31215C]',
+                        topic.isCompleted ? 'bg-emerald-50 text-emerald-700' : 'bg-[#DCEEE1] text-[#1F3D2C]',
                       )}>
                         {doneSubTopics}/{subTopics.length} sub-topics done
                       </span>
                     ) : sessionCount > 0 ? (
-                      <span className="flex items-center gap-1 text-xs text-[#31215C] bg-[#E9E1F6] px-2 py-0.5 rounded-full font-semibold">
+                      <span className="flex items-center gap-1 text-xs text-[#1F3D2C] bg-[#DCEEE1] px-2 py-0.5 rounded-full font-semibold">
                         <Calendar size={10} />
                         {sessionCount} session{sessionCount !== 1 ? 's' : ''}
                         {latestDate && ` · ${new Date(latestDate + 'T00:00:00').toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}`}
@@ -478,7 +515,7 @@ export default function ClassSyllabusPage() {
                 {/* Expand sub-topics */}
                 <button type="button"
                   onClick={() => setExpandedTopicId(isExpanded ? null : topic.id)}
-                  className="p-2 text-ink-soft hover:text-[#8069B0] transition-colors rounded-xl shrink-0">
+                  className="p-2 text-ink-soft hover:text-[#2C5540] transition-colors rounded-xl shrink-0">
                   {isExpanded ? <ChevronUp size={15} /> : <ChevronDown size={15} />}
                 </button>
               </div>
@@ -492,7 +529,8 @@ export default function ClassSyllabusPage() {
                     <select
                       value={topic.prerequisiteDefinitionId ?? ''}
                       onChange={e => updateSyllabusTopicPrerequisite(topic.id, e.target.value || null)}
-                      className="flex-1 text-xs border border-black/10 rounded-lg px-2 py-1.5 bg-white text-ink"
+                      className="flex-1 text-xs rounded-lg px-2 py-1.5 bg-white text-ink"
+                      style={{ border: '2px solid var(--card-border)' }}
                     >
                       <option value="">None</option>
                       {topics
@@ -554,7 +592,8 @@ export default function ClassSyllabusPage() {
                           if (e.key === 'Escape') { setAddingSubFor(null); setNewSubName('') }
                         }}
                         placeholder="Sub-topic name (e.g. Natural Numbers)"
-                        className="flex-1 text-sm border border-black/10 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#C7B7E8] bg-white"
+                        className="flex-1 text-sm rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#2C5540] bg-white"
+                        style={{ border: '2px solid var(--card-border)' }}
                       />
                       <button
                         type="button"
@@ -564,7 +603,8 @@ export default function ClassSyllabusPage() {
                           addSubTopic(topic.id, classId, { name: newSubName.trim() })
                             .then(() => { setNewSubName(''); setAddingSubFor(null); setSavingSub(false) })
                         }}
-                        className="px-3 py-2 bg-[#8069B0] text-white text-xs font-bold rounded-xl disabled:opacity-40 active:scale-95 transition-all"
+                        className="px-3 py-2 text-white text-xs font-bold rounded-xl disabled:opacity-40 active:scale-95 transition-all"
+                        style={{ background: 'var(--forest)' }}
                       >
                         {savingSub ? '…' : 'Add'}
                       </button>
@@ -577,7 +617,7 @@ export default function ClassSyllabusPage() {
                     <button
                       type="button"
                       onClick={() => setAddingSubFor(topic.id)}
-                      className="flex items-center gap-1.5 text-xs text-[#8069B0] font-semibold py-1.5 px-2 rounded-xl hover:bg-[#E9E1F6] transition-colors active:scale-95"
+                      className="flex items-center gap-1.5 text-xs text-[#2C5540] font-semibold py-1.5 px-2 rounded-xl hover:bg-[#DCEEE1] transition-colors active:scale-95"
                     >
                       <Plus size={13} strokeWidth={2.5} /> Add sub-topic
                     </button>

@@ -1,6 +1,7 @@
 'use client'
 import { useState } from 'react'
-import { RefreshCw, Copy, BookOpen, CheckCircle, ChevronDown, ChevronUp } from 'lucide-react'
+import { BookOpen, ChevronDown, ChevronUp } from '@/components/ui/icons'
+import { RefreshCw, Copy, CheckCircle } from 'lucide-react'
 import type { AiQuestion, QuestionType } from '@/lib/types'
 import Badge from '@/components/ui/Badge'
 import { aiKey, getAiCache, setAiCache, TTL } from '@/lib/ai-cache'

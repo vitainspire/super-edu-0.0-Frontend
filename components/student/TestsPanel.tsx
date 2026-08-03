@@ -130,11 +130,11 @@ export function TestsPanel({
       <div style={{ position: 'fixed', inset: 0, zIndex: 90, background: '#FFFFFF', overflowY: 'auto' }}>
         {/* Header */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '18px 18px 14px', background: '#FFFFFF' }}>
-          <button onClick={() => setOpenTest(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#3D6CB4', display: 'flex', padding: 0 }}>
+          <button onClick={() => setOpenTest(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#D9720F', display: 'flex', padding: 0 }}>
             <ArrowLeft size={22} />
           </button>
-          <span className="font-kid" style={{ fontSize: 19, fontWeight: 600, color: '#3D6CB4' }}>Study Guide</span>
-          <button onClick={() => setOpenTest(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontSize: 15, fontWeight: 700, color: '#3D6CB4', padding: 0 }}>
+          <span className="font-kid" style={{ fontSize: 19, fontWeight: 600, color: '#D9720F' }}>Study Guide</span>
+          <button onClick={() => setOpenTest(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontSize: 15, fontWeight: 700, color: '#D9720F', padding: 0 }}>
             Hide
           </button>
         </div>
@@ -142,13 +142,13 @@ export function TestsPanel({
         <div style={{ padding: '4px 20px 100px', maxWidth: 640, margin: '0 auto' }}>
           {loadingId === t.id ? (
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12, padding: '64px 0' }}>
-              <Loader2 size={30} className="animate-spin" style={{ color: '#3D6CB4' }} />
+              <Loader2 size={30} className="animate-spin" style={{ color: '#D9720F' }} />
               <span style={{ fontSize: 13.5, fontWeight: 600, color: '#5B6B87' }}>Building your complete study guide…</span>
             </div>
           ) : errorId === t.id ? (
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12, padding: '64px 0', textAlign: 'center' }}>
               <span style={{ fontSize: 13.5, fontWeight: 600, color: '#dc2626' }}>Couldn&apos;t load the study guide.</span>
-              <button onClick={() => openStudyGuide(t)} style={{ fontSize: 13, fontWeight: 700, color: '#3D6CB4', background: '#DCEBF8', padding: '8px 18px', borderRadius: 10, border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>Retry</button>
+              <button onClick={() => openStudyGuide(t)} style={{ fontSize: 13, fontWeight: 700, color: '#D9720F', background: '#FFE8D1', padding: '8px 18px', borderRadius: 10, border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>Retry</button>
             </div>
           ) : topics && topic ? (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
@@ -160,7 +160,7 @@ export function TestsPanel({
                     const isAct = i === tabIdx
                     return (
                       <button key={tp.name} onClick={() => setActiveTab(prev => ({ ...prev, [t.id]: i }))}
-                        style={{ flexShrink: 0, padding: '7px 14px', borderRadius: 20, border: `1.5px solid ${isAct ? '#3D6CB4' : '#D8E1EE'}`, cursor: 'pointer', fontFamily: 'inherit', fontSize: 12, fontWeight: 700, transition: 'all .15s', background: isAct ? '#3D6CB4' : 'transparent', color: isAct ? '#fff' : '#5B6B87' }}>
+                        style={{ flexShrink: 0, padding: '7px 14px', borderRadius: 20, border: `1.5px solid ${isAct ? '#D9720F' : '#D8E1EE'}`, cursor: 'pointer', fontFamily: 'inherit', fontSize: 12, fontWeight: 700, transition: 'all .15s', background: isAct ? '#D9720F' : 'transparent', color: isAct ? '#fff' : '#5B6B87' }}>
                         {tp.name}
                       </button>
                     )
@@ -179,7 +179,7 @@ export function TestsPanel({
                     <img src={topic.image.url} alt={topic.image.caption} style={{ display: 'block', width: '100%', maxHeight: 260, objectFit: 'contain', background: '#fff' }} />
                     <figcaption style={{ fontSize: 10, fontWeight: 600, color: '#5B6B87', padding: '6px 7px 0', textAlign: 'center' }}>{topic.image.caption}</figcaption>
                     <button onClick={() => setViewerImage(topic.image ?? null)}
-                      style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5, width: 'calc(100% - 14px)', margin: '7px', padding: '5px 0', borderRadius: 8, border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontSize: 10.5, fontWeight: 700, color: '#3D6CB4', background: '#DCEBF8' }}>
+                      style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5, width: 'calc(100% - 14px)', margin: '7px', padding: '5px 0', borderRadius: 8, border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontSize: 10.5, fontWeight: 700, color: '#D9720F', background: '#FFE8D1' }}>
                       <Maximize2 size={10} /> View
                     </button>
                   </figure>
@@ -222,10 +222,10 @@ export function TestsPanel({
               {topic.commonMistakes.length > 0 && (
                 <div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
-                    <AlertTriangle size={14} style={{ color: '#B45309' }} />
-                    <p style={{ fontSize: 11, fontWeight: 800, letterSpacing: '.06em', color: '#B45309', textTransform: 'uppercase' }}>Watch out for</p>
+                    <AlertTriangle size={14} style={{ color: '#D9720F' }} />
+                    <p style={{ fontSize: 11, fontWeight: 800, letterSpacing: '.06em', color: '#D9720F', textTransform: 'uppercase' }}>Watch out for</p>
                   </div>
-                  <div style={{ background: '#FDECD3', borderRadius: 14, padding: '14px 16px', display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  <div style={{ background: '#FFE8D1', borderRadius: 14, padding: '14px 16px', display: 'flex', flexDirection: 'column', gap: 8 }}>
                     {topic.commonMistakes.map((m, i) => (
                       <p key={i} style={{ fontSize: 13.5, color: '#7C4A15', lineHeight: 1.55 }}>{m}</p>
                     ))}
@@ -237,25 +237,25 @@ export function TestsPanel({
                 <div>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
                     <p style={{ fontSize: 11, fontWeight: 800, letterSpacing: '.06em', color: '#5B6B87', textTransform: 'uppercase' }}>Practice questions</p>
-                    <span style={{ fontSize: 11, fontWeight: 700, color: '#3D6CB4', background: '#DCEBF8', padding: '2px 10px', borderRadius: 20 }}>{pqIdx + 1} / {pqTotal}</span>
+                    <span style={{ fontSize: 11, fontWeight: 700, color: '#D9720F', background: '#FFE8D1', padding: '2px 10px', borderRadius: 20 }}>{pqIdx + 1} / {pqTotal}</span>
                   </div>
 
                   <button onClick={() => setPqFlipped(prev => ({ ...prev, [pqKey]: !prev[pqKey] }))}
                     style={{ width: '100%', minHeight: 150, cursor: 'pointer', fontFamily: 'inherit', borderRadius: 18, padding: '22px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 10, textAlign: 'center', transition: 'all .15s',
-                      background: pqFlip ? '#3D6CB4' : '#fff',
-                      border: `2.5px solid ${pqFlip ? 'transparent' : '#3D6CB4'}` }}>
-                    <span style={{ fontSize: 10.5, fontWeight: 800, letterSpacing: '.1em', textTransform: 'uppercase', color: pqFlip ? 'rgba(255,255,255,.75)' : '#3D6CB4' }}>{pqFlip ? 'Answer' : 'Question'}</span>
+                      background: pqFlip ? '#D9720F' : '#fff',
+                      border: `2.5px solid ${pqFlip ? 'transparent' : '#D9720F'}` }}>
+                    <span style={{ fontSize: 10.5, fontWeight: 800, letterSpacing: '.1em', textTransform: 'uppercase', color: pqFlip ? 'rgba(255,255,255,.75)' : '#D9720F' }}>{pqFlip ? 'Answer' : 'Question'}</span>
                     <span className="font-kid" style={{ fontSize: 17, fontWeight: 600, lineHeight: 1.5, color: pqFlip ? '#fff' : '#1E2A44' }}>{pqFlip ? pq.answer : pq.question}</span>
                     <span style={{ fontSize: 11.5, fontWeight: 600, color: pqFlip ? 'rgba(255,255,255,.7)' : '#94A3B8', marginTop: 2 }}>Tap to flip</span>
                   </button>
 
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 14 }}>
                     <button onClick={() => pqGo(pqKey, -1, pqTotal)} disabled={pqIdx === 0}
-                      style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, padding: '13px 0', borderRadius: 14, border: 'none', background: pqIdx === 0 ? '#E3E9F3' : '#1E2A44', color: pqIdx === 0 ? '#A6AEC2' : '#fff', fontSize: 14, fontWeight: 700, cursor: pqIdx === 0 ? 'default' : 'pointer', fontFamily: 'inherit' }}>
+                      style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, padding: '13px 0', borderRadius: 14, border: 'none', background: pqIdx === 0 ? '#F3ECD6' : '#1E2A44', color: pqIdx === 0 ? '#A6AEC2' : '#fff', fontSize: 14, fontWeight: 700, cursor: pqIdx === 0 ? 'default' : 'pointer', fontFamily: 'inherit' }}>
                       <ChevronLeft size={16} /> Prev
                     </button>
                     <button onClick={() => pqGo(pqKey, 1, pqTotal)} disabled={pqIdx >= pqTotal - 1}
-                      style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, padding: '13px 0', borderRadius: 14, border: 'none', background: pqIdx >= pqTotal - 1 ? '#E3E9F3' : '#1E2A44', color: pqIdx >= pqTotal - 1 ? '#A6AEC2' : '#fff', fontSize: 14, fontWeight: 700, cursor: pqIdx >= pqTotal - 1 ? 'default' : 'pointer', fontFamily: 'inherit' }}>
+                      style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, padding: '13px 0', borderRadius: 14, border: 'none', background: pqIdx >= pqTotal - 1 ? '#F3ECD6' : '#1E2A44', color: pqIdx >= pqTotal - 1 ? '#A6AEC2' : '#fff', fontSize: 14, fontWeight: 700, cursor: pqIdx >= pqTotal - 1 ? 'default' : 'pointer', fontFamily: 'inherit' }}>
                       Next <ChevronRight size={16} />
                     </button>
                   </div>
@@ -297,7 +297,7 @@ export function TestsPanel({
           </div>
           <p style={{ fontSize: 12, color: '#5B6B87', marginTop: 3 }}>{t.subjectLabel} · {t.totalMarks} marks · {whenLabel}</p>
         </div>
-        <span style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0, padding: '9px 14px', borderRadius: 11, background: '#3D6CB4', color: '#fff', fontSize: 12.5, fontWeight: 800 }}>
+        <span style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0, padding: '9px 14px', borderRadius: 11, background: '#D9720F', color: '#fff', fontSize: 12.5, fontWeight: 800 }}>
           {isLoading ? <Loader2 size={13} className="animate-spin" /> : null} Study guide
         </span>
       </button>
@@ -318,7 +318,7 @@ export function TestsPanel({
           ) : upcomingTests.map(t => (
             <TestCard key={t.id} t={t} whenLabel={t.whenLabel} borderColor="#1E2A44" badge={t.isNew ? (
               <span style={{ display: 'flex', alignItems: 'center', gap: 4, background: '#1E2A44', color: '#fff', fontSize: 9.5, fontWeight: 800, letterSpacing: '.04em', padding: '2px 7px', borderRadius: 8 }}>
-                <span style={{ width: 5, height: 5, borderRadius: '50%', background: '#EAC968' }} />
+                <span style={{ width: 5, height: 5, borderRadius: '50%', background: '#FFC93C' }} />
                 NEW
               </span>
             ) : undefined} />
@@ -329,11 +329,11 @@ export function TestsPanel({
       {/* ── Awaiting results — already conducted, not marked for this student yet ── */}
       {awaitingResults.length > 0 && (
         <div>
-          <SectionBar color="#D97706" tint="#FDECD3" Icon={Hourglass} label="Awaiting Results" />
+          <SectionBar color="#D9720F" tint="#FFE8D1" Icon={Hourglass} label="Awaiting Results" />
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 12 }}>
             {awaitingResults.map(t => (
-              <TestCard key={t.id} t={t} whenLabel={t.whenLabel} borderColor="#D97706" badge={
-                <span style={{ fontSize: 9.5, fontWeight: 800, letterSpacing: '.04em', color: '#B45309', background: '#FDECD3', padding: '2px 7px', borderRadius: 8 }}>
+              <TestCard key={t.id} t={t} whenLabel={t.whenLabel} borderColor="#D9720F" badge={
+                <span style={{ fontSize: 9.5, fontWeight: 800, letterSpacing: '.04em', color: '#D9720F', background: '#FFE8D1', padding: '2px 7px', borderRadius: 8 }}>
                   GRADING
                 </span>
               } />
@@ -344,7 +344,7 @@ export function TestsPanel({
 
       {/* ── Previous scores ── */}
       <div>
-        <SectionBar color="#3D6CB4" tint="#DCEBF8" Icon={BarChart3} label="Previous Scores" />
+        <SectionBar color="#D9720F" tint="#FFE8D1" Icon={BarChart3} label="Previous Scores" />
         <div style={{ marginTop: 12 }}>
           {pastScores.length === 0 ? (
             <div style={{ background: '#fff', borderRadius: 16, border: '1.5px solid #D8E1EE', padding: '20px 18px', textAlign: 'center' }}>

@@ -1,12 +1,14 @@
 'use client'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useApp } from '@/lib/context'
 import Modal from '@/components/ui/Modal'
-import { Sparkles, RotateCcw, AlertCircle, ClipboardList, Wand2 } from 'lucide-react'
+import { Sparkles, RotateCcw, AlertCircle, ClipboardList, Wand2, GameController } from '@/components/ui/icons'
 import type { SmartLesson, AcademicEvent } from '@/lib/types'
 import { isTeachingProfileComplete } from '@/lib/logic/teaching-profile'
+import { nextTopicFor, nextTopicLabel } from '@/lib/logic/nextTopic'
 import { getCurrentWeek } from '@/lib/logic/pacing'
+import { simulationExists } from '@/lib/simulation-url'
 import PrepSheetView from './PrepSheetView'
 
 interface PrepMaterialModalProps {
@@ -24,7 +26,7 @@ type GenState = 'idle' | 'loading' | 'done' | 'error'
 export default function PrepMaterialModal({ open, onClose, classId, subject, grade, initialTopic, autoGenerate }: PrepMaterialModalProps) {
   const router = useRouter()
   const {
-    teacher, getClassSyllabus, getTopicSubTopics, getPrepMaterial, savePrepMaterial, saveTaughtTopic,
+    teacher, syllabusTopics, getClassSyllabus, getTopicSubTopics, getPrepMaterial, savePrepMaterial, saveTaughtTopic,
     toggleSubTopicComplete, toggleTopicComplete,
   } = useApp()
 
@@ -37,6 +39,13 @@ export default function PrepMaterialModal({ open, onClose, classId, subject, gra
   const [errorMsg, setErrorMsg] = useState('')
   const [lesson, setLesson] = useState<SmartLesson | null>(null)
   const [fromCache, setFromCache] = useState(false)
+  // Simulation generation — a separate, optional step on top of the prep
+  // material itself. Only ever VIEWED in Classroom Mode; this modal just
+  // triggers the build and shows a small confirmation. Keyed off the saved
+  // PrepMaterial's id, so it lines up 1:1 with the lesson shown above.
+  const [prepMaterialId, setPrepMaterialId] = useState<string | null>(null)
+  const [simState, setSimState] = useState<'idle' | 'loading' | 'done' | 'error'>('idle')
+  const [simErrorMsg, setSimErrorMsg] = useState('')
   // Whether the topic/subtopic/context picker is shown. Hidden once a result
   // is on screen so the prep sheet reads cleanly — the corner button on the
   // result card brings it back to let the teacher choose a different topic.
@@ -55,6 +64,18 @@ export default function PrepMaterialModal({ open, onClose, classId, subject, gra
   const academicYearStart = academicEvents.find(e => e.category === 'term' && e.title === 'Academic Year')?.startDate
   const currentWeek = getCurrentWeek(academicYearStart)
 
+  // The admin's planned next topic, kept at render so the badge can say whether
+  // what is on screen is the plan or the teacher's own pick.
+  const planned = useMemo(
+    () => (open && classId ? nextTopicFor(getClassSyllabus(classId, subject), currentWeek) : null),
+    // syllabusTopics is the underlying data getClassSyllabus reads, so it is
+    // what actually changes when a topic is completed or the admin reorders.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [open, classId, subject, currentWeek, syllabusTopics],
+  )
+  const plannedTopic = planned && planned.reason !== 'all-done' ? planned.topic.topic : null
+  const onPlan = !!plannedTopic && plannedTopic === topic.trim()
+
   // Reset topic/subtopic whenever a different class's modal is opened.
   // Defaults to this week's first incomplete topic (falling back to the
   // syllabus-wide first incomplete topic if there's no week data), unless an
@@ -62,11 +83,15 @@ export default function PrepMaterialModal({ open, onClose, classId, subject, gra
   // incomplete subtopic, if it has any.
   useEffect(() => {
     if (!open || !classId) return
-    const syllabus = getClassSyllabus(classId)
-    const weekTopics = currentWeek != null ? syllabus.filter(t => t.weekNumber === currentWeek) : []
+    // Scoped to this period's subject — a class's syllabus rows cover every
+    // subject it's taught, so an unscoped read defaults a Maths period to
+    // whatever incomplete topic comes first, EVS included.
+    const syllabus = getClassSyllabus(classId, subject)
+    // One shared rule, so the schedule card and this modal cannot disagree
+    // about what comes next. See lib/logic/nextTopic.
+    const planned = nextTopicFor(syllabus, currentWeek)
     const next = initialTopic
-      ?? weekTopics.find(t => !t.isCompleted)?.topic
-      ?? syllabus.find(t => !t.isCompleted)?.topic
+      ?? (planned && planned.reason !== 'all-done' ? planned.topic.topic : undefined)
       ?? ''
     const nextEntry = syllabus.find(t => t.topic === next)
     const nextSub = nextEntry ? getTopicSubTopics(nextEntry.id).find(s => !s.isCompleted)?.name ?? '' : ''
@@ -80,6 +105,8 @@ export default function PrepMaterialModal({ open, onClose, classId, subject, gra
     setLesson(null)
     setFormVisible(!autoGenerate)
     autoFiredRef.current = null
+    setPrepMaterialId(null)
+    setSimState('idle')
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, classId, initialTopic])
 
@@ -92,13 +119,28 @@ export default function PrepMaterialModal({ open, onClose, classId, subject, gra
       setFromCache(true)
       setState('done')
       setFormVisible(false)
+      setPrepMaterialId(cached.id)
     } else {
       setLesson(null)
       setFromCache(false)
       setState('idle')
+      setPrepMaterialId(null)
+      setSimState('idle')
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, classId, topic, subtopic])
+
+  // Whenever the active prep material changes, check whether a simulation was
+  // already built for it, so the button reads "Regenerate" instead of
+  // "Generate" and a teacher isn't left guessing whether one exists.
+  useEffect(() => {
+    if (!prepMaterialId || !classId) return
+    let cancelled = false
+    simulationExists(classId, prepMaterialId).then(exists => {
+      if (!cancelled) setSimState(exists ? 'done' : 'idle')
+    })
+    return () => { cancelled = true }
+  }, [prepMaterialId, classId])
 
   // Fire generation immediately once topic/subtopic settle, instead of waiting
   // for a manual click — used for the one-click "generate this week" flow.
@@ -123,7 +165,7 @@ export default function PrepMaterialModal({ open, onClose, classId, subject, gra
     if (!open || !classId || !lesson || !topic.trim()) return
     saveTaughtTopic({ classId, topic: topic.trim(), subtopic: subtopic.trim() || undefined }).catch(() => {})
 
-    const entry = getClassSyllabus(classId).find(t => t.topic === topic)
+    const entry = getClassSyllabus(classId, subject).find(t => t.topic === topic)
     if (!entry) return
     const trimmedSub = subtopic.trim()
     const entrySubs = getTopicSubTopics(entry.id)
@@ -136,7 +178,7 @@ export default function PrepMaterialModal({ open, onClose, classId, subject, gra
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [lesson])
 
-  const syllabus = getClassSyllabus(classId)
+  const syllabus = getClassSyllabus(classId, subject)
   const incomplete = syllabus.filter(t => !t.isCompleted)
   const completed = syllabus.filter(t => t.isCompleted)
   const hasSyllabus = syllabus.length > 0
@@ -203,6 +245,8 @@ export default function PrepMaterialModal({ open, onClose, classId, subject, gra
       setFromCache(false)
       setState('done')
       setFormVisible(false)
+      setPrepMaterialId(saved.id)
+      setSimState('idle')
     } catch (err) {
       console.error('[PrepMaterialModal] generate failed:', err)
       setErrorMsg(err instanceof Error ? err.message : 'Failed to generate. Try again.')
@@ -211,16 +255,113 @@ export default function PrepMaterialModal({ open, onClose, classId, subject, gra
     }
   }
 
+  async function generateSimulation() {
+    if (!prepMaterialId || !lesson || simState === 'loading') return
+    setSimState('loading')
+    setSimErrorMsg('')
+    try {
+      const res = await fetch('/api/generate-simulation', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        // Sent directly rather than looked up server-side by prepMaterialId —
+        // the Supabase save of the prep material is best-effort/fire-and-forget,
+        // so requiring that row to already exist was a source of spurious
+        // "not found" failures right after a fresh generation.
+        body: JSON.stringify({ prepMaterialId, classId, subject, grade, topic, subtopic, lesson }),
+      })
+      if (!res.ok) {
+        const errBody = await res.json().catch(() => null) as { error?: string } | null
+        throw new Error(errBody?.error || `Server returned ${res.status}`)
+      }
+      setSimState('done')
+    } catch (err) {
+      console.error('[PrepMaterialModal] generateSimulation failed:', err)
+      setSimErrorMsg(err instanceof Error ? err.message : 'Failed to build. Try again.')
+      setSimState('error')
+    }
+  }
+
   const isLoading = state === 'loading'
   const isDone = state === 'done' && lesson
 
   return (
-    <Modal open={open} onClose={onClose} title="Prep Material">
+    <Modal open={open} onClose={onClose} title="Prep Material" fullscreen>
       <div className="space-y-4">
-        <div className="flex items-center gap-2 text-sm text-ink-soft font-medium">
-          <ClipboardList size={14} style={{ color: '#31215C' }} className="shrink-0" />
-          <span>{subject}{grade ? ` · Grade ${grade}` : ''}</span>
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2 text-sm text-ink-soft font-medium min-w-0">
+            <ClipboardList size={14} style={{ color: '#1F3D2C' }} className="shrink-0" />
+            <span className="truncate">{subject}{grade ? ` · Grade ${grade}` : ''}</span>
+          </div>
+          {prepMaterialId && (
+            <button
+              type="button"
+              onClick={generateSimulation}
+              disabled={simState === 'loading'}
+              title="Build a small interactive simulation for Classroom Mode"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-bold shrink-0 disabled:opacity-60 active:scale-[0.98] transition-all"
+              style={{
+                background: simState === 'done' ? 'rgba(31,61,44,0.08)' : 'var(--forest)',
+                color: simState === 'done' ? 'var(--forest)' : '#fff',
+              }}
+            >
+              {simState === 'loading' ? (
+                <><span className="w-3 h-3 border-2 rounded-full animate-spin shrink-0" style={{ borderColor: 'currentColor', borderTopColor: 'transparent' }} /> Building…</>
+              ) : simState === 'done' ? (
+                <><GameController size={13} /> Regenerate Simulation</>
+              ) : (
+                <><GameController size={13} /> Generate Simulation</>
+              )}
+            </button>
+          )}
         </div>
+
+        {/* What this sheet is actually for. The header above names the subject
+            and grade but never the topic, so once the picker collapses behind a
+            generated sheet there was nothing on screen saying which topic it
+            teaches — and a teacher scrolling a lesson should never have to
+            guess. Says whether it is the planned topic or their own pick. */}
+        {topic.trim() && (
+          <div className="flex items-center gap-1.5 flex-wrap -mt-1">
+            <span
+              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold"
+              style={{ background: 'rgba(31,61,44,0.08)', color: 'var(--forest)' }}
+            >
+              {topic.trim()}
+              {subtopic.trim() && (
+                <span className="font-semibold" style={{ opacity: 0.75 }}>· {subtopic.trim()}</span>
+              )}
+            </span>
+            {onPlan && planned ? (
+              <span
+                className="text-[10px] font-bold px-1.5 py-0.5 rounded-md"
+                style={planned.reason === 'overdue'
+                  ? { background: 'rgba(196,107,84,0.14)', color: '#7A2E17' }
+                  : { background: 'rgba(58,44,30,0.06)', color: 'var(--ink-soft)' }}
+              >
+                {nextTopicLabel(planned)}
+              </span>
+            ) : plannedTopic ? (
+              // Deviating is allowed — this just keeps the plan in view rather
+              // than silently letting the class drift off it.
+              <span
+                className="text-[10px] font-bold px-1.5 py-0.5 rounded-md truncate max-w-[180px]"
+                style={{ background: 'rgba(58,44,30,0.06)', color: 'var(--ink-soft)' }}
+                title={`The plan for this class is "${plannedTopic}"`}
+              >
+                Plan: {plannedTopic}
+              </span>
+            ) : null}
+          </div>
+        )}
+
+        {simState === 'done' && (
+          <p className="text-[11px] font-medium text-ink-faint -mt-2.5">✓ Saved — open Classroom Mode to show it to the class.</p>
+        )}
+        {simState === 'error' && (
+          <p className="text-[11px] font-medium -mt-2.5" style={{ color: '#B0771E' }}>
+            Couldn&apos;t build the simulation{simErrorMsg ? `: ${simErrorMsg}` : ' — try again.'}
+          </p>
+        )}
 
         {/* Teaching Profile nudge — only shown until the teacher sets it up once */}
         {formVisible && !hasProfile && (
@@ -228,12 +369,12 @@ export default function PrepMaterialModal({ open, onClose, classId, subject, gra
             type="button"
             onClick={() => { onClose(); router.push('/profile/teaching') }}
             className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-left"
-            style={{ background: '#E9E1F6', border: '1px solid #C7B7E8' }}
+            style={{ background: '#fff', border: '2px solid var(--card-border)' }}
           >
-            <Wand2 size={16} style={{ color: '#31215C' }} className="shrink-0" />
+            <Wand2 size={16} style={{ color: '#1F3D2C' }} className="shrink-0" />
             <span className="flex-1 min-w-0">
-              <span className="block text-xs font-bold" style={{ color: '#31215C' }}>Set up your Teaching Profile</span>
-              <span className="block text-[11px]" style={{ color: '#6B5D8F' }}>Unlock lessons personalized to how you teach →</span>
+              <span className="block text-xs font-bold" style={{ color: '#1F3D2C' }}>Set up your Teaching Profile</span>
+              <span className="block text-[11px]" style={{ color: '#4A4740' }}>Unlock lessons personalized to how you teach →</span>
             </span>
           </button>
         )}
@@ -262,7 +403,7 @@ export default function PrepMaterialModal({ open, onClose, classId, subject, gra
                 value={topic}
                 onChange={e => pickTopic(e.target.value)}
                 className="w-full appearance-none px-4 py-2.5 pr-9 rounded-2xl text-sm font-medium text-ink focus:outline-none transition-all"
-                style={{ background: 'rgba(58,44,30,0.04)', border: '1.5px solid rgba(58,44,30,0.1)' }}
+                style={{ background: '#fff', border: '2px solid var(--card-border)' }}
               >
                 <option value="" disabled>— pick a topic —</option>
                 {incomplete.length > 0 && (
@@ -291,7 +432,7 @@ export default function PrepMaterialModal({ open, onClose, classId, subject, gra
               onChange={e => setTopic(e.target.value)}
               placeholder="What are you teaching today?"
               className="w-full px-4 py-2.5 rounded-2xl text-sm font-medium text-ink focus:outline-none transition-all"
-              style={{ background: 'rgba(58,44,30,0.04)', border: '1.5px solid rgba(58,44,30,0.1)' }}
+              style={{ background: '#fff', border: '2px solid var(--card-border)' }}
             />
           )}
 
@@ -327,7 +468,7 @@ export default function PrepMaterialModal({ open, onClose, classId, subject, gra
                   else setSubtopic(e.target.value)
                 }}
                 className="w-full appearance-none px-4 py-2.5 pr-9 rounded-2xl text-sm font-medium text-ink focus:outline-none transition-all"
-                style={{ background: 'rgba(58,44,30,0.04)', border: '1.5px solid rgba(58,44,30,0.1)' }}
+                style={{ background: '#fff', border: '2px solid var(--card-border)' }}
               >
                 <option value="">— pick a subtopic (optional) —</option>
                 {subs.map(s => <option key={s.id} value={s.name}>{s.name}</option>)}
@@ -347,7 +488,7 @@ export default function PrepMaterialModal({ open, onClose, classId, subject, gra
               onChange={e => setSubtopic(e.target.value)}
               placeholder={isCustomSub ? 'Type your subtopic…' : 'e.g. "line symmetry"…'}
               className="w-full px-4 py-2.5 rounded-2xl text-sm font-medium text-ink focus:outline-none transition-all"
-              style={{ background: 'rgba(58,44,30,0.04)', border: '1.5px solid rgba(58,44,30,0.1)' }}
+              style={{ background: '#fff', border: '2px solid var(--card-border)' }}
             />
           )}
         </div>
@@ -363,7 +504,7 @@ export default function PrepMaterialModal({ open, onClose, classId, subject, gra
             onChange={e => setContextNote(e.target.value)}
             placeholder="e.g. only have chalk today, class is restless, focus on confidence…"
             className="w-full px-4 py-2.5 rounded-2xl text-sm font-medium text-ink focus:outline-none transition-all"
-            style={{ background: 'rgba(58,44,30,0.04)', border: '1.5px solid rgba(58,44,30,0.1)' }}
+            style={{ background: '#fff', border: '2px solid var(--card-border)' }}
           />
         </div>
 
@@ -372,10 +513,10 @@ export default function PrepMaterialModal({ open, onClose, classId, subject, gra
           onClick={() => generate(isDone ? true : false)}
           disabled={!topic.trim() || isLoading}
           className="w-full py-3 rounded-2xl text-sm font-bold flex items-center justify-center gap-2 disabled:opacity-50 active:scale-[0.98] transition-all"
-          style={{ background: '#C7B7E8', color: '#31215C' }}
+          style={{ background: 'var(--forest)', color: '#fff' }}
         >
           {isLoading ? (
-            <><span className="w-4 h-4 border-2 rounded-full animate-spin" style={{ borderColor: '#31215C', borderTopColor: 'transparent' }} /> Generating Prep Material…</>
+            <><span className="w-4 h-4 border-2 rounded-full animate-spin" style={{ borderColor: '#fff', borderTopColor: 'transparent' }} /> Generating Prep Material…</>
           ) : isDone ? (
             <><RotateCcw size={14} /> Regenerate</>
           ) : (
@@ -393,8 +534,8 @@ export default function PrepMaterialModal({ open, onClose, classId, subject, gra
 
         {/* Compact status while auto-generating with the picker tucked away */}
         {!formVisible && isLoading && (
-          <div className="w-full py-3 rounded-2xl text-sm font-bold flex items-center justify-center gap-2" style={{ background: '#C7B7E8', color: '#31215C' }}>
-            <span className="w-4 h-4 border-2 rounded-full animate-spin" style={{ borderColor: '#31215C', borderTopColor: 'transparent' }} /> Generating Prep Material…
+          <div className="w-full py-3 rounded-2xl text-sm font-bold flex items-center justify-center gap-2" style={{ background: 'var(--forest)', color: '#fff' }}>
+            <span className="w-4 h-4 border-2 rounded-full animate-spin" style={{ borderColor: '#fff', borderTopColor: 'transparent' }} /> Generating Prep Material…
           </div>
         )}
 
@@ -413,7 +554,7 @@ export default function PrepMaterialModal({ open, onClose, classId, subject, gra
                 aria-label="Choose a different topic"
                 title="Choose a different topic"
                 className="w-6 h-6 rounded-full flex items-center justify-center shrink-0 transition-colors"
-                style={{ background: 'rgba(255,255,255,0.12)', color: '#C7B7E8' }}
+                style={{ background: 'rgba(255,255,255,0.12)', color: '#A9C4A2' }}
               >
                 <RotateCcw size={11} />
               </button>
@@ -421,16 +562,12 @@ export default function PrepMaterialModal({ open, onClose, classId, subject, gra
           />
         )}
 
-        {classId && (
-          <button
-            type="button"
-            onClick={() => { onClose(); router.push(`/classes/${classId}/attendance`) }}
-            className="w-full py-2.5 rounded-2xl text-xs font-bold text-ink-soft transition-colors"
-            style={{ border: '1.5px solid rgba(58,44,30,0.12)' }}
-          >
-            Take attendance for this class →
-          </button>
-        )}
+        {/* No "Take attendance" here. Classroom Mode opens on an attendance
+            step (ClassroomModeModal), so the teacher is asked for it on the way
+            into the lesson regardless — and offering it from the prep sheet
+            meant leaving the sheet mid-preparation to do something the next
+            screen was about to ask for anyway. Attendance is still reachable
+            from the class page and the timetable. */}
       </div>
     </Modal>
   )

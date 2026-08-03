@@ -627,6 +627,17 @@ export interface LevelSet {
   points: ExpandableBullet[]   // 1-3 bullets, tied back to Explore
 }
 
+// One misconception/pitfall to watch for DURING each section (headline in text,
+// one-line teacher fix in detail). Keyed by section so the banner can show a
+// "Watch for" note inside every section card, not just one global footnote.
+export interface SectionWatch {
+  refresher?: ExpandableBullet | null
+  concept?: ExpandableBullet | null
+  explore?: ExpandableBullet | null
+  challenge?: ExpandableBullet | null
+  levelSet?: ExpandableBullet | null
+}
+
 // Rough minutes to spend on each section — shown as an at-a-glance pacing chip
 // on the banner. Optional: a lesson saved before this field existed simply has
 // none, and the UI just omits the chips.
@@ -646,9 +657,11 @@ export interface SmartLesson {
   concept: ExpandableBullet[]                               // 1-3 bullets introducing the idea
   explore: Explore
   challenge: LessonChallenge
-  watchFor?: ExpandableBullet[]  // 2-3 predictable misconceptions (text) + how the teacher should respond (detail)
+  watchFor?: ExpandableBullet[]  // LEGACY global misconception list — superseded by sectionWatch; kept so lessons saved before sectionWatch still render
+  sectionWatch?: SectionWatch    // one thing to watch for per section, shown inline in each banner section card
   materialsUsed: string[]    // everything actually referenced across explore/challenge — validated server-side against the profile's resources
   levelSet: LevelSet
+  diagrams?: { section: string; focus: string }[]  // sections the model asked for a board sketch on; server draws each and attaches it to that section's first bullet (concept always included)
   timings?: LessonTimings    // optional per-section minutes for pacing
 }
 
@@ -688,6 +701,68 @@ export interface PrepMaterial {
   topic: string
   subtopic?: string
   lesson: SmartLesson
+  createdAt: string
+}
+
+// ── Workbook ────────────────────────────────────────────────────────────────
+// The exam-practice sibling of the Prep Sheet: a printable B&W practice page
+// built from the SAME inputs (interests, weak topics, textbook grounding,
+// previous topic, teacher profile) and grounded in the prep lesson's content.
+// One page = 5 rotated problem types, not 50 identical drills.
+export type WorkbookProblemKind = 'hook' | 'story' | 'peer' | 'hidden' | 'textbook'
+
+export type WorkbookDifficulty = 'easy' | 'medium' | 'hard'
+
+export interface WorkbookProblem {
+  kind: WorkbookProblemKind   // hook (local interest) | story (word problem) | peer (partner verify) | hidden (weak-topic review, never labelled) | textbook (exam format)
+  difficulty: WorkbookDifficulty   // easy/medium/hard — interleaved evenly through each section
+  label: string               // short student-facing label, e.g. "Warm Up", "With a Partner"
+  prompt: string              // the problem itself, student-facing
+  workLines?: number          // rough blank-work lines to leave under it (1-6)
+  answer?: string             // teacher-only — shown in the guide, hidden from the printed student page
+  image?: { url: string } | null   // optional illustration the teacher adds to a problem that needs one
+}
+
+// A drag-and-drop composer block: how many problems of one kind, at what difficulty.
+export type WorkbookBlockDifficulty = WorkbookDifficulty | 'mixed'
+
+export interface WorkbookBlock {
+  id: string
+  kind: WorkbookProblemKind
+  count: number
+  difficulty: WorkbookBlockDifficulty
+}
+
+// One chapter/topic's worth of problems. A workbook can cover several.
+export interface WorkbookSection {
+  topic: string
+  textbookRef?: string        // "p.45 · Exercise 3", when grounding exists
+  problems: WorkbookProblem[] // rotates the problem kinds; length set by problemsPerTopic
+}
+
+export interface WorkbookDoc {
+  title: string
+  difficulty: number          // 1-4 engagement level (1 = objects only … 4 = abstract multi-step)
+  bilingualPhrase?: { phrase: string; english: string }   // one home-language instruction phrase
+  sections: WorkbookSection[] // one per selected topic
+  choiceBox: string           // the A/B or resource choice line at the end of the drills
+  reflect: string             // 30-second partner reflection prompt
+  homeChoice: { a: string; b: string }   // A/B take-home choice
+  teacherGuide: {
+    weakTopicsTargeted: string[]   // labelled ONLY here, never on the student page
+    hiddenNote: string             // which problem embeds the weak-topic review + why
+  }
+}
+
+export interface Workbook {
+  id: string
+  teacherId: string
+  classId: string
+  subject: string
+  grade: string
+  topic: string
+  subtopic?: string
+  workbook: WorkbookDoc
   createdAt: string
 }
 

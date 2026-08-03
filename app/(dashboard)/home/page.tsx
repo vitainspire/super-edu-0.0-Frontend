@@ -1,53 +1,42 @@
 'use client'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import {
-  Users, GraduationCap, Wifi, WifiOff,
-  LogOut, Check, ClipboardList,
-  Sparkles, TrendingUp, Wand2,
-} from 'lucide-react'
+  Wifi, WifiOff, LogOut, Check,
+  Sparkles, Wand2, CalendarDays, PlayCircle,
+} from '@/components/ui/icons'
 import { useRouter } from 'next/navigation'
 import { useApp } from '@/lib/context'
+import { resolveSchedule, timeToMins } from '@/lib/logic/schedule'
 import CreateClassModal from '@/components/classes/CreateClassModal'
 import DailyBriefing from '@/components/briefing/DailyBriefing'
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary'
 import Modal from '@/components/ui/Modal'
 import OnboardingChecklist from '@/components/onboarding/OnboardingChecklist'
 import FeatureTour from '@/components/onboarding/FeatureTour'
-import PageHeader from '@/components/theme/PageHeader'
 import SubstituteBanner from '@/components/timetable/SubstituteBanner'
 import AttendanceCircle from '@/components/home/AttendanceCircle'
+import WeekStrip from '@/components/home/WeekStrip'
+import NextDayPrep from '@/components/home/NextDayPrep'
+import ClassStatChips from '@/components/home/ClassStatChips'
 import PrepMaterialModal from '@/components/timetable/PrepMaterialModal'
 import PrepMaterialPreviewModal from '@/components/timetable/PrepMaterialPreviewModal'
-import { Sticker, ClipboardCheckSticker, QuillBookSticker, BellSticker } from '@/components/theme/StickerIcon'
+import ClassroomModeModal from '@/components/timetable/ClassroomModeModal'
 import { countStudentsNeedingAttention } from '@/lib/logic/home-alerts'
+import { classSnapshot } from '@/lib/logic/class-snapshot'
+import { nextTopicFor, nextTopicLabel } from '@/lib/logic/nextTopic'
+import { entriesOn, occurrencesFrom, projectPlan, addDays, atMidnight, sameDay, weekProgress } from '@/lib/logic/weekPlan'
+// Shared with the week strip and the next-day card, so a subject keeps one colour.
+import { accentForSubject } from '@/lib/subject-accent'
+import type { TimetableEntry } from '@/lib/types'
 import clsx from 'clsx'
 
-// Pastel palette for today's-schedule period chips — colored by subject so
-// the card reads at a glance instead of as a uniform list.
-const PERIOD_COLORS = [
-  { bg: '#AACDEA', text: '#1E3A55' }, // blue
-  { bg: '#AAD6A0', text: '#234A1D' }, // green
-  { bg: '#F0A491', text: '#5C2416' }, // coral
-  { bg: '#EAC968', text: '#4A3809' }, // gold
-  { bg: '#C7B7E8', text: '#31215C' }, // violet
-  { bg: '#F0AFC6', text: '#5C1F38' }, // pink
-]
-function colorForSubject(label: string) {
-  let hash = 0
-  for (let i = 0; i < label.length; i++) hash = (hash * 31 + label.charCodeAt(i)) >>> 0
-  return PERIOD_COLORS[hash % PERIOD_COLORS.length]
-}
-function timeToMins(t: string) {
-  const [h, m] = t.split(':').map(Number)
-  return h * 60 + m
-}
-
 const DAYS   = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday']
-const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
+const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December']
 
 export default function HomePage() {
   const { teacher, classes, students, assignments, syncStatus, logout,
-          syllabusTopics, timetableEntries, getStudentWarnings } = useApp()
+          syllabusTopics, timetableEntries, attendance, mastery, getStudentWarnings,
+          getClassSyllabus } = useApp()
 
   const assignedIds = new Set([
     ...(assignments ?? []).map(a => a.classId),
@@ -56,23 +45,85 @@ export default function HomePage() {
   const myClasses = classes.filter(cls => assignedIds.has(cls.id))
   const router = useRouter()
 
-  // Today's schedule — deliberately just today, not the full week grid
-  // (that's what the Timetable page is for).
+  // The admin's published Academic Year, so "this week" means the same thing
+  // here as on the syllabus tab and in the prep sheet.
+  const [yearStart, setYearStart] = useState<string | undefined>(undefined)
+  useEffect(() => {
+    fetch('/api/teacher/academic-calendar')
+      .then(r => r.json())
+      .then(d => setYearStart(
+        (d.events ?? []).find((e: { category: string; title: string }) =>
+          e.category === 'term' && e.title === 'Academic Year')?.startDate,
+      ))
+      .catch(() => {})
+  }, [])
+
+  // Re-read the clock every minute. Without it the card is frozen at whatever
+  // time the page was opened, so the "Now" badge goes stale and a schedule left
+  // open through the last period never rolls forward to the next day.
+  const [now, setNow] = useState(() => new Date())
+  useEffect(() => {
+    const id = setInterval(() => setNow(new Date()), 60_000)
+    return () => clearInterval(id)
+  }, [])
+
   const todaysEntries = timetableEntries
-    .filter(e => e.dayOfWeek === new Date().getDay())
+    .filter(e => e.dayOfWeek === now.getDay())
     .sort((a, b) => a.periodNumber - b.periodNumber)
+  // What the card shows: today while it has anything left, otherwise the next
+  // day that does. See resolveSchedule.
+  const schedule = resolveSchedule(timetableEntries, now)
+
+  // Which day the strip and the schedule below it are showing. Seeded from
+  // resolveSchedule so the page still opens on today — or the next day with
+  // periods — and only moves when the teacher picks a day.
+  const [selectedDay, setSelectedDay] = useState<Date | null>(null)
+  const defaultDay = useMemo(() => {
+    if (!schedule) return atMidnight(now)
+    return addDays(atMidnight(now), schedule.daysAhead)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [schedule?.dayOfWeek, schedule?.daysAhead, now.toDateString()])
+  const shownDay = selectedDay ?? defaultDay
+  const shownEntries = entriesOn(timetableEntries, shownDay)
+  /** Academic week of a date, for the overdue comparison. */
+  const weekOf = (d: Date) => weekProgress([], d, yearStart).week
+  const isShowingToday = sameDay(shownDay, now)
+  // The plan is only projected forward from today, so a day in a past week has
+  // no projection. It must not be read as "nothing left to teach".
+  const isPastDay = shownDay.getTime() < atMidnight(now).getTime()
+
+  // The plan dealt across every period from today on, so a future day gets the
+  // topic that will actually be due by then rather than today's.
+  const plannedBySlot = useMemo(() => {
+    const byClassSubject = new Map<string, ReturnType<typeof projectPlan>>()
+    for (const entry of timetableEntries) {
+      const subject = entry.label ?? ''
+      const key = `${entry.classId}|${subject}`
+      if (byClassSubject.has(key)) continue
+      const sameSubject = timetableEntries.filter(
+        e => e.classId === entry.classId && (e.label ?? '') === subject)
+      byClassSubject.set(key, projectPlan(
+        getClassSyllabus(entry.classId, subject),
+        occurrencesFrom(sameSubject, now, 60),
+      ))
+    }
+    return byClassSubject
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [timetableEntries, syllabusTopics, now.toDateString()])
+  /** The topic projected into one period on one date. Single lookup, so the
+      schedule card and the next-day card can never name different topics. */
+  const plannedFor = (entry: TimetableEntry, date: Date) =>
+    plannedBySlot
+      .get(`${entry.classId}|${entry.label ?? ''}`)
+      ?.get(`${date.toDateString()}|${entry.id}`)
   const classNameFor = (classId: string) => classes.find(c => c.id === classId)?.name ?? 'Class'
   const gradeFor = (classId: string) => classes.find(c => c.id === classId)?.grade ?? ''
-  const nowMins = new Date().getHours() * 60 + new Date().getMinutes()
+  const nowMins = now.getHours() * 60 + now.getMinutes()
 
-  // Tap a Today's Schedule row to reveal its Prep Material / Take Attendance
-  // actions — accordion-style, only one row expanded at a time.
-  const [expandedEntryId, setExpandedEntryId] = useState<string | null>(null)
   const [prepModal, setPrepModal] = useState<{ classId: string; subject: string; grade: string; mode: 'auto' | 'custom' } | null>(null)
   const [previewModal, setPreviewModal] = useState<{ classId: string; subject: string; grade: string; endTime: string } | null>(null)
+  const [classroomModal, setClassroomModal] = useState<{ classId: string; subject: string; grade: string; endTime: string } | null>(null)
 
-  // Same per-student criteria the Alerts page itself uses, so this count
-  // always matches what tapping "View" reveals.
   const attentionCount = countStudentsNeedingAttention(classes, students, getStudentWarnings)
   const [createOpen, setCreateOpen] = useState(false)
   const [greeting, setGreeting]     = useState('Good morning')
@@ -82,7 +133,6 @@ export default function HomePage() {
   const [hasAdmin, setHasAdmin]         = useState(false)
   const [briefingOpen, setBriefingOpen] = useState(false)
 
-  // All 4 setup steps complete
   const allSetupDone =
     classes.length > 0 &&
     students.filter(s => s.isActive).length > 0 &&
@@ -93,17 +143,15 @@ export default function HomePage() {
     const now  = new Date()
     const hour = now.getHours()
     setGreeting(hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening')
-    setDateStr(`${DAYS[now.getDay()]}, ${now.getDate()} ${MONTHS[now.getMonth()]}`)
+    setDateStr(`${DAYS[now.getDay()]}, ${now.getDate()} ${MONTHS[now.getMonth()].slice(0, 3)}`)
   }, [])
 
-  // Read localStorage preferences once teacher is known
   useEffect(() => {
     if (!teacher) return
     const hiddenKey = `eduteach_show_guide_btn_${teacher.id}`
     setShowGuideBtn(localStorage.getItem(hiddenKey) !== 'false')
   }, [teacher])
 
-  // Check if school has an admin (hides class-creation controls for teachers)
   useEffect(() => {
     if (!teacher?.schoolId) return
     fetch(`/api/school/has-admin?schoolId=${teacher.schoolId}`)
@@ -112,7 +160,6 @@ export default function HomePage() {
       .catch(() => {})
   }, [teacher?.schoolId])
 
-  // Auto-trigger tour the first time all 4 setup steps are done
   useEffect(() => {
     if (!teacher || !allSetupDone) return
     const tourSeen = localStorage.getItem(`eduteach_tour_seen_${teacher.id}`) === 'true'
@@ -123,245 +170,313 @@ export default function HomePage() {
   }, [teacher, allSetupDone])
 
   const handleLogout = async () => { await logout(); router.replace('/teacher/login') }
-  const totalStudents = students.filter(s => s.isActive && assignedIds.has(s.classId)).length
+
+  // Real syllabus completion across my classes → Class Progress donut.
+  const myTopics = syllabusTopics.filter(t => assignedIds.has(t.classId))
+  const progressPct = myTopics.length ? Math.round(myTopics.filter(t => t.isCompleted).length / myTopics.length * 100) : 0
+  const firstName = teacher?.name?.split(' ')[0] ?? 'Teacher'
+  const periodsDone = todaysEntries.filter(e => nowMins >= timeToMins(e.endTime)).length
 
   return (
     <div className="paper-page pb-28">
 
       {/* ── HEADER ──────────────────────────────────────────── */}
-      <PageHeader
-        eyebrow={greeting}
-        title={teacher?.name?.split(' ')[0] ?? 'Teacher'}
-        subtitle={`${teacher?.schoolName ?? 'Your School'}${teacher?.subject ? ` · ${teacher.subject}` : ''}`}
-        back={false}
-        action={
-          <div className="flex items-center gap-2">
-            <div className="px-3 py-1.5 rounded-full text-xs font-semibold text-ink-soft" style={{ background: 'rgba(58,44,30,0.06)' }}>
-              {dateStr}
-            </div>
-            <div className={clsx(
-              'flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold',
-              syncStatus === 'online'  ? 'text-emerald-700' :
-              syncStatus === 'offline' ? 'text-red-600' : 'text-ink-soft'
-            )} style={{ background: 'rgba(58,44,30,0.06)' }}>
-              {syncStatus === 'online'  ? <Wifi size={11} /> :
-               syncStatus === 'offline' ? <WifiOff size={11} /> :
-               <div className="w-2.5 h-2.5 border border-ink-faint border-t-transparent rounded-full animate-spin" />}
+      <header className="px-5 md:px-8 pt-6 md:pt-9 pb-1 w-full max-w-[1280px] mx-auto">
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <h1 className="font-display font-extrabold text-ink leading-[1.05]" style={{ fontSize: 'clamp(26px, 4.5vw, 38px)', letterSpacing: '-0.02em' }}>
+              {greeting}, {firstName}!
+            </h1>
+            <p className="text-[13px] md:text-sm text-ink-soft font-medium mt-1.5 truncate">
+              {teacher?.schoolName ?? 'Your School'}{teacher?.subject ? ` · ${teacher.subject}` : ''} · {dateStr}
+            </p>
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
+            <span className={clsx(
+              'hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold',
+              syncStatus === 'online' ? 'text-emerald-800' : syncStatus === 'offline' ? 'text-red-700' : 'text-ink-soft',
+            )} style={{ background: 'rgba(255,255,255,0.6)', border: '1.75px solid var(--card-border)' }}>
+              {syncStatus === 'online' ? <Wifi size={11} /> : syncStatus === 'offline' ? <WifiOff size={11} /> :
+                <div className="w-2.5 h-2.5 border border-ink-faint border-t-transparent rounded-full animate-spin" />}
               <span className="capitalize">{syncStatus}</span>
-            </div>
-            <button onClick={handleLogout}
-              className="w-9 h-9 flex items-center justify-center rounded-full active:scale-90 transition-transform"
-              style={{ background: 'rgba(58,44,30,0.06)' }}>
-              <LogOut size={15} className="text-ink-soft" />
+            </span>
+            <button onClick={handleLogout} title="Sign out"
+              className="w-10 h-10 flex items-center justify-center rounded-full active:scale-90 transition-transform"
+              style={{ background: 'rgba(255,255,255,0.6)', border: '1.75px solid var(--card-border)' }}>
+              <LogOut size={16} className="text-ink-soft" />
             </button>
           </div>
-        }
-      />
+        </div>
+      </header>
 
-      {/* ── TODAY'S SCHEDULE — a timeline, not a plain list ────────────── */}
-      <div className="px-5 relative z-10 mb-3">
-        <div className="paper-card p-6">
-          {todaysEntries.length === 0 ? (
-            <div className="text-center py-3">
-              <Sticker tone="gold" size={64} radius={20} style={{ margin: '0 auto 14px' }}>
-                <QuillBookSticker size={30} />
-              </Sticker>
-              <p className="font-display font-bold text-ink text-base">Nothing on the books today</p>
-              <p className="text-xs text-ink-soft mt-1">Set up your timetable to see today&apos;s periods here</p>
-              <button
-                onClick={() => router.push('/timetable')}
-                className="text-sm font-bold text-ink mt-3 hover:underline"
-              >
-                Set up timetable →
-              </button>
+      {/* ── BODY: main column + desktop aside ───────────────── */}
+      <div className="px-5 md:px-8 mt-4 w-full max-w-[1280px] mx-auto lg:grid lg:grid-cols-[1fr_320px] lg:gap-6 lg:items-start">
+
+        {/* MAIN */}
+        <main className="min-w-0 space-y-5">
+          {/* One week at a time, with the week's progress through the plan.
+              Picking a day here drives the schedule below it — which is what
+              makes any day other than today reachable on this page. */}
+          <WeekStrip
+            timetableEntries={timetableEntries}
+            syllabusTopics={myTopics}
+            selected={shownDay}
+            onSelect={setSelectedDay}
+            academicYearStart={yearStart}
+          />
+
+          <SubstituteBanner />
+
+          {/* Schedule for whichever day the strip above has selected. */}
+          <section>
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="font-display font-bold text-ink text-lg">
+                {isShowingToday
+                  ? "Today's Schedule"
+                  : sameDay(shownDay, addDays(atMidnight(now), 1))
+                    ? "Tomorrow's Schedule"
+                    : `${DAYS[shownDay.getDay()]}'s Schedule`}
+              </h2>
+              {isShowingToday ? (
+                <span className="text-xs font-semibold text-ink-soft">{periodsDone} of {todaysEntries.length} done</span>
+              ) : (
+                /* Name the date when it is not today, so a Friday heading in a
+                   week's time is not mistaken for this Friday. */
+                <span className="text-xs font-semibold text-ink-soft">
+                  {MONTHS[shownDay.getMonth()].slice(0, 3)} {shownDay.getDate()}
+                  {shownEntries.length === 0 ? ' · nothing scheduled' : ''}
+                </span>
+              )}
             </div>
-          ) : (
-            <div>
-              {/* Header — icon + live progress, not just a plain label */}
-              <div className="flex items-center gap-3 mb-4">
-                <Sticker tone="blue" size={44} radius={16}>
-                  <ClipboardCheckSticker size={24} />
-                </Sticker>
-                <div className="flex-1 min-w-0">
-                  <p className="font-display font-bold text-ink text-base leading-tight">Today&apos;s Schedule</p>
-                  <p className="text-xs text-ink-soft mt-0.5">
-                    {todaysEntries.filter(e => nowMins >= timeToMins(e.endTime)).length} of {todaysEntries.length} period{todaysEntries.length === 1 ? '' : 's'} done
-                  </p>
+
+            {timetableEntries.length === 0 ? (
+              <div className="paper-card p-8 text-center">
+                <div className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-3" style={{ background: '#F7EFC4', border: '2px solid var(--card-border)' }}>
+                  <CalendarDays size={24} className="text-ink" />
                 </div>
+                <p className="font-display font-bold text-ink">Nothing on the books yet</p>
+                <p className="text-sm text-ink-soft mt-1">Once your timetable is published, your periods appear here</p>
+                <button onClick={() => router.push('/timetable')} className="text-sm font-bold text-forest-soft mt-3 hover:underline">
+                  Set up timetable →
+                </button>
               </div>
+            ) : shownEntries.length === 0 ? (
+              <div className="paper-card p-8 text-center">
+                <div className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-3" style={{ background: '#F7EFC4', border: '2px solid var(--card-border)' }}>
+                  <CalendarDays size={24} className="text-ink" />
+                </div>
+                <p className="font-display font-bold text-ink">No periods on this day</p>
+                <p className="text-sm text-ink-soft mt-1">Pick another day above to see its lessons and topics</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {shownEntries.map((entry, idx) => {
+                  const label   = entry.label ?? classNameFor(entry.classId)
+                  const accent  = accentForSubject(label)
+                  const startM  = timeToMins(entry.startTime)
+                  const endM    = timeToMins(entry.endTime)
+                  // Only meaningful against today's clock. A day other than
+                  // today has periods that are neither running nor finished,
+                  // whatever the time happens to be right now.
+                  const isNow   = isShowingToday && nowMins >= startM && nowMins < endM
+                  const isPast  = isShowingToday && nowMins >= endM && !isNow
 
-              {/* Timeline */}
-              <div className="relative">
-                <div className="absolute left-[19px] top-1 bottom-1 w-[2px]" style={{ background: 'rgba(58,44,30,0.12)' }} />
-                <div className="space-y-3">
-                  {todaysEntries.map((entry, idx) => {
-                    const color  = colorForSubject(entry.label ?? classNameFor(entry.classId))
-                    const startM = timeToMins(entry.startTime)
-                    const endM   = timeToMins(entry.endTime)
-                    const isNow  = nowMins >= startM && nowMins < endM
-                    const isPast = nowMins >= endM
-
-                    return (
-                      <div
-                        key={entry.id}
-                        className="relative flex items-center gap-3 animate-fade-up"
-                        style={{ animationDelay: `${idx * 60}ms` }}
-                      >
-                        <div className="relative z-10 shrink-0">
-                          {isNow && (
-                            <span
-                              className="absolute inset-0 rounded-full"
-                              style={{ background: color.text, animation: 'pulse-ring 1.6s ease-out infinite' }}
-                            />
-                          )}
-                          <div
-                            className="relative w-10 h-10 rounded-full flex items-center justify-center text-sm font-black border-2"
-                            style={{
-                              background: isPast && !isNow ? '#fff' : color.bg,
-                              borderColor: isNow ? color.text : isPast ? 'rgba(58,44,30,0.16)' : color.text,
-                              color: color.text,
-                            }}
-                          >
-                            {isPast && !isNow ? <Check size={15} /> : entry.periodNumber}
-                          </div>
-                        </div>
-                        <div
-                          role="button"
-                          tabIndex={0}
-                          onClick={() => setExpandedEntryId(prev => prev === entry.id ? null : entry.id)}
-                          onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setExpandedEntryId(prev => prev === entry.id ? null : entry.id) } }}
-                          className="flex-1 min-w-0 rounded-2xl px-3.5 py-2.5 transition-all text-left cursor-pointer"
-                          style={{
-                            background: isNow ? color.bg : 'rgba(58,44,30,0.035)',
-                            border: isNow ? `1.5px solid ${color.text}` : '1.5px solid transparent',
-                            opacity: isPast && !isNow ? 0.6 : 1,
-                          }}
-                        >
-                          <div className="flex items-center justify-between gap-2">
-                            <p className="text-sm font-bold truncate" style={{ color: isNow ? color.text : 'var(--ink)' }}>
-                              {entry.label ?? 'Period'}
-                            </p>
+                  return (
+                    <div
+                      key={entry.id}
+                      className="paper-card overflow-hidden flex animate-fade-up"
+                      style={{ animationDelay: `${idx * 50}ms`, borderLeft: `5px solid ${accent}`, opacity: isPast ? 0.62 : 1 }}
+                    >
+                      <div className="flex-1 min-w-0 p-4 flex flex-col sm:flex-row sm:items-center gap-3">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2">
+                            <p className="font-display font-bold text-ink text-[15px] truncate">{label}</p>
                             {isNow && (
-                              <span
-                                className="text-[9px] font-black uppercase tracking-wide px-2 py-0.5 rounded-full shrink-0"
-                                style={{ background: color.text, color: 'white' }}
-                              >
-                                Now
-                              </span>
+                              <span className="text-[9px] font-black uppercase tracking-wide px-2 py-0.5 rounded-full text-white shrink-0" style={{ background: accent }}>Now</span>
                             )}
+                            {isPast && <Check size={15} className="text-ink-faint shrink-0" />}
                           </div>
-                          <p className="text-xs font-semibold mt-0.5 truncate" style={{ color: isNow ? color.text : 'var(--ink-soft)', opacity: isNow ? 0.85 : 1 }}>
+                          <p className="text-[12.5px] font-medium text-ink-soft mt-0.5">
                             {entry.startTime}–{entry.endTime} · {classNameFor(entry.classId)}
                           </p>
-
-                          {/* Revealed on tap — swaps to Classroom Mode's own actions once the period is live */}
-                          {expandedEntryId === entry.id && (
-                            <div className="flex gap-2 mt-2.5 animate-fade-up">
-                              {isNow ? (
-                                <button
-                                  type="button"
-                                  onClick={e => {
-                                    e.stopPropagation()
-                                    setPreviewModal({ classId: entry.classId, subject: entry.label ?? classNameFor(entry.classId), grade: gradeFor(entry.classId), endTime: entry.endTime })
-                                  }}
-                                  className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-bold active:scale-95 transition-all"
-                                  style={{ background: 'rgba(255,255,255,0.7)', color: color.text }}
+                          {/* The topic due in THIS period, from the plan
+                              projected across every period from today on. Using
+                              "the next topic" here made every future day show
+                              today's topic, since nothing has been taught in
+                              between yet. */}
+                          {(() => {
+                            const planned = plannedFor(entry, shownDay)
+                            if (!planned) {
+                              // Past the end of the plan: say so rather than
+                              // repeating the last topic forever. A day already
+                              // gone has no projection at all — stay quiet there
+                              // instead of claiming the syllabus is finished.
+                              const syllabus = getClassSyllabus(entry.classId, label)
+                              if (!syllabus.length || isPastDay) return null
+                              return (
+                                <p className="text-[12px] mt-1 font-bold text-ink-faint">
+                                  Syllabus complete
+                                </p>
+                              )
+                            }
+                            const overdue =
+                              planned.topic.weekNumber != null && weekOf(shownDay) != null &&
+                              planned.topic.weekNumber < weekOf(shownDay)!
+                            return (
+                              <p className="text-[12px] mt-1 flex items-baseline gap-1.5 flex-wrap">
+                                <span className="font-bold" style={{ color: accent }}>
+                                  {planned.topic.topic}
+                                </span>
+                                <span
+                                  className="text-[10px] font-bold px-1.5 py-0.5 rounded-md"
+                                  style={overdue
+                                    ? { background: 'rgba(196,107,84,0.14)', color: '#7A2E17' }
+                                    : { background: 'rgba(58,44,30,0.06)', color: 'var(--ink-soft)' }}
                                 >
-                                  <Sparkles size={12} /> Preview Prep Material
-                                </button>
-                              ) : (
-                                <>
-                                  <button
-                                    type="button"
-                                    onClick={e => {
-                                      e.stopPropagation()
-                                      setPrepModal({ classId: entry.classId, subject: entry.label ?? classNameFor(entry.classId), grade: gradeFor(entry.classId), mode: 'auto' })
-                                    }}
-                                    className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-bold active:scale-95 transition-all"
-                                    style={{ background: 'rgba(255,255,255,0.7)', color: 'var(--ink)' }}
-                                  >
-                                    <Sparkles size={12} /> Prep Material
-                                  </button>
-                                  <button
-                                    type="button"
-                                    onClick={e => {
-                                      e.stopPropagation()
-                                      setPrepModal({ classId: entry.classId, subject: entry.label ?? classNameFor(entry.classId), grade: gradeFor(entry.classId), mode: 'custom' })
-                                    }}
-                                    title="Generate for a topic of your choice"
-                                    className="w-9 h-9 shrink-0 flex items-center justify-center rounded-xl active:scale-90 transition-all"
-                                    style={{ background: 'rgba(255,255,255,0.7)', color: 'var(--ink)' }}
-                                  >
-                                    <Wand2 size={14} />
-                                  </button>
-                                  <button
-                                    type="button"
-                                    onClick={e => { e.stopPropagation(); router.push(`/classes/${entry.classId}/attendance`) }}
-                                    className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-bold text-white active:scale-95 transition-all"
-                                    style={{ background: 'var(--ink)' }}
-                                  >
-                                    <ClipboardList size={12} /> Take Attendance
-                                  </button>
-                                </>
-                              )}
-                            </div>
+                                  {planned.sessions > 1
+                                    ? `Session ${planned.session} of ${planned.sessions}`
+                                    : planned.topic.weekNumber != null
+                                      ? `Week ${planned.topic.weekNumber}${overdue ? ' · overdue' : ''}`
+                                      : 'In the plan'}
+                                </span>
+                              </p>
+                            )
+                          })()}
+                          <ClassStatChips
+                            snapshot={classSnapshot(entry.classId, {
+                              students, attendance, mastery, getStudentWarnings,
+                            })}
+                          />
+                        </div>
+
+                        <div className="flex items-center gap-2 shrink-0">
+                          {isNow ? (
+                            <>
+                              <button
+                                type="button"
+                                onClick={() => setPreviewModal({ classId: entry.classId, subject: label, grade: gradeFor(entry.classId), endTime: entry.endTime })}
+                                className="flex items-center justify-center gap-1.5 px-3 h-9 rounded-xl text-xs font-bold text-ink bg-white active:scale-95 transition-all hover:bg-black/[0.03]"
+                                style={{ border: '2px solid var(--card-border)' }}
+                              >
+                                <Sparkles size={13} /> Preview
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => setClassroomModal({ classId: entry.classId, subject: label, grade: gradeFor(entry.classId), endTime: entry.endTime })}
+                                className="flex items-center justify-center gap-1.5 px-3.5 h-9 rounded-xl text-xs font-bold text-white active:scale-95 transition-all"
+                                style={{ background: 'var(--forest)' }}
+                              >
+                                <PlayCircle size={13} /> Classroom Mode
+                              </button>
+                            </>
+                          ) : (
+                            <>
+                              <button
+                                type="button"
+                                onClick={() => setPrepModal({ classId: entry.classId, subject: label, grade: gradeFor(entry.classId), mode: 'auto' })}
+                                className="flex items-center justify-center gap-1.5 px-3 h-9 rounded-xl text-xs font-bold text-ink bg-white active:scale-95 transition-all hover:bg-black/[0.03]"
+                                style={{ border: '2px solid var(--card-border)' }}
+                              >
+                                <Sparkles size={13} /> Prep Material
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => setPrepModal({ classId: entry.classId, subject: label, grade: gradeFor(entry.classId), mode: 'custom' })}
+                                title="Generate for a topic of your choice"
+                                className="w-9 h-9 shrink-0 flex items-center justify-center rounded-xl text-ink bg-white active:scale-90 transition-all hover:bg-black/[0.03]"
+                                style={{ border: '2px solid var(--card-border)' }}
+                              >
+                                <Wand2 size={14} />
+                              </button>
+                              {/* No "Take Attendance" alongside Prep Material.
+                                  Classroom Mode opens on an attendance step, so
+                                  the teacher is asked for it on the way into the
+                                  lesson anyway. It is still on the class page. */}
+                            </>
                           )}
                         </div>
                       </div>
-                    )
-                  })}
+                    </div>
+                  )
+                })}
+              </div>
+            )}
+          </section>
+
+          {/* Prep happens the evening before, so the next teaching day gets its
+              own card with its own topics — reachable without hunting for the
+              day in the strip first. */}
+          {timetableEntries.length > 0 && (
+            <NextDayPrep
+              timetableEntries={timetableEntries}
+              /* Always looking forward: browsing back to a past week should not
+                 offer to prep a day that has already happened. */
+              after={isPastDay ? atMidnight(now) : shownDay}
+              classNameFor={classNameFor}
+              gradeFor={gradeFor}
+              plannedFor={plannedFor}
+              onOpenDay={setSelectedDay}
+              onPrep={({ classId, subject, grade }) =>
+                setPrepModal({ classId, subject, grade, mode: 'auto' })}
+            />
+          )}
+
+          {/* The student and class counts that used to sit here are gone: both
+              are restated by the schedule cards below, which give them per
+              class where they can actually be acted on. The term is kept —
+              it appears nowhere else on this page — and the row only renders
+              when there is one. */}
+          {teacher?.currentTerm && (
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="paper-pill">{teacher.currentTerm}</span>
+            </div>
+          )}
+
+          {teacher && (
+            <OnboardingChecklist
+              teacherId={teacher.id}
+              teacher={teacher}
+              classes={classes}
+              students={students}
+              syllabusTopics={syllabusTopics}
+              timetableEntries={timetableEntries}
+              onCreateClass={hasAdmin ? undefined : () => setCreateOpen(true)}
+              hasAdmin={hasAdmin}
+            />
+          )}
+
+        </main>
+
+        {/* DESKTOP ASIDE — reminders. The calendar used to sit here too; the
+            week strip now leads the main column instead, where the day it
+            selects is next to the schedule it changes. */}
+        <aside className="hidden lg:block space-y-4 sticky top-6">
+          <div className="paper-card p-5">
+            <p className="font-display font-bold text-ink text-sm mb-3">Reminders</p>
+            <div className="space-y-2.5">
+              <div className="flex items-start gap-2.5" style={{ borderLeft: '3px solid #3E7A57', paddingLeft: 10 }}>
+                <div>
+                  <p className="text-[13px] font-semibold text-ink leading-snug">{todaysEntries.length} period{todaysEntries.length === 1 ? '' : 's'} scheduled today</p>
+                  <p className="text-[11px] text-ink-faint mt-0.5">{periodsDone} done so far</p>
+                </div>
+              </div>
+              {attentionCount > 0 && (
+                <div className="flex items-start gap-2.5" style={{ borderLeft: '3px solid #C46B54', paddingLeft: 10 }}>
+                  <div>
+                    <p className="text-[13px] font-semibold text-ink leading-snug">{attentionCount} student{attentionCount === 1 ? '' : 's'} need attention</p>
+                    <p className="text-[11px] text-ink-faint mt-0.5">Absent or low recent scores</p>
+                  </div>
+                </div>
+              )}
+              <div className="flex items-start gap-2.5" style={{ borderLeft: '3px solid #5B87AD', paddingLeft: 10 }}>
+                <div>
+                  <p className="text-[13px] font-semibold text-ink leading-snug">Syllabus {progressPct}% complete</p>
+                  <p className="text-[11px] text-ink-faint mt-0.5">Across {myClasses.length} class{myClasses.length === 1 ? '' : 'es'}</p>
                 </div>
               </div>
             </div>
-          )}
-        </div>
-      </div>
-
-      <div className="px-5 relative z-10 mb-3 space-y-2">
-        <SubstituteBanner />
-      </div>
-
-      <div className="px-5 relative z-10 flex items-center gap-2 flex-wrap mb-1">
-        <span className="paper-pill flex items-center gap-1.5"><Users size={12} />{totalStudents} students</span>
-        <span className="paper-pill flex items-center gap-1.5"><GraduationCap size={12} />{myClasses.length} classes</span>
-        {teacher?.currentTerm && (
-          <span className="paper-pill flex items-center gap-1.5"><TrendingUp size={12} />{teacher.currentTerm}</span>
-        )}
-      </div>
-
-      {/* ── CONTENT ─────────────────────────────────────────── */}
-      <div className="px-4 md:px-8 pt-3 space-y-4 pb-28 md:pb-12 relative z-10 max-w-4xl md:mx-auto">
-
-        {teacher && (
-          <OnboardingChecklist
-            teacherId={teacher.id}
-            teacher={teacher}
-            classes={classes}
-            students={students}
-            syllabusTopics={syllabusTopics}
-            timetableEntries={timetableEntries}
-            onCreateClass={hasAdmin ? undefined : () => setCreateOpen(true)}
-            hasAdmin={hasAdmin}
-          />
-        )}
-
-        {/* ── STUDENTS NEEDING ATTENTION — bottom of the page, hidden when zero ── */}
-        {attentionCount > 0 && (
-          <button
-            onClick={() => router.push('/alerts')}
-            className="w-full paper-card p-4 flex items-center gap-3 text-left active:scale-[0.99] transition-transform"
-            style={{ background: '#fffbeb', border: '1.5px solid rgba(217,119,6,0.2)' }}
-          >
-            <Sticker tone="gold" size={40} radius={14}>
-              <BellSticker size={20} />
-            </Sticker>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-bold text-ink">{attentionCount} student{attentionCount === 1 ? '' : 's'} need attention</p>
-              <p className="text-xs text-ink-soft">Absent or scored low on a recent topic</p>
-            </div>
-            <span className="text-xs font-bold shrink-0" style={{ color: '#b45309' }}>View →</span>
-          </button>
-        )}
+          </div>
+        </aside>
       </div>
 
       <CreateClassModal open={createOpen} onClose={() => setCreateOpen(false)} />
@@ -383,41 +498,46 @@ export default function HomePage() {
         grade={previewModal?.grade ?? ''}
         endTime={previewModal?.endTime ?? ''}
         onGenerateInstead={() => previewModal && setPrepModal({ classId: previewModal.classId, subject: previewModal.subject, grade: previewModal.grade, mode: 'auto' })}
+        onEnterClassroom={() => previewModal && setClassroomModal(previewModal)}
       />
 
-      {/* Floating attendance-status button — right above Morning Briefing */}
+      <ClassroomModeModal
+        open={!!classroomModal}
+        onClose={() => setClassroomModal(null)}
+        classId={classroomModal?.classId ?? ''}
+        subject={classroomModal?.subject ?? ''}
+        grade={classroomModal?.grade ?? ''}
+        endTime={classroomModal?.endTime ?? ''}
+      />
+
       {teacher && <AttendanceCircle />}
 
-      {/* Floating Morning Briefing button */}
       {teacher && (
         <button
           onClick={() => setBriefingOpen(true)}
           className="fixed bottom-40 md:bottom-24 right-4 z-40 w-11 h-11 flex items-center justify-center rounded-full text-white active:scale-90 transition-transform"
-          style={{ background: '#8069B0', border: '1.5px solid rgba(58,44,30,0.18)' }}
+          style={{ background: 'var(--forest-soft)', border: '1.5px solid rgba(23,20,15,0.18)' }}
           title="Morning Briefing"
         >
           <Sparkles size={17} />
         </button>
       )}
 
-      {/* Floating "?" guide button */}
       {showGuideBtn && teacher && (
         <button
           onClick={() => setShowTour(true)}
           className="fixed bottom-24 md:bottom-8 right-4 z-40 w-11 h-11 flex items-center justify-center rounded-full font-black text-white text-base active:scale-90 transition-transform"
-          style={{ background: 'var(--ink)' }}
+          style={{ background: 'var(--forest)' }}
           title="Open App Guide"
         >
           ?
         </button>
       )}
 
-      {/* Morning briefing modal */}
       <Modal open={briefingOpen} onClose={() => setBriefingOpen(false)} title="Morning Briefing">
         <ErrorBoundary label="daily briefing"><DailyBriefing /></ErrorBoundary>
       </Modal>
 
-      {/* Feature tour modal */}
       {teacher && (
         <FeatureTour
           teacherId={teacher.id}

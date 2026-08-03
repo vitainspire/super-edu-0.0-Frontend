@@ -1,12 +1,14 @@
 'use client'
 import { useState, useEffect } from 'react'
 import {
-  X, ChevronLeft, ChevronRight, ArrowDown,
-  School, Users, BookOpen, CalendarDays, CalendarClock,
-  Sunrise, Clock, NotebookPen, Hand, Zap, CheckCircle2,
-  FileEdit, Calculator, Bot,
-  AlertTriangle, ClipboardList, RefreshCw,
-  BarChart3, UserRound, Trophy,
+  X, ChevronRight, Users, BookOpen, CalendarDays, Clock,
+  AlertTriangle, ClipboardList, BarChart3, UserRound, Trophy,
+} from '@/components/ui/icons'
+import {
+  ChevronLeft, ArrowDown,
+  School, CalendarClock,
+  Sunrise, NotebookPen, Hand, Zap, CheckCircle2,
+  FileEdit, Calculator, Bot, RefreshCw,
   type LucideIcon,
 } from 'lucide-react'
 

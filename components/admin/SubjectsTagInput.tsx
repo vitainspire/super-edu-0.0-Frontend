@@ -18,26 +18,47 @@ const COMMON_SUBJECTS = [
 ]
 const OTHER = '__other__'
 
+const NONE = ''
+
 export default function SubjectsTagInput({ value, onChange }: Props) {
   const availableSubjects = COMMON_SUBJECTS.filter(s => !value.includes(s))
-  const [selected, setSelected] = useState(availableSubjects[0] ?? OTHER)
+  // Starts on the placeholder, and picking a subject adds it immediately.
+  //
+  // This used to preselect the first subject and require a separate press of
+  // the + button to commit it. Choosing "Mathematics" and pressing Save then
+  // sent subjects: [] — the dropdown looked like the answer and was silently
+  // discarded, so the teacher's subject stayed empty with no error. A select
+  // that shows a value nobody chose is a trap; this one holds nothing until a
+  // choice is made, and a choice takes effect on the spot.
+  const [selected, setSelected] = useState<string>(NONE)
   const [customName, setCustomName] = useState('')
   const isOther = selected === OTHER
 
-  // Keep the dropdown pointed at a still-available subject as `value` changes
-  // from outside too (e.g. the modal reopens for a different teacher).
+  // If `value` changes from outside (the modal reopens for another teacher),
+  // drop a stale pending selection.
   useEffect(() => {
-    if (selected !== OTHER && !availableSubjects.includes(selected)) setSelected(availableSubjects[0] ?? OTHER)
+    if (selected !== OTHER && selected !== NONE && !availableSubjects.includes(selected)) setSelected(NONE)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value])
 
+  function commit(name: string) {
+    const clean = name.trim()
+    if (!clean || value.some(s => s.toLowerCase() === clean.toLowerCase())) return
+    onChange([...value, clean])
+  }
+
+  function handleSelect(next: string) {
+    if (next === OTHER || next === NONE) { setSelected(next); return }
+    // A common subject needs no second step.
+    commit(next)
+    setSelected(NONE)
+  }
+
   function add() {
-    const name = isOther ? customName.trim() : selected
-    if (!name || value.some(s => s.toLowerCase() === name.toLowerCase())) { setCustomName(''); return }
-    onChange([...value, name])
+    if (!isOther) return
+    commit(customName)
     setCustomName('')
-    const next = COMMON_SUBJECTS.filter(s => !value.includes(s) && s !== name)
-    setSelected(next[0] ?? OTHER)
+    setSelected(NONE)
   }
 
   function remove(name: string) {
@@ -65,9 +86,10 @@ export default function SubjectsTagInput({ value, onChange }: Props) {
       <div className="flex items-center gap-2 flex-wrap">
         <select
           value={selected}
-          onChange={e => setSelected(e.target.value)}
+          onChange={e => handleSelect(e.target.value)}
           className="input-field flex-1 min-w-[140px]"
         >
+          <option value={NONE}>Add a subject…</option>
           {availableSubjects.map(s => <option key={s} value={s}>{s}</option>)}
           <option value={OTHER}>Other (custom name)…</option>
         </select>
@@ -82,17 +104,21 @@ export default function SubjectsTagInput({ value, onChange }: Props) {
             autoFocus
           />
         )}
-        <button
-          type="button"
-          onClick={add}
-          disabled={isOther ? !customName.trim() : !selected}
-          className="w-11 h-11 flex items-center justify-center rounded-2xl disabled:opacity-50 shrink-0"
-          style={{ background: 'var(--ink)', color: 'var(--paper-soft)' }}
-        >
-          <Plus size={16} />
-        </button>
+        {/* Only the custom name needs a commit step — a listed subject is added
+            the moment it is chosen. */}
+        {isOther && (
+          <button
+            type="button"
+            onClick={add}
+            disabled={!customName.trim()}
+            className="w-11 h-11 flex items-center justify-center rounded-2xl disabled:opacity-50 shrink-0"
+            style={{ background: 'var(--ink)', color: 'var(--paper-soft)' }}
+          >
+            <Plus size={16} />
+          </button>
+        )}
       </div>
-      {value.length === 0 && <p className="text-xs text-ink-faint mt-1.5">Add every subject this teacher can teach — not just what they're currently assigned.</p>}
+      {value.length === 0 && <p className="text-xs text-ink-faint mt-1.5">Add every subject this teacher can teach — not just what they&apos;re currently assigned.</p>}
     </div>
   )
 }

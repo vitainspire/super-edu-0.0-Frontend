@@ -90,7 +90,7 @@ export default function ConfirmPage() {
       <div className="space-y-2">
         <label htmlFor="student-select" className="block text-sm font-semibold text-gray-700">Student</label>
         <div className="relative">
-          <select id="student-select" value={selectedStudentId} onChange={(e) => { setSelectedStudentId(e.target.value); setError(null); }} className="w-full appearance-none px-4 py-4 pr-10 rounded-2xl border border-gray-200 text-base text-gray-900 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent min-h-[52px]">
+          <select id="student-select" value={selectedStudentId} onChange={(e) => { setSelectedStudentId(e.target.value); setError(null); }} className="w-full appearance-none px-4 py-4 pr-10 rounded-2xl border border-gray-200 text-base text-gray-900 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[var(--scanner-blue-mid)] focus:border-transparent min-h-[52px]">
             <option value="">— Select a student —</option>
             {students.map((s) => <option key={s.id} value={s.id}>Roll {s.roll_number} — {s.name}</option>)}
           </select>
@@ -100,7 +100,7 @@ export default function ConfirmPage() {
 
       <div className="space-y-2">
         <label htmlFor="score-input" className="block text-sm font-semibold text-gray-700">Score <span className="ml-1.5 font-normal text-gray-400">out of {totalMarks}</span></label>
-        <input id="score-input" type="number" inputMode="decimal" min={0} max={totalMarks} step="0.5" value={scoreInput} onChange={(e) => { setScoreInput(e.target.value); setError(null); }} placeholder="e.g. 16" className="w-full px-4 py-5 rounded-2xl border border-gray-200 text-3xl font-bold text-center text-gray-900 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent" />
+        <input id="score-input" type="number" inputMode="decimal" min={0} max={totalMarks} step="0.5" value={scoreInput} onChange={(e) => { setScoreInput(e.target.value); setError(null); }} placeholder="e.g. 16" className="w-full px-4 py-5 rounded-2xl border border-gray-200 text-3xl font-bold text-center text-gray-900 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[var(--scanner-blue-mid)] focus:border-transparent" />
         {scoreInput !== "" && !isNaN(scoreNum) && (
           <p className={cn("text-center text-sm font-medium", scoreNum > totalMarks ? "text-red-500" : "text-gray-400")}>
             {scoreInput} / {totalMarks}{scoreNum > totalMarks && " — exceeds total marks"}
@@ -110,7 +110,7 @@ export default function ConfirmPage() {
 
       {error && <p className="text-sm text-red-600 bg-red-50 rounded-xl px-4 py-3">{error}</p>}
 
-      <button onClick={handleSave} disabled={saving || !canSave} className={cn("w-full min-h-[56px] rounded-2xl text-white font-bold text-lg flex items-center justify-center gap-3 active:scale-[0.98] transition-transform", saving || !canSave ? "bg-gray-300 cursor-not-allowed" : "bg-indigo-600 shadow-lg shadow-indigo-200")}>
+      <button onClick={handleSave} disabled={saving || !canSave} className={cn("w-full min-h-[56px] rounded-2xl text-white font-bold text-lg flex items-center justify-center gap-3 active:scale-[0.98] transition-transform border-2", saving || !canSave ? "bg-gray-300 cursor-not-allowed border-gray-300" : "bg-[var(--scanner-blue)] border-[var(--card-border)]")}>
         {saving ? <><Spinner size="sm" className="border-white border-t-transparent" /> Saving…</> : <><Save size={20} /> Save Score</>}
       </button>
     </div>

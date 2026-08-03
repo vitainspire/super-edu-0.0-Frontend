@@ -2,8 +2,10 @@
 import { useState, useEffect, useRef } from 'react'
 import { useParams, useSearchParams } from 'next/navigation'
 import {
-  PenLine, Plus, ArrowLeft,
-  Sparkles, RefreshCw, X, ChevronDown, ChevronUp, Lock, Printer,
+  Plus, ArrowLeft, Sparkles, X, ChevronDown, ChevronUp,
+} from '@/components/ui/icons'
+import {
+  PenLine, RefreshCw, Lock, Printer,
 } from 'lucide-react'
 import { useApp } from '@/lib/context'
 import type { AiQuestion } from '@/lib/types'
@@ -97,7 +99,7 @@ export default function ClassMarksPage() {
       ? selectedTerm
       : unitTopic.trim() ? `Unit ${safeUnit} — ${unitTopic.trim()}` : `Unit ${safeUnit}`
     await createTest({
-      subject: teacher?.subject ?? '',
+      subject: teacher?.subject || '',
       topic: effectiveTopic,
       totalMarks: parseInt(totalMarks) || 10,
       conductedOn,
@@ -151,7 +153,7 @@ export default function ClassMarksPage() {
       const res = await fetch('/api/test-analysis', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ topic: test.topic, totalMarks: test.totalMarks, grade: cls?.grade ?? '', subject: teacher?.subject ?? '', results, lessonContext }),
+        body: JSON.stringify({ topic: test.topic, totalMarks: test.totalMarks, grade: cls?.grade || '', subject: teacher?.subject || '', results, lessonContext }),
       })
       if (res.ok) {
         const data = await res.json()
@@ -176,16 +178,16 @@ export default function ClassMarksPage() {
       const concepts = (material?.lesson.concept ?? []).map(c => c.text)
       const lessonContext = concepts.length > 0 ? { concepts } : undefined
       const groundingFingerprint = concepts.length > 0 ? concepts.join('|').slice(0, 40) : 'ungrounded'
-      const ck = aiKey('questions', { v: 4, topic: topic.toLowerCase().trim(), grade: cls?.grade ?? teacher?.grade ?? '5', totalM, groundingFingerprint })
+      const ck = aiKey('questions', { v: 4, topic: topic.toLowerCase().trim(), grade: cls?.grade || teacher?.grade || '5', totalM, groundingFingerprint })
       const cached = getAiCache<AiQuestion[]>(ck)
       if (cached) { setAiQuestions(cached); setAiQLoading(false); return }
       const res = await fetch('/api/questions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          subject: teacher?.subject ?? 'General',
+          subject: teacher?.subject || 'General',
           topic,
-          grade: cls?.grade ?? teacher?.grade ?? '5',
+          grade: cls?.grade || teacher?.grade || '5',
           totalMarks: totalM,
           lessonContext,
         }),
@@ -224,11 +226,11 @@ export default function ClassMarksPage() {
   if (step === 'new-test') {
     return (
       <div>
-        <div className="bg-paper-soft px-4 pt-4 pb-4 border-b border-black/5 flex items-center gap-3 sticky top-0 z-10">
-          <button onClick={() => setStep('list')} className="w-9 h-9 flex items-center justify-center rounded-full active:scale-90 transition-transform" style={{ background: 'rgba(58,44,30,0.08)' }}>
+        <div className="px-4 pt-4 pb-4 flex items-center gap-3 sticky top-0 z-10" style={{ background: 'var(--paper-bg)', borderBottom: '2px solid var(--card-border)' }}>
+          <button onClick={() => setStep('list')} className="w-9 h-9 flex items-center justify-center rounded-full bg-white active:scale-90 transition-transform" style={{ border: '1.75px solid var(--card-border)' }}>
             <ArrowLeft size={18} className="text-ink" />
           </button>
-          <h2 className="text-lg font-display font-bold text-ink">New Test</h2>
+          <h2 className="text-lg font-display font-extrabold text-ink">New Test</h2>
         </div>
 
         <div className="px-4 py-4 space-y-5">
@@ -289,16 +291,16 @@ export default function ClassMarksPage() {
                         }}
                         className={clsx(
                           'w-full flex items-center gap-3 px-4 py-3 rounded-2xl border-2 text-left transition-all',
-                          isSelected  ? 'border-[#AACDEA] bg-[#DCEBF8]' :
+                          isSelected  ? 'border-[color:var(--card-border)] bg-[#DCEEE1]' :
                           isBlocked   ? 'border-red-200 bg-red-50' :
-                          !taught     ? 'border-black/10 bg-black/[0.03] opacity-70' :
-                                        'border-black/10 bg-white',
+                          !taught     ? 'border-[color:var(--card-border)] bg-black/[0.03] opacity-70' :
+                                        'border-[color:var(--card-border)] bg-white',
                         )}
                       >
                         <div className="flex-1">
                           <p className={clsx(
                             'font-semibold text-sm',
-                            isSelected ? 'text-[#1E3A55]' :
+                            isSelected ? 'text-[#1F3D2C]' :
                             !taught    ? 'text-ink-soft' :
                                          'text-ink',
                           )}>
@@ -313,7 +315,7 @@ export default function ClassMarksPage() {
                         {taught ? (
                           <span className={clsx(
                             'text-xs font-semibold px-2 py-0.5 rounded-full shrink-0',
-                            isSelected ? 'bg-[#DCEBF8] text-[#1E3A55]' : 'bg-emerald-100 text-emerald-700',
+                            isSelected ? 'bg-[#DCEEE1] text-[#1F3D2C]' : 'bg-emerald-100 text-emerald-700',
                           )}>
                             {sessionCount} session{sessionCount > 1 ? 's' : ''}
                           </span>
@@ -340,40 +342,40 @@ export default function ClassMarksPage() {
 
           {/* Step 3 — AI Question Suggestions (auto-shown after topic pick) */}
           {topicId && aiQOpen && (
-            <div className="bg-[#E9E1F6] border border-[#C7B7E8] rounded-2xl p-4">
+            <div className="bg-[#DCEEE1] rounded-2xl p-4" style={{ border: '2px solid var(--card-border)' }}>
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
-                  <Sparkles size={15} className="text-[#8069B0]" />
-                  <p className="text-sm font-bold text-[#31215C]">
+                  <Sparkles size={15} style={{ color: 'var(--forest)' }} />
+                  <p className="text-sm font-bold" style={{ color: 'var(--forest)' }}>
                     Exam Questions — {selectedSyllabusTopic?.topic}
                   </p>
                 </div>
                 <div className="flex items-center gap-2">
                   {!aiQLoading && aiQuestions.length > 0 && (
-                    <button onClick={() => setPaperPreviewOpen(true)} className="p-1 rounded-lg hover:bg-[#E9E1F6]" title="Print as question paper">
-                      <Printer size={13} className="text-[#8069B0]" />
+                    <button onClick={() => setPaperPreviewOpen(true)} className="p-1 rounded-lg hover:bg-[#CFE6D6]" title="Print as question paper">
+                      <Printer size={13} style={{ color: 'var(--forest)' }} />
                     </button>
                   )}
                   {!aiQLoading && (
-                    <button onClick={() => fetchAiQuestions()} className="p-1 rounded-lg hover:bg-[#E9E1F6]" title="Regenerate">
-                      <RefreshCw size={13} className="text-[#8069B0]" />
+                    <button onClick={() => fetchAiQuestions()} className="p-1 rounded-lg hover:bg-[#CFE6D6]" title="Regenerate">
+                      <RefreshCw size={13} style={{ color: 'var(--forest)' }} />
                     </button>
                   )}
-                  <button onClick={() => setAiQOpen(false)} className="p-1 rounded-lg hover:bg-[#E9E1F6]">
-                    <X size={14} className="text-[#8069B0]" />
+                  <button onClick={() => setAiQOpen(false)} className="p-1 rounded-lg hover:bg-[#CFE6D6]">
+                    <X size={14} style={{ color: 'var(--forest)' }} />
                   </button>
                 </div>
               </div>
 
               {linkedMaterial && (
-                <p className="text-[11px] font-semibold text-[#8069B0] mb-2 flex items-center gap-1">
+                <p className="text-[11px] font-semibold text-[#2C5540] mb-2 flex items-center gap-1">
                   <Sparkles size={10} /> Grounded in the Prep Material generated for this topic
                 </p>
               )}
 
               {aiQLoading && (
                 <div className="space-y-2 mt-2">
-                  {[1,2,3,4,5].map(i => <div key={i} className="h-10 bg-[#E9E1F6] rounded-xl animate-pulse" />)}
+                  {[1,2,3,4,5].map(i => <div key={i} className="h-10 bg-[#CFE6D6] rounded-xl animate-pulse" />)}
                 </div>
               )}
 
@@ -413,7 +415,7 @@ export default function ClassMarksPage() {
                               return (
                                 <div key={idx} className="px-3 py-2.5 space-y-2">
                                   <div className="flex items-start gap-2">
-                                    <span className="w-5 h-5 bg-[#31215C] text-white rounded-full text-xs font-black flex items-center justify-center shrink-0 mt-0.5">
+                                    <span className="w-5 h-5 bg-[#1F3D2C] text-white rounded-full text-xs font-black flex items-center justify-center shrink-0 mt-0.5">
                                       {idx}
                                     </span>
                                     <p className="text-sm text-ink leading-relaxed">{q.text}</p>
@@ -461,7 +463,7 @@ export default function ClassMarksPage() {
                         </div>
                       )
                     })}
-                    <p className="text-xs text-[#8069B0]">
+                    <p className="text-xs text-[#2C5540]">
                       Reference only · Total: {aiQuestions.reduce((s, q) => s + (q.marks ?? 0), 0)} marks
                     </p>
                   </div>
@@ -495,7 +497,7 @@ export default function ClassMarksPage() {
                   <button key={t} type="button" onClick={() => setSelectedTerm(t)}
                     className={clsx(
                       'flex-1 py-2.5 rounded-xl font-semibold text-sm transition-colors',
-                      selectedTerm === t ? 'bg-[#31215C] text-white' : 'text-ink-soft',
+                      selectedTerm === t ? 'bg-[#1F3D2C] text-white' : 'text-ink-soft',
                     )}
                     style={selectedTerm !== t ? { background: 'rgba(58,44,30,0.06)' } : undefined}>
                     {t}
@@ -581,12 +583,12 @@ export default function ClassMarksPage() {
   if (step === 'enter-marks' && currentTest) {
     return (
       <div>
-        <div className="bg-paper-soft px-4 pt-4 pb-4 border-b border-black/5 flex items-center gap-3 sticky top-0 z-10">
-          <button onClick={() => setStep('list')} className="w-9 h-9 flex items-center justify-center rounded-full shrink-0 active:scale-90 transition-transform" style={{ background: 'rgba(58,44,30,0.08)' }}>
+        <div className="px-4 pt-4 pb-4 flex items-center gap-3 sticky top-0 z-10" style={{ background: 'var(--paper-bg)', borderBottom: '2px solid var(--card-border)' }}>
+          <button onClick={() => setStep('list')} className="w-9 h-9 flex items-center justify-center rounded-full bg-white shrink-0 active:scale-90 transition-transform" style={{ border: '1.75px solid var(--card-border)' }}>
             <ArrowLeft size={18} className="text-ink" />
           </button>
           <div>
-            <h2 className="text-lg font-display font-bold text-ink leading-tight">{currentTest.topic}</h2>
+            <h2 className="text-lg font-display font-extrabold text-ink leading-tight">{currentTest.topic}</h2>
             <p className="text-xs text-ink-soft">
               {new Date(currentTest.conductedOn).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}
               {' · '}Out of {currentTest.totalMarks}

@@ -59,10 +59,7 @@ export function ScanProgressView({ classId, testId, classInfo, testInfo, pending
     <div className="pb-safe">
       <div
         className="-mx-4 -mt-5 px-5 pt-5 pb-6"
-        style={{ background: allDone
-          ? "linear-gradient(145deg, #064e3b 0%, #065f46 50%, #047857 100%)"
-          : "linear-gradient(145deg, #1e1b4b 0%, #312e81 50%, #1e3a8a 100%)"
-        }}
+        style={{ background: allDone ? "#065f46" : "var(--scanner-blue)" }}
       >
         <div className="flex items-center justify-between mb-4">
           <Link href={`/scanner/${classId}/tests`} className="inline-flex items-center gap-1.5 text-white/60 hover:text-white text-sm font-medium transition-colors">
@@ -73,7 +70,10 @@ export function ScanProgressView({ classId, testId, classInfo, testInfo, pending
           </Link>
         </div>
 
-        <p className="text-[10px] font-black tracking-[0.25em] uppercase text-indigo-300/70 mb-1">
+        <p className={cn(
+          "text-[10px] font-black tracking-[0.25em] uppercase mb-1",
+          allDone ? "text-white/50" : "text-[rgba(61,108,180,0.7)]"
+        )}>
           Grade {classInfo.grade} &middot; {classInfo.section} &middot; {classInfo.name}
         </p>
         <h1 className="text-xl font-black text-white leading-tight truncate">{testInfo.topic}</h1>
@@ -89,7 +89,7 @@ export function ScanProgressView({ classId, testId, classInfo, testInfo, pending
             <span className={cn("text-4xl font-black tabular-nums", allDone ? "text-emerald-300" : "text-white")}>{pct}%</span>
           </div>
           <div className="h-2 bg-white/10 rounded-full overflow-hidden">
-            <div className={cn("h-full rounded-full transition-all duration-700", allDone ? "bg-emerald-400" : "bg-indigo-400")} style={{ width: `${pct}%` }} />
+            <div className={cn("h-full rounded-full transition-all duration-700", allDone ? "bg-emerald-400" : "bg-[var(--scanner-blue-mid)]")} style={{ width: `${pct}%` }} />
           </div>
         </div>
       </div>
@@ -100,7 +100,7 @@ export function ScanProgressView({ classId, testId, classInfo, testInfo, pending
           <input
             type="search" inputMode="search" placeholder="Search by name or roll number…"
             value={query} onChange={(e) => setQuery(e.target.value)}
-            className="w-full pl-10 pr-10 py-3 rounded-2xl bg-white border border-gray-200 text-sm font-medium text-gray-900 placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent shadow-sm"
+            className="w-full pl-10 pr-10 py-3 rounded-2xl bg-white border border-gray-200 text-sm font-medium text-gray-900 placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-[var(--scanner-blue-mid)] focus:border-transparent"
           />
           {query && (
             <button onClick={() => setQuery("")} className="absolute right-3 top-1/2 -translate-y-1/2 w-6 h-6 flex items-center justify-center rounded-full bg-gray-200 text-gray-500 hover:bg-gray-300 transition-colors">
@@ -128,12 +128,12 @@ export function ScanProgressView({ classId, testId, classInfo, testInfo, pending
             </div>
             <ul className="space-y-2">
               {filteredPending.map((s) => (
-                <li key={s.id} className="flex items-center gap-3 bg-white rounded-2xl px-4 py-3.5 shadow-sm border border-gray-100 min-h-[64px]">
+                <li key={s.id} className="flex items-center gap-3 bg-white rounded-2xl px-4 py-3.5 border-2 border-[var(--card-border)] min-h-[64px]">
                   <div className="w-10 h-10 rounded-xl bg-gray-100 flex items-center justify-center shrink-0 text-xs font-black text-gray-500 tabular-nums">
                     {String(s.roll_number).padStart(2, "0")}
                   </div>
                   <span className="text-sm font-bold text-gray-800 flex-1 min-w-0 truncate">{highlightMatch(s.name, q)}</span>
-                  <button onClick={() => goToCamera(s.id, s.name)} className="flex items-center gap-1.5 bg-gradient-to-r from-indigo-600 to-indigo-700 text-white text-xs font-bold px-4 rounded-xl active:scale-95 transition-transform shadow-md shadow-indigo-200 min-h-[44px] shrink-0">
+                  <button onClick={() => goToCamera(s.id, s.name)} className="flex items-center gap-1.5 bg-[var(--scanner-blue)] border-2 border-[var(--card-border)] text-white text-xs font-bold px-4 rounded-xl active:scale-95 transition-transform min-h-[44px] shrink-0">
                     <Camera size={15} /> Scan
                   </button>
                 </li>
@@ -155,7 +155,7 @@ export function ScanProgressView({ classId, testId, classInfo, testInfo, pending
                 const pctScore = testInfo.total_marks > 0 ? (s.score ?? 0) / testInfo.total_marks : 0;
                 const scoreColor = pctScore >= 0.7 ? "text-emerald-600" : pctScore >= 0.4 ? "text-amber-600" : "text-red-500";
                 return (
-                  <li key={s.id} className="flex items-center gap-3 bg-white rounded-2xl px-4 py-3.5 border border-gray-100 min-h-[64px]">
+                  <li key={s.id} className="flex items-center gap-3 bg-white rounded-2xl px-4 py-3.5 border-2 border-[var(--card-border)] min-h-[64px]">
                     <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center shrink-0 text-xs font-black text-emerald-600 tabular-nums">
                       {String(s.roll_number).padStart(2, "0")}
                     </div>
@@ -182,6 +182,6 @@ function highlightMatch(name: string, query: string): React.ReactNode {
   const idx = name.toLowerCase().indexOf(query.toLowerCase());
   if (idx === -1) return name;
   return (
-    <>{name.slice(0, idx)}<span className="text-indigo-600 font-black">{name.slice(idx, idx + query.length)}</span>{name.slice(idx + query.length)}</>
+    <>{name.slice(0, idx)}<span className="text-[var(--scanner-blue)] font-black">{name.slice(idx, idx + query.length)}</span>{name.slice(idx + query.length)}</>
   );
 }

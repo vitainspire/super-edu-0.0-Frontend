@@ -5,7 +5,7 @@ import { supabase } from '@/lib/supabase'
 import { backendFetch } from '@/lib/backend'
 import { Shield, Eye, EyeOff, Loader2, ArrowLeft } from 'lucide-react'
 
-const TONE = { bg: '#AACDEA', ink: '#1E3A55' }
+const TONE = { bg: '#E7E4DC', ink: '#17140F' }
 
 type Mode = 'signin' | 'register'
 

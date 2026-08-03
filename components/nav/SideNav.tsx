@@ -4,7 +4,7 @@ import { usePathname } from 'next/navigation'
 import {
   Home, LayoutGrid, GraduationCap, LogOut, Settings2, ClipboardList,
   CalendarDays, Megaphone, UserRound, HelpCircle,
-} from 'lucide-react'
+} from '@/components/ui/icons'
 import clsx from 'clsx'
 import { useApp } from '@/lib/context'
 import { useRouter } from 'next/navigation'
@@ -57,16 +57,17 @@ export default function SideNav() {
         onClick={() => router.push(href)}
         className={clsx(
           'w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-bold transition-all text-left',
-          active ? 'text-white' : 'hover:bg-black/[0.04]',
+          active ? 'text-white' : 'text-white/60 hover:text-white hover:bg-white/[0.06]',
         )}
-        style={active
-          ? { background: 'var(--ink)' }
-          : { color: 'var(--ink-soft)' }}
+        style={{
+          border: active ? '2px solid var(--card-border)' : '2px solid transparent',
+          background: active ? 'var(--forest-soft)' : undefined,
+        }}
       >
         <div className="relative shrink-0">
           <Icon size={18} strokeWidth={active ? 2.4 : 2} />
           {badge > 0 && (
-            <span className="absolute -top-1.5 -right-1.5 min-w-[14px] h-3.5 px-0.5 rounded-full bg-red-500 text-white text-[8px] font-black flex items-center justify-center leading-none">
+            <span className="absolute -top-1.5 -right-1.5 min-w-[14px] h-3.5 px-0.5 rounded-full bg-red-400 text-forest text-[8px] font-black flex items-center justify-center leading-none">
               {badge > 9 ? '9+' : badge}
             </span>
           )}
@@ -74,7 +75,7 @@ export default function SideNav() {
         <span>{label}</span>
         {badge > 0 && !active && (
           <span className="ml-auto min-w-[20px] h-5 px-1.5 rounded-full text-[10px] font-black flex items-center justify-center"
-            style={{ background: '#F8ECC9', color: '#AD8A2C' }}>
+            style={{ background: 'rgba(255,255,255,0.16)', color: '#F5E7B8' }}>
             {badge > 9 ? '9+' : badge}
           </span>
         )}
@@ -84,40 +85,40 @@ export default function SideNav() {
 
   return (
     <aside
-      className="hidden md:flex flex-col w-64 shrink-0 h-screen sticky top-0 overflow-y-auto"
-      style={{ background: 'var(--paper-soft)', borderRight: '1.5px solid rgba(58,44,30,0.1)' }}
+      className="hidden md:flex flex-col w-64 shrink-0 h-screen sticky top-0 overflow-y-auto text-white"
+      style={{ background: 'var(--forest)', borderRight: '3px solid var(--card-border)' }}
     >
-      <div className="flex items-center gap-3 px-6 py-6" style={{ borderBottom: '1.5px solid rgba(58,44,30,0.08)' }}>
-        <div className="w-10 h-10 rounded-2xl flex items-center justify-center shrink-0" style={{ background: 'var(--ink)' }}>
+      <div className="flex items-center gap-3 px-6 py-6" style={{ borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
+        <div className="w-10 h-10 rounded-2xl flex items-center justify-center shrink-0" style={{ background: 'rgba(255,255,255,0.12)' }}>
           <GraduationCap size={20} className="text-white" />
         </div>
         <div className="min-w-0">
-          <p className="font-display font-bold text-ink text-base leading-none">EduTeach</p>
-          <p className="text-[11px] text-ink-soft font-medium mt-1 truncate">{teacher?.schoolName ?? ''}</p>
+          <p className="font-display font-bold text-white text-base leading-none">EduTeach</p>
+          <p className="text-[11px] text-white/55 font-medium mt-1 truncate">{teacher?.schoolName ?? ''}</p>
         </div>
       </div>
 
       <nav className="flex-1 px-3 py-4 space-y-1">
         {NAV_ITEMS.map(renderItem)}
-        <div className="h-px my-2 mx-2" style={{ background: 'rgba(58,44,30,0.1)' }} />
+        <div className="h-px my-2 mx-2" style={{ background: 'rgba(255,255,255,0.1)' }} />
         {MORE_ITEMS.map(renderItem)}
       </nav>
 
-      <div className="px-4 py-4" style={{ borderTop: '1.5px solid rgba(58,44,30,0.08)' }}>
+      <div className="px-4 py-4" style={{ borderTop: '1px solid rgba(255,255,255,0.1)' }}>
         <div className="flex items-center gap-3 mb-3 px-2">
-          <div className="w-8 h-8 rounded-xl flex items-center justify-center text-white font-black text-sm shrink-0"
-            style={{ background: 'var(--ink)' }}>
+          <div className="w-8 h-8 rounded-xl flex items-center justify-center text-forest font-black text-sm shrink-0"
+            style={{ background: '#F7EFC4' }}>
             {teacher?.name?.[0]?.toUpperCase() ?? 'T'}
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-bold text-ink truncate">{teacher?.name}</p>
-            <p className="text-[10px] text-ink-soft truncate">{teacher?.subject}</p>
+            <p className="text-sm font-bold text-white truncate">{teacher?.name}</p>
+            <p className="text-[10px] text-white/55 truncate">{teacher?.subject}</p>
           </div>
         </div>
         <button
           type="button"
           onClick={handleLogout}
-          className="w-full flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold text-ink-soft hover:bg-red-50 hover:text-red-600 transition-colors"
+          className="w-full flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold text-white/60 hover:bg-white/[0.06] hover:text-white transition-colors"
         >
           <LogOut size={14} /> Sign out
         </button>

@@ -307,7 +307,7 @@ export default function ConnectPage() {
           {/* Header */}
           <div className="flex items-start justify-between gap-3">
             <div>
-              <p className="text-[10px] font-black tracking-[0.2em] uppercase text-indigo-500 mb-0.5">School Scanner</p>
+              <p className="text-[10px] font-black tracking-[0.2em] uppercase text-[var(--scanner-blue-mid)] mb-0.5">School Scanner</p>
               <h1 className="text-xl font-black text-gray-900 leading-tight">{schoolName || "School"}</h1>
               {!testsLoading && (totalTests > 0 || totalWs > 0) && (
                 <p className="text-xs text-gray-400 mt-0.5">
@@ -322,13 +322,13 @@ export default function ConnectPage() {
                 onClick={() => setShowFilters(v => !v)}
                 className={cn(
                   "relative w-9 h-9 rounded-xl flex items-center justify-center transition-colors",
-                  showFilters || filtersActive ? "bg-indigo-100 text-indigo-600" : "bg-slate-100 text-slate-500 hover:bg-slate-200"
+                  showFilters || filtersActive ? "bg-[var(--scanner-blue-soft)] text-[var(--scanner-blue-mid)]" : "bg-slate-100 text-slate-500 hover:bg-slate-200"
                 )}
                 title="Filters"
               >
                 <SlidersHorizontal size={15} />
                 {filtersActive && (
-                  <span className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-indigo-600" />
+                  <span className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-[var(--scanner-blue-mid)]" />
                 )}
               </button>
               <button
@@ -351,12 +351,12 @@ export default function ConnectPage() {
 
           {/* Filters */}
           {showFilters && !testsLoading && (
-            <div className="rounded-2xl border border-gray-100 bg-white shadow-sm p-3.5 space-y-3">
+            <div className="rounded-2xl border-2 border-[var(--card-border)] bg-white p-3.5 space-y-3">
               <div className="grid grid-cols-2 gap-2">
                 <select
                   value={filterGrade}
                   onChange={e => setFilterGrade(e.target.value)}
-                  className="w-full px-3 py-2.5 rounded-xl border border-gray-200 bg-gray-50 text-sm font-semibold text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                  className="w-full px-3 py-2.5 rounded-xl border border-gray-200 bg-gray-50 text-sm font-semibold text-gray-700 focus:outline-none focus:ring-2 focus:ring-[var(--scanner-blue-mid)]"
                 >
                   <option value="">All grades</option>
                   {grades.map(g => <option key={g} value={g}>Grade {g}</option>)}
@@ -364,7 +364,7 @@ export default function ConnectPage() {
                 <select
                   value={filterClassId}
                   onChange={e => setFilterClassId(e.target.value)}
-                  className="w-full px-3 py-2.5 rounded-xl border border-gray-200 bg-gray-50 text-sm font-semibold text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                  className="w-full px-3 py-2.5 rounded-xl border border-gray-200 bg-gray-50 text-sm font-semibold text-gray-700 focus:outline-none focus:ring-2 focus:ring-[var(--scanner-blue-mid)]"
                 >
                   <option value="">All sections</option>
                   {classesForGrade.map(c => (
@@ -378,7 +378,7 @@ export default function ConnectPage() {
               <select
                 value={filterSubject}
                 onChange={e => setFilterSubject(e.target.value)}
-                className="w-full px-3 py-2.5 rounded-xl border border-gray-200 bg-gray-50 text-sm font-semibold text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                className="w-full px-3 py-2.5 rounded-xl border border-gray-200 bg-gray-50 text-sm font-semibold text-gray-700 focus:outline-none focus:ring-2 focus:ring-[var(--scanner-blue-mid)]"
               >
                 <option value="">All subjects</option>
                 {subjects.map(s => <option key={s} value={s}>{s}</option>)}
@@ -392,7 +392,7 @@ export default function ConnectPage() {
                     onClick={() => setFilterKind(k)}
                     className={cn(
                       "flex-1 py-1.5 rounded-lg text-xs font-bold capitalize transition-colors",
-                      filterKind === k ? "bg-white text-indigo-600 shadow-sm" : "text-gray-400"
+                      filterKind === k ? "bg-white text-[var(--scanner-blue-mid)]" : "text-gray-400"
                     )}
                   >
                     {k}
@@ -405,13 +405,13 @@ export default function ConnectPage() {
                 onClick={() => setPendingOnly(v => !v)}
                 className={cn(
                   "w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-colors",
-                  pendingOnly ? "bg-indigo-50 text-indigo-700" : "bg-gray-50 text-gray-500"
+                  pendingOnly ? "bg-[var(--scanner-blue-soft)] text-[var(--scanner-blue)]" : "bg-gray-50 text-gray-500"
                 )}
               >
                 Pending only (hide fully scanned)
                 <span className={cn(
                   "w-9 h-5 rounded-full relative transition-colors shrink-0",
-                  pendingOnly ? "bg-indigo-500" : "bg-gray-300"
+                  pendingOnly ? "bg-[var(--scanner-blue-mid)]" : "bg-gray-300"
                 )}>
                   <span className={cn(
                     "absolute top-0.5 w-4 h-4 rounded-full bg-white transition-transform",
@@ -441,8 +441,8 @@ export default function ConnectPage() {
             </div>
           ) : (testGroups.length === 0 && worksheetGroups.length === 0) ? (
             <div className="text-center py-16">
-              <div className="w-16 h-16 rounded-3xl bg-indigo-50 flex items-center justify-center mx-auto mb-3">
-                <BookOpen size={28} className="text-indigo-300" />
+              <div className="w-16 h-16 rounded-3xl bg-[var(--scanner-blue-soft)] border-2 border-[var(--card-border)] flex items-center justify-center mx-auto mb-3">
+                <BookOpen size={28} className="text-[var(--scanner-blue)]" />
               </div>
               <p className="text-gray-500 font-bold text-sm">No tests or worksheets yet</p>
               <p className="text-xs text-gray-400 mt-1">Teachers haven&apos;t created any content yet.</p>
@@ -453,7 +453,7 @@ export default function ConnectPage() {
                 <SlidersHorizontal size={24} className="text-gray-300" />
               </div>
               <p className="text-gray-500 font-bold text-sm">Nothing matches these filters</p>
-              <button type="button" onClick={clearFilters} className="text-xs font-bold text-indigo-500 mt-2">
+              <button type="button" onClick={clearFilters} className="text-xs font-bold text-[var(--scanner-blue-mid)] mt-2">
                 Clear filters
               </button>
             </div>
@@ -464,8 +464,8 @@ export default function ConnectPage() {
               {filteredTestGroups.length > 0 && (
                 <div className="space-y-5">
                   <div className="flex items-center gap-2">
-                    <FileText size={13} className="text-indigo-400 shrink-0" />
-                    <p className="text-[11px] font-black uppercase tracking-[0.18em] text-indigo-400">Tests</p>
+                    <FileText size={13} className="text-[var(--scanner-blue-mid)] shrink-0" />
+                    <p className="text-[11px] font-black uppercase tracking-[0.18em] text-[var(--scanner-blue-mid)]">Tests</p>
                   </div>
                   {filteredTestGroups.map((group, gi) => (
                     <div key={gi}>
@@ -488,20 +488,20 @@ export default function ConnectPage() {
                                 }}
                                 disabled={!test.class_id}
                                 className={cn(
-                                  "group flex-1 flex items-center rounded-2xl px-4 py-3.5 shadow-sm border active:scale-[0.98] transition-all text-left",
+                                  "group flex-1 flex items-center rounded-2xl px-4 py-3.5 border-2 active:scale-[0.98] transition-all text-left",
                                   completed
                                     ? "bg-emerald-50 border-emerald-200 hover:border-emerald-300"
-                                    : "bg-white border-gray-100 hover:border-indigo-100",
+                                    : "bg-white border-[var(--card-border)] hover:border-[var(--scanner-blue-mid)]",
                                   !test.class_id && "opacity-50 cursor-not-allowed"
                                 )}
                               >
                                 <div className={cn(
                                   "w-9 h-9 rounded-xl flex items-center justify-center shrink-0 mr-3",
-                                  completed ? "bg-emerald-100" : "bg-indigo-50 group-hover:bg-indigo-100"
+                                  completed ? "bg-emerald-100" : "bg-[var(--scanner-blue-soft)] group-hover:brightness-95"
                                 )}>
                                   {completed
                                     ? <CheckCircle2 size={18} className="text-emerald-600" />
-                                    : <FileText size={16} className="text-indigo-400" />}
+                                    : <FileText size={16} className="text-[var(--scanner-blue-mid)]" />}
                                 </div>
                                 <div className="flex-1 min-w-0">
                                   <p className={cn("text-sm font-bold truncate leading-snug", completed ? "text-emerald-800" : "text-gray-900")}>
@@ -510,7 +510,7 @@ export default function ConnectPage() {
                                   <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
                                     <span className="text-xs text-gray-400">{formatDate(test.conducted_on)}</span>
                                     <span className="text-gray-300">·</span>
-                                    <span className={cn("text-xs font-bold", completed ? "text-emerald-600" : "text-indigo-500")}>
+                                    <span className={cn("text-xs font-bold", completed ? "text-emerald-600" : "text-[var(--scanner-blue-mid)]")}>
                                       {test.total_marks}m
                                     </span>
                                     {test.subject && (
@@ -524,7 +524,7 @@ export default function ConnectPage() {
                                     </p>
                                   )}
                                   {inProgress && (
-                                    <p className="text-[10px] font-semibold text-indigo-500 mt-0.5">
+                                    <p className="text-[10px] font-semibold text-[var(--scanner-blue-mid)] mt-0.5">
                                       {test.scanned} of {test.total} scanned
                                     </p>
                                   )}
@@ -535,10 +535,8 @@ export default function ConnectPage() {
                                   type="button"
                                   onClick={() => router.push(`/scanner/${test.class_id}/tests/${test.id}/multi-scan`)}
                                   className={cn(
-                                    "shrink-0 w-[56px] rounded-2xl flex flex-col items-center justify-center gap-1 shadow-md active:scale-95 transition-transform",
-                                    completed
-                                      ? "bg-gradient-to-b from-emerald-500 to-emerald-600 shadow-emerald-200/60"
-                                      : "bg-gradient-to-b from-indigo-600 to-indigo-700 shadow-indigo-200/60"
+                                    "shrink-0 w-[56px] rounded-2xl flex flex-col items-center justify-center gap-1 border-2 border-[var(--card-border)] active:scale-95 transition-transform",
+                                    completed ? "bg-[#065f46]" : "bg-[var(--scanner-blue)]"
                                   )}
                                 >
                                   <ScanLine size={20} className="text-white" />
@@ -558,8 +556,8 @@ export default function ConnectPage() {
               {filteredWorksheetGroups.length > 0 && (
                 <div className="space-y-5">
                   <div className="flex items-center gap-2">
-                    <ClipboardList size={13} className="text-violet-500 shrink-0" />
-                    <p className="text-[11px] font-black uppercase tracking-[0.18em] text-violet-500">Worksheets</p>
+                    <ClipboardList size={13} className="text-[var(--scanner-blue-mid)] shrink-0" />
+                    <p className="text-[11px] font-black uppercase tracking-[0.18em] text-[var(--scanner-blue-mid)]">Worksheets</p>
                   </div>
                   {filteredWorksheetGroups.map((group, gi) => (
                     <div key={gi}>
@@ -575,18 +573,18 @@ export default function ConnectPage() {
                           return (
                             <div key={ws.id} className="flex items-stretch gap-2">
                               <div className={cn(
-                                "group flex-1 flex items-center rounded-2xl px-4 py-3.5 shadow-sm border",
+                                "group flex-1 flex items-center rounded-2xl px-4 py-3.5 border-2",
                                 completed
                                   ? "bg-emerald-50 border-emerald-200"
-                                  : "bg-white border-gray-100"
+                                  : "bg-white border-[var(--card-border)]"
                               )}>
                                 <div className={cn(
                                   "w-9 h-9 rounded-xl flex items-center justify-center shrink-0 mr-3",
-                                  completed ? "bg-emerald-100" : "bg-violet-50"
+                                  completed ? "bg-emerald-100" : "bg-[var(--scanner-blue-soft)]"
                                 )}>
                                   {completed
                                     ? <CheckCircle2 size={18} className="text-emerald-600" />
-                                    : <ClipboardList size={16} className="text-violet-400" />}
+                                    : <ClipboardList size={16} className="text-[var(--scanner-blue-mid)]" />}
                                 </div>
                                 <div className="flex-1 min-w-0">
                                   <p className={cn("text-sm font-bold truncate leading-snug", completed ? "text-emerald-800" : "text-gray-900")}>
@@ -595,7 +593,7 @@ export default function ConnectPage() {
                                   <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
                                     <span className="text-xs text-gray-400">{formatDate(ws.created_at)}</span>
                                     <span className="text-gray-300">·</span>
-                                    <span className={cn("text-xs font-bold", completed ? "text-emerald-600" : "text-violet-500")}>
+                                    <span className={cn("text-xs font-bold", completed ? "text-emerald-600" : "text-[var(--scanner-blue-mid)]")}>
                                       {ws.total_marks}m
                                     </span>
                                     {ws.subject && (
@@ -609,7 +607,7 @@ export default function ConnectPage() {
                                     </p>
                                   )}
                                   {inProgress && (
-                                    <p className="text-[10px] font-semibold text-violet-500 mt-0.5">
+                                    <p className="text-[10px] font-semibold text-[var(--scanner-blue-mid)] mt-0.5">
                                       {ws.scanned} of {ws.total} scanned
                                     </p>
                                   )}
@@ -620,10 +618,8 @@ export default function ConnectPage() {
                                   type="button"
                                   onClick={() => router.push(`/scanner/worksheet/${ws.id}/multi-scan`)}
                                   className={cn(
-                                    "shrink-0 w-[56px] rounded-2xl flex flex-col items-center justify-center gap-1 shadow-md active:scale-95 transition-transform",
-                                    completed
-                                      ? "bg-gradient-to-b from-emerald-500 to-emerald-600 shadow-emerald-200/60"
-                                      : "bg-gradient-to-b from-violet-600 to-violet-700 shadow-violet-200/60"
+                                    "shrink-0 w-[56px] rounded-2xl flex flex-col items-center justify-center gap-1 border-2 border-[var(--card-border)] active:scale-95 transition-transform",
+                                    completed ? "bg-[#065f46]" : "bg-[var(--scanner-blue)]"
                                   )}
                                 >
                                   <ScanLine size={20} className="text-white" />
@@ -640,7 +636,7 @@ export default function ConnectPage() {
               )}
 
               <p className="text-center text-xs text-gray-400 pb-4 leading-relaxed px-2">
-                Tap <span className="font-bold text-indigo-500">Scan</span> on a test or <span className="font-bold text-violet-500">Scan</span> on a worksheet to photograph each student&apos;s pages — AI grades automatically.
+                Tap <span className="font-bold text-[var(--scanner-blue-mid)]">Scan</span> on a test or <span className="font-bold text-[var(--scanner-blue-mid)]">Scan</span> on a worksheet to photograph each student&apos;s pages — AI grades automatically.
               </p>
             </div>
           )}
@@ -654,8 +650,8 @@ export default function ConnectPage() {
     <div className="flex flex-col items-center justify-center min-h-[calc(100dvh-3.5rem)] pb-safe">
       <div className="w-full max-w-sm space-y-8 px-4">
         <div className="text-center space-y-4">
-          <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-indigo-500 to-indigo-700 flex items-center justify-center mx-auto shadow-2xl shadow-indigo-300/40">
-            <BookOpen size={36} className="text-white" />
+          <div className="w-20 h-20 rounded-3xl bg-[var(--scanner-blue-soft)] border-2 border-[var(--card-border)] flex items-center justify-center mx-auto">
+            <BookOpen size={36} className="text-[var(--scanner-blue)]" />
           </div>
           <div>
             <h1 className="text-2xl font-black text-gray-900">Enter School Code</h1>
@@ -673,7 +669,7 @@ export default function ConnectPage() {
             autoComplete="off"
             autoCapitalize="characters"
             spellCheck={false}
-            className="w-full px-5 py-5 rounded-2xl border-2 border-gray-100 bg-white text-2xl font-black text-center text-gray-900 placeholder:text-gray-200 placeholder:font-bold focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent tracking-[0.4em] uppercase shadow-sm transition-all"
+            className="w-full px-5 py-5 rounded-2xl border-2 border-gray-100 bg-white text-2xl font-black text-center text-gray-900 placeholder:text-gray-200 placeholder:font-bold focus:outline-none focus:ring-2 focus:ring-[var(--scanner-blue-mid)] focus:border-transparent tracking-[0.4em] uppercase transition-all"
           />
 
           {codeError && (
@@ -687,10 +683,10 @@ export default function ConnectPage() {
             type="submit"
             disabled={codeLoading}
             className={cn(
-              "w-full py-4 rounded-2xl text-white font-black text-base active:scale-[0.97] transition-all flex items-center justify-center gap-2",
+              "w-full py-4 rounded-2xl text-white font-black text-base active:scale-[0.97] transition-all flex items-center justify-center gap-2 border-2 border-[var(--card-border)]",
               codeLoading
-                ? "bg-indigo-400 cursor-not-allowed"
-                : "bg-gradient-to-r from-indigo-600 to-indigo-700 shadow-xl shadow-indigo-200 hover:shadow-indigo-300"
+                ? "bg-[var(--scanner-blue-mid)] opacity-70 cursor-not-allowed"
+                : "bg-[var(--scanner-blue)]"
             )}
           >
             {codeLoading ? <><Spinner size="sm" /> Connecting…</> : <>Connect <ArrowRight size={18} /></>}

@@ -2,15 +2,18 @@
 import { useState, useMemo, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import {
-  PenLine, Plus, ChevronRight, GraduationCap, X, BookOpen,
-  ArrowLeft, Sparkles, RefreshCw, ChevronDown, ChevronUp, Lock,
-  FileText, Trash2, Printer, Check,
+  PenLine, RefreshCw, Lock, FileText, Trash2, Printer,
 } from 'lucide-react'
+import {
+  Plus, ChevronRight, GraduationCap, X, BookOpen,
+  ArrowLeft, Sparkles, ChevronDown, ChevronUp, Check,
+} from '@/components/ui/icons'
 import { useApp } from '@/lib/context'
 import MarkEntry from '@/components/marks/MarkEntry'
 import QuestionPaperModal from '@/components/marks/QuestionPaperModal'
 import CreateClassModal from '@/components/classes/CreateClassModal'
 import PaperBuilder from '@/components/tests/PaperBuilder'
+import WorkbookModal from '@/components/tests/WorkbookModal'
 import { aiKey, getAiCache, setAiCache, TTL } from '@/lib/ai-cache'
 import type { AiQuestion } from '@/lib/types'
 import clsx from 'clsx'
@@ -131,6 +134,11 @@ export default function TestsPage() {
   // ── Modals ──────────────────────────────────────────────────────────────────
   const [classPicker, setClassPicker]       = useState(false)
   const [createClassOpen, setCreateClassOpen] = useState(false)
+  // The class picker is shared between "New Test" and "Workbook"; intent decides
+  // where a pick lands.
+  const [pickerIntent, setPickerIntent]     = useState<'test' | 'workbook'>('test')
+  const [workbookOpen, setWorkbookOpen]     = useState(false)
+  const [workbookClassId, setWorkbookClassId] = useState('')
 
   // ── Derived data ────────────────────────────────────────────────────────────
 
@@ -219,6 +227,7 @@ export default function TestsPage() {
 
   function handleNewTest() {
     if (myClasses.length === 0) { setCreateClassOpen(true); return }
+    setPickerIntent('test')
     resetForm()
     if (myClasses.length === 1) {
       setSelectedClassId(myClasses[0].id)
@@ -228,9 +237,26 @@ export default function TestsPage() {
     }
   }
 
+  // Workbook flow — same class-choice UX as New Test, but opens the Workbook modal.
+  function handleNewWorkbook() {
+    if (myClasses.length === 0) { setCreateClassOpen(true); return }
+    setPickerIntent('workbook')
+    if (myClasses.length === 1) {
+      setWorkbookClassId(myClasses[0].id)
+      setWorkbookOpen(true)
+    } else {
+      setClassPicker(true)
+    }
+  }
+
   function pickClass(classId: string) {
-    setSelectedClassId(classId)
     setClassPicker(false)
+    if (pickerIntent === 'workbook') {
+      setWorkbookClassId(classId)
+      setWorkbookOpen(true)
+      return
+    }
+    setSelectedClassId(classId)
     resetForm()
     setStep('new-test')
   }
@@ -411,9 +437,9 @@ export default function TestsPage() {
       <div className="paper-page">
         {/* Header */}
         <div style={{ padding: '20px 24px 0' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 14, paddingBottom: 16, borderBottom: '1px solid rgba(58,44,30,0.08)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 14, paddingBottom: 16, borderBottom: '2px solid var(--card-border)' }}>
             <button onClick={() => setStep('list')}
-              style={{ width: 36, height: 36, borderRadius: 10, background: 'rgba(58,44,30,0.08)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              style={{ width: 36, height: 36, borderRadius: '50%', background: '#fff', border: '1.75px solid var(--card-border)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
               <ArrowLeft size={18} style={{ color: 'var(--ink)' }} />
             </button>
             <div>
@@ -445,7 +471,7 @@ export default function TestsPage() {
         <div style={{ padding: '20px 24px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
             <button onClick={() => { setStep('list'); setCurrentTestId('') }}
-              style={{ width: 36, height: 36, borderRadius: 10, background: 'rgba(58,44,30,0.08)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              style={{ width: 36, height: 36, borderRadius: '50%', background: '#fff', border: '1.75px solid var(--card-border)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
               <ArrowLeft size={18} style={{ color: 'var(--ink)' }} />
             </button>
             <div>
@@ -467,25 +493,25 @@ export default function TestsPage() {
         <div style={{ padding: '20px 24px', display: 'flex', flexDirection: 'column', gap: 16 }}>
           {/* Question paper reference */}
           {currentTest.questions && currentTest.questions.length > 0 && (
-            <div style={{ background: '#E9E1F6', border: '1px solid rgba(49,33,92,0.12)', borderRadius: 20, overflow: 'hidden' }}>
+            <div style={{ background: '#fff', border: '2px solid var(--card-border)', borderRadius: 20, overflow: 'hidden' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 18px' }}>
                 <button type="button" onClick={() => setPaperOpen(p => !p)}
                   style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
-                  <Sparkles size={14} style={{ color: '#31215C' }} />
-                  <span style={{ fontSize: 13, fontWeight: 700, color: '#31215C' }}>Question Paper · {currentTest.questions.length} questions</span>
-                  {paperOpen ? <ChevronUp size={15} style={{ color: '#6B5D8F' }} /> : <ChevronDown size={15} style={{ color: '#6B5D8F' }} />}
+                  <Sparkles size={14} style={{ color: 'var(--forest)' }} />
+                  <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--ink)' }}>Question Paper · {currentTest.questions.length} questions</span>
+                  {paperOpen ? <ChevronUp size={15} style={{ color: 'var(--ink-soft)' }} /> : <ChevronDown size={15} style={{ color: 'var(--ink-soft)' }} />}
                 </button>
                 <button type="button" onClick={() => setPrintPaperOpen(true)}
-                  style={{ display: 'flex', alignItems: 'center', gap: 6, background: '#31215C', color: '#fff', border: 'none', cursor: 'pointer', fontSize: 12, fontWeight: 700, padding: '6px 14px', borderRadius: 8 }}>
+                  style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'var(--ink)', color: '#fff', border: 'none', cursor: 'pointer', fontSize: 12, fontWeight: 700, padding: '6px 14px', borderRadius: 8 }}>
                   <Printer size={12} /> Print Paper
                 </button>
               </div>
               {paperOpen && (
                 <div style={{ padding: '0 18px 16px', display: 'flex', flexDirection: 'column', gap: 8 }}>
                   {currentTest.questions.map((q, i) => (
-                    <div key={i} style={{ background: '#fff', borderRadius: 14, padding: '12px 14px', border: '1px solid rgba(49,33,92,0.12)' }}>
+                    <div key={i} style={{ background: '#fff', borderRadius: 14, padding: '12px 14px', border: '2px solid var(--card-border)' }}>
                       <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
-                        <span style={{ width: 20, height: 20, background: '#31215C', color: '#fff', borderRadius: '50%', fontSize: 11, fontWeight: 900, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 1 }}>{i + 1}</span>
+                        <span style={{ width: 20, height: 20, background: 'var(--ink)', color: '#fff', borderRadius: '50%', fontSize: 11, fontWeight: 900, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 1 }}>{i + 1}</span>
                         <div style={{ flex: 1 }}>
                           <p style={{ fontSize: 13, color: 'var(--ink)' }}>{q.text}</p>
                           <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 6 }}>
@@ -496,7 +522,7 @@ export default function TestsPage() {
                       </div>
                     </div>
                   ))}
-                  <p style={{ fontSize: 11, color: '#6B5D8F', paddingTop: 4 }}>Total: {currentTest.questions.reduce((s, q) => s + (q.marks ?? 0), 0)} marks</p>
+                  <p style={{ fontSize: 11, color: 'var(--ink-soft)', paddingTop: 4 }}>Total: {currentTest.questions.reduce((s, q) => s + (q.marks ?? 0), 0)} marks</p>
                 </div>
               )}
             </div>
@@ -540,7 +566,7 @@ export default function TestsPage() {
         <div style={{ padding: '20px 24px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
             <button onClick={() => { setStep('list'); setCurrentWorksheetId('') }}
-              style={{ width: 36, height: 36, borderRadius: 10, background: 'rgba(58,44,30,0.08)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              style={{ width: 36, height: 36, borderRadius: '50%', background: '#fff', border: '1.75px solid var(--card-border)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
               <ArrowLeft size={18} style={{ color: 'var(--ink)' }} />
             </button>
             <div>
@@ -554,7 +580,7 @@ export default function TestsPage() {
         <div style={{ padding: '20px 24px' }}>
           {wsMarksLoading ? (
             <div style={{ display: 'flex', justifyContent: 'center', padding: '48px 0' }}>
-              <RefreshCw size={24} style={{ color: '#31215C' }} className="animate-spin" />
+              <RefreshCw size={24} style={{ color: 'var(--forest)' }} className="animate-spin" />
             </div>
           ) : (
             <MarkEntry
@@ -589,9 +615,13 @@ export default function TestsPage() {
               style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'rgba(58,44,30,0.08)', color: 'var(--ink-soft)', border: 'none', borderRadius: 12, padding: '9px 12px', fontSize: 12, fontWeight: 700, cursor: 'pointer', opacity: syncing || syncStatus === 'offline' ? 0.5 : 1 }}>
               <RefreshCw size={13} className={syncing ? 'animate-spin' : ''} />
             </button>
+            <button onClick={handleNewWorkbook}
+              style={{ display: 'flex', alignItems: 'center', gap: 7, background: 'var(--forest)', color: '#fff', fontWeight: 800, fontSize: 13, padding: '10px 14px', borderRadius: 14, border: 'none', cursor: 'pointer' }}>
+              <BookOpen size={15} /> Workbook
+            </button>
             <button onClick={handleNewTest}
               style={{ display: 'flex', alignItems: 'center', gap: 7, background: 'var(--ink)', color: '#fff', fontWeight: 800, fontSize: 13, padding: '10px 16px', borderRadius: 14, border: 'none', cursor: 'pointer' }}>
-              <Plus size={15} strokeWidth={2.5} /> New
+              <Plus size={15} strokeWidth={2.5} /> New Test
             </button>
           </div>
         }
@@ -648,7 +678,7 @@ export default function TestsPage() {
 
               {/* Revision needed banner */}
               {revisionTopics.length > 0 && (
-                <div style={{ background: '#F8ECC9', border: '2px solid rgba(58,44,30,0.12)', borderRadius: 20, padding: '12px 16px', marginBottom: 10 }}>
+                <div style={{ background: '#F8ECC9', border: '2px solid var(--card-border)', borderRadius: 20, padding: '12px 16px', marginBottom: 10 }}>
                   <p style={{ fontSize: 11, fontWeight: 800, color: '#4A3809', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '.06em' }}>Revision needed</p>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                     {revisionTopics.map(({ topic, avg }) => (
@@ -738,7 +768,7 @@ export default function TestsPage() {
                         <div style={{ padding: '0 16px 10px' }}>
                           <button type="button" onClick={() => fetchAnalysis(cls.id, t.id)}
                             className="w-full flex items-center justify-center gap-2 py-2 rounded-2xl text-xs font-bold transition-all"
-                            style={{ background: isOpen ? '#E9E1F6' : 'rgba(58,44,30,0.04)', color: isOpen ? '#31215C' : 'var(--ink-soft)' }}>
+                            style={{ background: isOpen ? 'rgba(31,61,44,0.10)' : 'rgba(58,44,30,0.04)', color: isOpen ? 'var(--forest)' : 'var(--ink-soft)' }}>
                             <Sparkles size={12} />
                             {isOpen ? 'Hide Analysis' : 'Analyse Class'}
                             {analysisLoading && isOpen && <RefreshCw size={11} className="animate-spin" />}
@@ -748,14 +778,14 @@ export default function TestsPage() {
 
                       {/* Analysis panel */}
                       {isOpen && (
-                        <div style={{ margin: '0 18px 12px', background: '#E9E1F6', border: '1px solid rgba(49,33,92,0.12)', borderRadius: 16, padding: '16px' }}>
+                        <div style={{ margin: '0 18px 12px', background: '#fff', border: '2px solid var(--card-border)', borderRadius: 16, padding: '16px' }}>
                           {!analysis && analysisLoading && (
                             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                              {[1,2,3,4].map(i => <div key={i} className="animate-pulse" style={{ height: 16, background: 'rgba(49,33,92,0.12)', borderRadius: 8 }} />)}
+                              {[1,2,3,4].map(i => <div key={i} className="animate-pulse" style={{ height: 16, background: 'rgba(58,44,30,0.10)', borderRadius: 8 }} />)}
                             </div>
                           )}
                           {!analysis && !analysisLoading && (
-                            <p style={{ fontSize: 12, color: '#6B5D8F', textAlign: 'center' }}>Could not load analysis — tap Analyse Class to retry</p>
+                            <p style={{ fontSize: 12, color: 'var(--ink-soft)', textAlign: 'center' }}>Could not load analysis — tap Analyse Class to retry</p>
                           )}
                           {analysis && (
                             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -777,8 +807,8 @@ export default function TestsPage() {
 
                           {/* Question-level stats from scanner */}
                           {questionStats && questionStats.length > 0 && (
-                            <div style={{ marginTop: 12, background: '#fff', border: '1px solid rgba(49,33,92,0.12)', borderRadius: 12, padding: '12px 14px' }}>
-                              <p style={{ fontSize: 10, fontWeight: 800, color: '#31215C', textTransform: 'uppercase', letterSpacing: '.06em', marginBottom: 10 }}>
+                            <div style={{ marginTop: 12, background: '#fff', border: '2px solid var(--card-border)', borderRadius: 12, padding: '12px 14px' }}>
+                              <p style={{ fontSize: 10, fontWeight: 800, color: 'var(--forest)', textTransform: 'uppercase', letterSpacing: '.06em', marginBottom: 10 }}>
                                 Questions Most Students Got Wrong
                               </p>
                               <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -790,7 +820,7 @@ export default function TestsPage() {
                                       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                                         <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--ink)', flexShrink: 0 }}>Q{q.qNum}</span>
                                         <div style={{ flex: 1, background: 'rgba(58,44,30,0.1)', borderRadius: 99, height: 8, overflow: 'hidden' }}>
-                                          <div style={{ height: 8, borderRadius: 99, background: q.wrongPct >= 70 ? '#C46B54' : q.wrongPct >= 50 ? '#AD8A2C' : '#8069B0', width: `${q.wrongPct}%` }} />
+                                          <div style={{ height: 8, borderRadius: 99, background: q.wrongPct >= 70 ? '#C46B54' : q.wrongPct >= 50 ? '#AD8A2C' : 'var(--forest)', width: `${q.wrongPct}%` }} />
                                         </div>
                                         <span style={{ fontSize: 11, fontWeight: 800, color: 'var(--ink-soft)', width: 36, textAlign: 'right', flexShrink: 0 }}>{q.wrongPct}%</span>
                                         {q.dominant && <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full shrink-0 ${ec}`}>{q.dominant}</span>}
@@ -800,7 +830,7 @@ export default function TestsPage() {
                                   )
                                 })}
                               </div>
-                              <p style={{ fontSize: 10, color: '#6B5D8F', marginTop: 8 }}>Showing questions where 30%+ students lost marks · {questionStats[0]?.total ?? 0} papers scanned</p>
+                              <p style={{ fontSize: 10, color: 'var(--ink-soft)', marginTop: 8 }}>Showing questions where 30%+ students lost marks · {questionStats[0]?.total ?? 0} papers scanned</p>
                             </div>
                           )}
                         </div>
@@ -818,16 +848,16 @@ export default function TestsPage() {
       {classPicker && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(58,44,30,.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100 }}
           onClick={() => setClassPicker(false)}>
-          <div style={{ background: 'var(--paper-soft)', borderRadius: 24, padding: '28px 24px', width: 380, maxWidth: 'calc(100vw - 32px)', border: '1.5px solid rgba(58,44,30,0.18)' }}
+          <div style={{ background: 'var(--paper-soft)', borderRadius: 24, padding: '28px 24px', width: 380, maxWidth: 'calc(100vw - 32px)', border: '2px solid var(--card-border)' }}
             onClick={e => e.stopPropagation()}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
               <div>
                 <p className="font-display" style={{ fontSize: 17, fontWeight: 900, color: 'var(--ink)' }}>Which class?</p>
-                <p style={{ fontSize: 12, color: 'var(--ink-soft)', marginTop: 2 }}>Select a class to create the test in</p>
+                <p style={{ fontSize: 12, color: 'var(--ink-soft)', marginTop: 2 }}>{pickerIntent === 'workbook' ? 'Select a class to make a workbook for' : 'Select a class to create the test in'}</p>
               </div>
               <button onClick={() => setClassPicker(false)}
-                style={{ background: 'rgba(58,44,30,0.08)', border: 'none', borderRadius: 10, width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
-                <X size={15} style={{ color: 'var(--ink-soft)' }} />
+                style={{ background: '#fff', border: '1.75px solid var(--card-border)', borderRadius: '50%', width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+                <X size={15} style={{ color: 'var(--ink)' }} />
               </button>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -836,7 +866,7 @@ export default function TestsPage() {
                 return (
                   <button key={cls.id} onClick={() => pickClass(cls.id)}
                     className="hover:bg-black/[0.03] transition-colors"
-                    style={{ display: 'flex', alignItems: 'center', gap: 13, padding: '14px 16px', borderRadius: 16, border: '1.5px solid rgba(58,44,30,0.1)', background: '#fff', cursor: 'pointer', textAlign: 'left' }}>
+                    style={{ display: 'flex', alignItems: 'center', gap: 13, padding: '14px 16px', borderRadius: 16, border: '2px solid var(--card-border)', background: '#fff', cursor: 'pointer', textAlign: 'left' }}>
                     <div style={{ width: 40, height: 40, borderRadius: 12, background: CLASS_ACCENT[gi % CLASS_ACCENT.length], display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                       <span style={{ fontSize: 17, fontWeight: 900, color: 'var(--ink)' }}>{cls.grade}</span>
                     </div>
@@ -877,7 +907,7 @@ export default function TestsPage() {
                       <span style={{ fontSize: 11, color: 'var(--ink-soft)' }}>Grade {ws.grade}</span>
                       <span style={{ fontSize: 11, color: 'var(--ink-soft)' }}>·</span>
                       <span style={{ fontSize: 11, color: 'var(--ink-soft)' }}>{ws.totalMarks} marks</span>
-                      {ws.template && <span style={{ fontSize: 10, fontWeight: 700, color: '#31215C', background: '#E9E1F6', borderRadius: 999, padding: '1px 8px' }}>{ws.template}</span>}
+                      {ws.template && <span style={{ fontSize: 10, fontWeight: 700, color: 'var(--forest)', background: 'rgba(31,61,44,0.10)', borderRadius: 999, padding: '1px 8px' }}>{ws.template}</span>}
                       {hasKey && (
                         <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3, fontSize: 10, fontWeight: 700, color: '#234A1D', background: '#DFF0DA', borderRadius: 999, padding: '1px 8px' }}>
                           <Check size={10} strokeWidth={3} /> Key
@@ -888,7 +918,7 @@ export default function TestsPage() {
                   <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
                     {ws.classId && (
                       <button onClick={() => void openWorksheetMarks(ws.classId!, ws.id)}
-                        style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 12, fontWeight: 700, color: '#31215C', background: '#E9E1F6', padding: '7px 14px', borderRadius: 10, border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>
+                        style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 12, fontWeight: 700, color: 'var(--forest)', background: 'rgba(31,61,44,0.10)', padding: '7px 14px', borderRadius: 10, border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>
                         <GraduationCap size={13} /> Scores
                       </button>
                     )}
@@ -917,6 +947,30 @@ export default function TestsPage() {
       )}
 
       <CreateClassModal open={createClassOpen} onClose={() => setCreateClassOpen(false)} />
+
+      {(() => {
+        const wc = myClasses.find(c => c.id === workbookClassId)
+        // `||`, not `??`. A teacher created by an admin without a subject has
+        // subject '' rather than null, and ?? only falls back on null/undefined
+        // — so the empty string went straight through and /api/generate-workbook
+        // rejected the request with "classId, subject, grade ... are required".
+        // That is the whole of "couldn't generate workbook".
+        //
+        // The assignment is also the better answer than the teacher's profile
+        // subject: it says what THIS teacher teaches THIS class, which is the
+        // workbook being asked for.
+        const assignedSubject = assignments.find(a => a.classId === workbookClassId)?.subject
+        return (
+          <WorkbookModal
+            open={workbookOpen}
+            onClose={() => setWorkbookOpen(false)}
+            classId={workbookClassId}
+            className={wc?.name}
+            grade={wc?.grade || teacher?.grade || ''}
+            subject={assignedSubject || teacher?.subject || 'General'}
+          />
+        )
+      })()}
 
     </div>
   )

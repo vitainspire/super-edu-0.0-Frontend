@@ -1,6 +1,7 @@
 'use client'
 import { useRouter } from 'next/navigation'
-import { ChevronRight, Megaphone, Bell, CalendarDays } from 'lucide-react'
+import { Bell } from 'lucide-react'
+import { ChevronRight, Megaphone, CalendarDays } from '@/components/ui/icons'
 import PageHeader from '@/components/theme/PageHeader'
 import { Sticker, NotebookSticker, GearSticker, ChatQuestionSticker } from '@/components/theme/StickerIcon'
 

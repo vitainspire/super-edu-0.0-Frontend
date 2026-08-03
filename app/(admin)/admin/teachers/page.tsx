@@ -35,6 +35,7 @@ export default function TeachersPage() {
 
   const [subjectsTeacher, setSubjectsTeacher] = useState<Teacher | null>(null)
   const [subjectsDraft, setSubjectsDraft] = useState<string[]>([])
+  const [subjectsError, setSubjectsError] = useState('')
   const [savingSubjects, setSavingSubjects] = useState(false)
 
   function load() {
@@ -113,20 +114,35 @@ export default function TeachersPage() {
 
   function openSubjects(t: Teacher) {
     setSubjectsTeacher(t)
+    setSubjectsError('')
     setSubjectsDraft(t.subjects?.length ? t.subjects : (t.subject ? [t.subject] : []))
   }
 
   async function saveSubjects() {
     if (!school || !subjectsTeacher) return
     setSavingSubjects(true)
-    await fetch(`/api/admin/schools/${school.id}/teachers`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ teacherId: subjectsTeacher.id, subjects: subjectsDraft }),
-    })
-    setSavingSubjects(false)
-    setSubjectsTeacher(null)
-    load()
+    setSubjectsError('')
+    try {
+      const res = await fetch(`/api/admin/schools/${school.id}/teachers`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ teacherId: subjectsTeacher.id, subjects: subjectsDraft }),
+      })
+      // The response was previously ignored entirely, so a rejected save looked
+      // exactly like a successful one: the modal closed, the list reloaded, and
+      // the subject column still read "Add subjects" with nothing said.
+      if (!res.ok) {
+        const body = await res.json().catch(() => null) as { error?: string } | null
+        setSubjectsError(body?.error ?? `Could not save (server returned ${res.status}).`)
+        return
+      }
+      setSubjectsTeacher(null)
+      load()
+    } catch {
+      setSubjectsError('Could not reach the server.')
+    } finally {
+      setSavingSubjects(false)
+    }
   }
 
   return (
@@ -169,7 +185,6 @@ export default function TeachersPage() {
                   <tr style={{ borderBottom: '1.5px solid rgba(58,44,30,0.12)' }}>
                     <th className="text-left text-xs font-bold text-ink-soft uppercase tracking-wide px-5 py-3">Name</th>
                     <th className="text-left text-xs font-bold text-ink-soft uppercase tracking-wide px-5 py-3">Subject</th>
-                    <th className="text-left text-xs font-bold text-ink-soft uppercase tracking-wide px-5 py-3">Grade</th>
                     <th className="text-left text-xs font-bold text-ink-soft uppercase tracking-wide px-5 py-3">Workload Limit</th>
                     <th className="text-left text-xs font-bold text-ink-soft uppercase tracking-wide px-5 py-3">Code</th>
                     <th className="px-5 py-3" />
@@ -197,7 +212,6 @@ export default function TeachersPage() {
                           </span>
                         </button>
                       </td>
-                      <td className="px-5 py-3 text-sm text-ink-soft">{t.grade || '—'}</td>
                       <td className="px-5 py-3">
                         <button
                           onClick={() => openLimits(t)}
@@ -353,6 +367,9 @@ export default function TeachersPage() {
           Every subject {subjectsTeacher?.name} can teach — not just what they&apos;re currently assigned to a class for. Used when assigning teachers to classes and generating timetables.
         </p>
         <SubjectsTagInput value={subjectsDraft} onChange={setSubjectsDraft} />
+        {subjectsError && (
+          <p className="text-xs font-semibold text-red-700 mt-3">{subjectsError}</p>
+        )}
         <div className="flex gap-3 pt-4">
           <button
             type="button"

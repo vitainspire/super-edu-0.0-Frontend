@@ -27,14 +27,25 @@ const config: Config = {
           800: "#1e40af",
         },
         paper: {
-          DEFAULT: "#FFFFFF",
-          soft:    "#FFFFFF",
-          line:    "#EAD9B8",
+          DEFAULT: "#FFFFFF",   // card surface
+          soft:    "#FBFBF6",   // slightly warm card
+          line:    "#E4E2D6",
+        },
+        // Sage canvas + forest-green nav/accent — the redesign palette.
+        sage: {
+          DEFAULT: "#A9C4A2",
+          soft:    "#B7CEB0",
+          deep:    "#95B48D",
+        },
+        forest: {
+          DEFAULT: "#1F3D2C",
+          soft:    "#2C5540",
+          bright:  "#3E7A57",
         },
         ink: {
-          DEFAULT: "#3A2C1E",
-          soft:    "#6B5A45",
-          faint:   "#A8977F",
+          DEFAULT: "#17140F",   // near-black headings / text / dark buttons
+          soft:    "#4A4740",
+          faint:   "#8A887F",
         },
         sticker: {
           blue:      "#AACDEA",
@@ -52,7 +63,8 @@ const config: Config = {
         },
       },
       fontFamily: {
-        display: ["var(--font-serif)", "Georgia", "serif"],
+        display: ["var(--font-display)", "var(--font-jakarta)", "sans-serif"],
+        serif: ["var(--font-serif)", "Georgia", "serif"],
         body: ["var(--font-jakarta)", "-apple-system", "sans-serif"],
         kid: ["var(--font-kid)", "-apple-system", "sans-serif"],
       },

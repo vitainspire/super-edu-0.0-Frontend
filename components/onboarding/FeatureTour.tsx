@@ -1,10 +1,11 @@
 'use client'
 import { useState, useEffect } from 'react'
 import {
-  X, ChevronLeft, ChevronRight,
-  Sparkles, BookOpen, AlertTriangle,
-  RefreshCw, Activity, FileText, Upload,
-  CalendarDays, HelpCircle, type LucideIcon,
+  X, ChevronRight, Sparkles, BookOpen,
+  AlertTriangle, Activity, CalendarDays, HelpCircle,
+} from '@/components/ui/icons'
+import {
+  ChevronLeft, RefreshCw, FileText, Upload, type LucideIcon,
 } from 'lucide-react'
 
 interface TourCard {

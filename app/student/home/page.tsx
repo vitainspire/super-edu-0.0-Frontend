@@ -46,16 +46,16 @@ interface BadgeDef {
 }
 
 const BADGE_DEFS: BadgeDef[] = [
-  { id: 'perfect',      Icon: Star,          Sticker: StarSticker,          name: 'Perfect Score',    description: 'Scored 100% on a test',             hint: 'Score full marks on any test',              color: '#d97706', bg: '#fffbeb', border: '#fde68a' },
-  { id: 'sharpshooter', Icon: Target,        Sticker: MedalSticker,         name: 'Sharpshooter',    description: 'Scored 90%+ on a test',             hint: 'Score 90% or above on any test',            color: '#059669', bg: '#ecfdf5', border: '#a7f3d0' },
-  { id: 'streak3',      Icon: Flame,         Sticker: FlameSticker,         name: 'Hat-Trick',       description: 'Attended 3 classes in a row',       hint: 'Attend 3 classes without missing one',      color: '#ea580c', bg: '#fff7ed', border: '#fde68a' },
-  { id: 'streak7',      Icon: Flame,         Sticker: FlameSticker,         name: 'Week Warrior',   description: 'Attended 7 classes in a row',       hint: 'Attend 7 classes in a row',                 color: '#dc2626', bg: '#fef2f2', border: '#fecaca' },
-  { id: 'attendance',   Icon: CalendarCheck, Sticker: CalendarCheckSticker, name: 'Attendance Star', description: 'Over 90% overall attendance',      hint: 'Keep attendance above 90%',                 color: '#2563eb', bg: '#eff6ff', border: '#bfdbfe' },
-  { id: 'improving',    Icon: TrendingUp,    Sticker: TrendingUpSticker,    name: 'On the Rise',     description: 'Improved since last test',          hint: 'Score higher than your previous test',      color: '#7c3aed', bg: '#f5f3ff', border: '#ddd6fe' },
-  { id: 'noweakspot',   Icon: Dumbbell,      Sticker: DumbbellSticker,      name: 'All Rounder',     description: 'No weak topics — all 60%+',         hint: 'Get 60%+ mastery in all tested topics',     color: '#0891b2', bg: '#ecfeff', border: '#a5f3fc' },
-  { id: 'topicmaster',  Icon: Trophy,        Sticker: TrophySticker,        name: 'Topic Master',    description: '80%+ mastery in a topic',           hint: 'Reach 80%+ mastery in any topic',           color: '#4f46e5', bg: '#eef2ff', border: '#c7d2fe' },
-  { id: 'halfway',      Icon: GraduationCap, Sticker: GradCapSticker,       name: 'Halfway Hero',    description: 'Completed 50% of the syllabus',    hint: 'Complete at least half the syllabus',       color: '#059669', bg: '#ecfdf5', border: '#6ee7b7' },
-  { id: 'comeback',     Icon: Rocket,        Sticker: RocketSticker,        name: 'Comeback Kid',    description: 'Bounced back from a low score',    hint: 'Score above 60% after scoring below 50%',   color: '#e11d48', bg: '#fff1f2', border: '#fecdd3' },
+  { id: 'perfect',      Icon: Star,          Sticker: StarSticker,          name: 'Perfect Score',    description: 'Scored 100% on a test',             hint: 'Score full marks on any test',              color: '#2F8FE0', bg: '#DCEBF8', border: '#BFDCF5' },
+  { id: 'sharpshooter', Icon: Target,        Sticker: MedalSticker,         name: 'Sharpshooter',    description: 'Scored 90%+ on a test',             hint: 'Score 90% or above on any test',            color: '#1E62A8', bg: '#CDE3F7', border: '#9CC3EA' },
+  { id: 'streak3',      Icon: Flame,         Sticker: FlameSticker,         name: 'Hat-Trick',       description: 'Attended 3 classes in a row',       hint: 'Attend 3 classes without missing one',      color: '#FF9F43', bg: '#FFE8D1', border: '#FFD09E' },
+  { id: 'streak7',      Icon: Flame,         Sticker: FlameSticker,         name: 'Week Warrior',   description: 'Attended 7 classes in a row',       hint: 'Attend 7 classes in a row',                 color: '#D9720F', bg: '#FCDCC2', border: '#F5B37A' },
+  { id: 'attendance',   Icon: CalendarCheck, Sticker: CalendarCheckSticker, name: 'Attendance Star', description: 'Over 90% overall attendance',      hint: 'Keep attendance above 90%',                 color: '#C98A0A', bg: '#FFF2CC', border: '#FFE18C' },
+  { id: 'improving',    Icon: TrendingUp,    Sticker: TrendingUpSticker,    name: 'On the Rise',     description: 'Improved since last test',          hint: 'Score higher than your previous test',      color: '#2F8FE0', bg: '#DCEBF8', border: '#BFDCF5' },
+  { id: 'noweakspot',   Icon: Dumbbell,      Sticker: DumbbellSticker,      name: 'All Rounder',     description: 'No weak topics — all 60%+',         hint: 'Get 60%+ mastery in all tested topics',     color: '#1E62A8', bg: '#CDE3F7', border: '#9CC3EA' },
+  { id: 'topicmaster',  Icon: Trophy,        Sticker: TrophySticker,        name: 'Topic Master',    description: '80%+ mastery in a topic',           hint: 'Reach 80%+ mastery in any topic',           color: '#FF9F43', bg: '#FFE8D1', border: '#FFD09E' },
+  { id: 'halfway',      Icon: GraduationCap, Sticker: GradCapSticker,       name: 'Halfway Hero',    description: 'Completed 50% of the syllabus',    hint: 'Complete at least half the syllabus',       color: '#D9720F', bg: '#FCDCC2', border: '#F5B37A' },
+  { id: 'comeback',     Icon: Rocket,        Sticker: RocketSticker,        name: 'Comeback Kid',    description: 'Bounced back from a low score',    hint: 'Score above 60% after scoring below 50%',   color: '#C98A0A', bg: '#FFF2CC', border: '#FFE18C' },
 ]
 
 function BadgeSticker({ badge, earned, size = 36 }: { badge: BadgeDef; earned: boolean; size?: number }) {
@@ -72,7 +72,7 @@ function BadgeSticker({ badge, earned, size = 36 }: { badge: BadgeDef; earned: b
         style={{
           width: size, height: size, borderRadius: Math.round(size * 0.28), position: 'relative',
           display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'default',
-          background: earned ? '#3D6CB4' : '#E7EBF3',
+          background: earned ? '#D9720F' : '#F3ECD6',
         }}
       >
         <span style={{ display: 'flex', filter: earned ? undefined : 'grayscale(1) opacity(0.55)' }}>
@@ -110,8 +110,8 @@ function ProgressRing({ pct, size = 78 }: { pct: number; size?: number }) {
   return (
     <div style={{ position: 'relative', width: size, height: size }}>
       <svg width={size} height={size} style={{ transform: 'rotate(-90deg)' }}>
-        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="#E3E9F3" strokeWidth={stroke} />
-        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="#3D6CB4" strokeWidth={stroke}
+        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="#F3ECD6" strokeWidth={stroke} />
+        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="#D9720F" strokeWidth={stroke}
           strokeLinecap="round" strokeDasharray={c} strokeDashoffset={dash} style={{ transition: 'stroke-dashoffset .5s ease' }} />
       </svg>
       <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -123,7 +123,7 @@ function ProgressRing({ pct, size = 78 }: { pct: number; size?: number }) {
 
 function StatTile({ value, label, color }: { value: string; label: string; color?: string }) {
   return (
-    <div style={{ background: '#FFFFFF', borderRadius: 20, border: '2.5px solid rgba(30,42,68,0.22)', padding: '18px 14px', textAlign: 'center' }}>
+    <div style={{ background: '#FFFFFF', borderRadius: 20, border: '2.5px solid #1E2A44', padding: '18px 14px', textAlign: 'center' }}>
       <p style={{ fontSize: 26, fontWeight: 800, color: color ?? '#1E2A44', letterSpacing: '-.4px' }}>{value}</p>
       <p style={{ fontSize: 11.5, fontWeight: 700, color: '#5B6B87', marginTop: 4 }}>{label}</p>
     </div>
@@ -251,7 +251,7 @@ interface SubjectData {
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
-const TAB_COLORS = ['#4f46e5','#059669','#dc2626','#d97706','#0891b2','#7c3aed','#e11d48']
+const TAB_COLORS = ['#FF9F43', '#C98A0A', '#D9720F', '#2F8FE0', '#1E62A8']
 
 const PRESET_INTERESTS: { label: string; Icon: LucideIcon }[] = [
   { label: 'Cricket',    Icon: Trophy },
@@ -276,7 +276,7 @@ const PRESET_INTERESTS: { label: string; Icon: LucideIcon }[] = [
 // shadow), just a soft ink-tinted border for edge definition.
 const CARD: React.CSSProperties = {
   background: '#FFFFFF', borderRadius: 24,
-  border: '2.5px solid rgba(30,42,68,0.22)',
+  border: '2.5px solid #1E2A44',
   padding: '20px 22px',
   display: 'flex', flexDirection: 'column', gap: 12,
 }
@@ -285,7 +285,7 @@ const CARD: React.CSSProperties = {
 const HCARD: React.CSSProperties = {
   background: '#FFFFFF', borderRadius: 22,
   padding: '20px 22px',
-  textAlign: 'left', border: '2.5px solid rgba(30,42,68,0.22)', width: '100%',
+  textAlign: 'left', border: '2.5px solid #1E2A44', width: '100%',
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -937,7 +937,7 @@ export default function StudentHomePage() {
   if (loading) return (
     <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'transparent' }}>
       <div style={{ textAlign: 'center' }}>
-        <div className="animate-spin" style={{ width: 44, height: 44, borderRadius: '50%', border: '4px solid #DCEBF8', borderTopColor: '#3D6CB4', margin: '0 auto 12px' }} />
+        <div className="animate-spin" style={{ width: 44, height: 44, borderRadius: '50%', border: '4px solid #FFE8D1', borderTopColor: '#D9720F', margin: '0 auto 12px' }} />
         <p style={{ color: '#5B6B87', fontSize: 13, fontWeight: 500 }}>Loading your dashboard…</p>
       </div>
     </div>
@@ -953,11 +953,11 @@ export default function StudentHomePage() {
 
       {/* ════ SIDEBAR (desktop only) ════ */}
       {!isMobile && (
-      <aside style={{ width: 240, flexShrink: 0, background: '#FFFFFF', borderRight: '2.5px solid rgba(30,42,68,0.22)', display: 'flex', flexDirection: 'column', height: '100vh' }}>
+      <aside style={{ width: 240, flexShrink: 0, background: '#FFFFFF', borderRight: '2.5px solid #1E2A44', display: 'flex', flexDirection: 'column', height: '100vh' }}>
 
         {/* Logo */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '20px 18px 16px', borderBottom: '2.5px solid rgba(30,42,68,0.18)', flexShrink: 0 }}>
-          <div style={{ width: 36, height: 36, borderRadius: 11, background: '#3D6CB4', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+          <div style={{ width: 36, height: 36, borderRadius: 11, background: '#D9720F', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
             <GraduationCap size={18} color="#fff" />
           </div>
           <div style={{ minWidth: 0 }}>
@@ -975,7 +975,7 @@ export default function StudentHomePage() {
               const isAct = activeNavGroup === group.id
               return (
                 <button key={group.id} onClick={() => selectNav(group.id)}
-                  style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '11px 12px', borderRadius: 14, border: 'none', cursor: 'pointer', transition: 'all .15s', textAlign: 'left', fontFamily: 'inherit', background: isAct ? '#3D6CB4' : 'transparent' }}
+                  style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '11px 12px', borderRadius: 14, border: 'none', cursor: 'pointer', transition: 'all .15s', textAlign: 'left', fontFamily: 'inherit', background: isAct ? '#D9720F' : 'transparent' }}
                   onMouseEnter={e => { if (!isAct) (e.currentTarget as HTMLButtonElement).style.background = 'rgba(30,42,68,0.05)' }}
                   onMouseLeave={e => { if (!isAct) (e.currentTarget as HTMLButtonElement).style.background = 'transparent' }}>
                   <group.Icon size={16} color={isAct ? '#fff' : '#5B6B87'} style={{ flexShrink: 0 }} />
@@ -994,7 +994,7 @@ export default function StudentHomePage() {
         {/* User profile + sign out */}
         <div style={{ padding: '12px 10px 14px', borderTop: '2.5px solid rgba(30,42,68,0.18)', flexShrink: 0 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '0 4px', marginBottom: 8 }}>
-            <div style={{ width: 34, height: 34, borderRadius: 11, background: '#3D6CB4', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 15, fontWeight: 800, color: '#fff', flexShrink: 0 }}>
+            <div style={{ width: 34, height: 34, borderRadius: 11, background: '#D9720F', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 15, fontWeight: 800, color: '#fff', flexShrink: 0 }}>
               {(student.name?.trim()?.[0] ?? '?').toUpperCase()}
             </div>
             <div style={{ flex: 1, minWidth: 0 }}>
@@ -1006,13 +1006,13 @@ export default function StudentHomePage() {
           </div>
           <button onClick={openInterestsEditor}
             style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px', borderRadius: 10, background: 'transparent', border: 'none', cursor: 'pointer', fontSize: 12, fontWeight: 700, color: '#5B6B87', fontFamily: 'inherit', marginBottom: 2 }}
-            onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = '#DCEBF8'; (e.currentTarget as HTMLButtonElement).style.color = '#3D6CB4' }}
+            onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = '#FFE8D1'; (e.currentTarget as HTMLButtonElement).style.color = '#D9720F' }}
             onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = 'transparent'; (e.currentTarget as HTMLButtonElement).style.color = '#5B6B87' }}>
             <Pencil size={13} />
             My Interests
             {student?.interests && student.interests.length > 0
-              ? <span style={{ marginLeft: 'auto', fontSize: 10, background: '#DCEBF8', color: '#3D6CB4', borderRadius: 8, padding: '2px 7px', fontWeight: 800 }}>{student.interests.length}</span>
-              : <span style={{ marginLeft: 'auto', fontSize: 10, color: '#D9A83B', fontWeight: 700 }}>Set now</span>
+              ? <span style={{ marginLeft: 'auto', fontSize: 10, background: '#FFE8D1', color: '#D9720F', borderRadius: 8, padding: '2px 7px', fontWeight: 800 }}>{student.interests.length}</span>
+              : <span style={{ marginLeft: 'auto', fontSize: 10, color: '#D9720F', fontWeight: 700 }}>Set now</span>
             }
           </button>
           <button onClick={handleLogout}
@@ -1036,7 +1036,7 @@ export default function StudentHomePage() {
           {activeNavGroup === 'home' ? (
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 2 }}>
               <div style={{ flex: 1, minWidth: 0 }}>
-                <h1 className="font-display" style={{ fontSize: isMobile ? 28 : 32, fontWeight: 700, color: '#1E2A44', letterSpacing: '-.3px', lineHeight: 1.1 }}>Hi, {firstName}!</h1>
+                <h1 className="font-kid" style={{ fontSize: isMobile ? 28 : 32, fontWeight: 700, color: '#1E2A44', letterSpacing: '-.3px', lineHeight: 1.1 }}>Hi, {firstName}!</h1>
               </div>
               <div style={{ position: 'relative', flexShrink: 0 }}>
                 <button onClick={() => setShowNotifPanel(v => !v)}
@@ -1046,7 +1046,7 @@ export default function StudentHomePage() {
                 {showNotifPanel && (
                   <>
                     <div onClick={() => setShowNotifPanel(false)} style={{ position: 'fixed', inset: 0, zIndex: 150 }} />
-                    <div style={{ position: 'absolute', top: '110%', right: 0, zIndex: 160, background: '#FFFFFF', border: '2.5px solid rgba(30,42,68,0.22)', borderRadius: 14, padding: '14px 16px', width: 220 }}>
+                    <div style={{ position: 'absolute', top: '110%', right: 0, zIndex: 160, background: '#FFFFFF', border: '2.5px solid #1E2A44', borderRadius: 14, padding: '14px 16px', width: 220 }}>
                       <p style={{ fontSize: 13, fontWeight: 800, color: '#1E2A44' }}>You&apos;re all caught up!</p>
                       <p style={{ fontSize: 11.5, color: '#5B6B87', marginTop: 4, lineHeight: 1.4 }}>No new notifications right now.</p>
                     </div>
@@ -1093,7 +1093,7 @@ export default function StudentHomePage() {
               <p style={{ fontSize: 16, fontWeight: 800, color: '#1E2A44', marginTop: 14 }}>Could not load data</p>
               <p style={{ fontSize: 13, color: '#5B6B87', marginTop: 5, lineHeight: 1.6, maxWidth: 340 }}>There was a problem fetching your dashboard. Check your connection and try again.</p>
               <button onClick={() => loadAllData(subjects)}
-                style={{ marginTop: 18, padding: '10px 28px', borderRadius: 12, background: '#3D6CB4', border: 'none', color: '#fff', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
+                style={{ marginTop: 18, padding: '10px 28px', borderRadius: 12, background: '#D9720F', border: 'none', color: '#fff', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
                 Retry
               </button>
             </div>
@@ -1108,9 +1108,9 @@ export default function StudentHomePage() {
             <>
               {/* ── Substitute teacher notice(s) for today ── */}
               {homeFeed.todayPeriods.filter(p => p.substitution).map(p => (
-                <div key={`${p.classId}-${p.periodNumber}`} style={{ ...CARD, flexDirection: 'row', alignItems: 'center', gap: 12, padding: '14px 18px', background: p.substitution!.status === 'unresolved' ? '#FFF7ED' : '#EFF6FF' }}>
-                  <div style={{ width: 34, height: 34, borderRadius: 11, background: p.substitution!.status === 'unresolved' ? '#FED7AA' : '#BFDBFE', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                    <UserCheck size={17} color={p.substitution!.status === 'unresolved' ? '#9A3412' : '#1E3A8A'} />
+                <div key={`${p.classId}-${p.periodNumber}`} style={{ ...CARD, flexDirection: 'row', alignItems: 'center', gap: 12, padding: '14px 18px', background: p.substitution!.status === 'unresolved' ? '#FFE8D1' : '#DCEBF8' }}>
+                  <div style={{ width: 34, height: 34, borderRadius: 11, background: p.substitution!.status === 'unresolved' ? '#FCDCC2' : '#CDE3F7', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    <UserCheck size={17} color={p.substitution!.status === 'unresolved' ? '#D9720F' : '#1E62A8'} />
                   </div>
                   <p style={{ fontSize: 13, fontWeight: 600, color: '#1E2A44', lineHeight: 1.4 }}>
                     {p.substitution!.status === 'unresolved'
@@ -1121,8 +1121,8 @@ export default function StudentHomePage() {
               ))}
 
               {/* ── Today's Lesson ── */}
-              <div style={{ borderRadius: 22, overflow: 'hidden', border: '2.5px solid rgba(30,42,68,0.22)' }}>
-                <div style={{ background: '#3D6CB4', padding: '20px 22px' }}>
+              <div style={{ borderRadius: 22, overflow: 'hidden', border: '2.5px solid #1E2A44' }}>
+                <div style={{ background: '#D9720F', padding: '20px 22px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 11, marginBottom: 14 }}>
                     <div style={{ width: 38, height: 38, borderRadius: 12, background: 'rgba(255,255,255,0.16)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                       <BookSticker size={22} />
@@ -1130,7 +1130,7 @@ export default function StudentHomePage() {
                     <p style={{ fontSize: 15, fontWeight: 700, color: '#fff' }}>Today&apos;s Lesson</p>
                   </div>
                   {todaysLesson ? (
-                    <p className="font-display" style={{ fontSize: isMobile ? 24 : 27, fontWeight: 700, color: '#fff', letterSpacing: '-.2px', lineHeight: 1.2 }}>{todaysLesson.topic}</p>
+                    <p className="font-kid" style={{ fontSize: isMobile ? 24 : 27, fontWeight: 700, color: '#fff', letterSpacing: '-.2px', lineHeight: 1.2 }}>{todaysLesson.topic}</p>
                   ) : (
                     <p style={{ fontSize: 13.5, color: 'rgba(255,255,255,0.8)', lineHeight: 1.5 }}>Once your teacher records a lesson, it&apos;ll show up here with notes, flashcards, and a quiz.</p>
                   )}
@@ -1138,7 +1138,7 @@ export default function StudentHomePage() {
                 {todaysLesson && (
                   <div style={{ background: '#fff', padding: '16px 22px' }}>
                     <button onClick={() => openLesson('notes', todaysLesson.subject, todaysLesson.topic)}
-                      style={{ width: '100%', padding: '14px 0', borderRadius: 14, border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontSize: 15, fontWeight: 800, color: '#fff', background: '#3D6CB4' }}>
+                      style={{ width: '100%', padding: '14px 0', borderRadius: 14, border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontSize: 15, fontWeight: 800, color: '#fff', background: '#D9720F' }}>
                       Start Lesson
                     </button>
                   </div>
@@ -1155,8 +1155,8 @@ export default function StudentHomePage() {
                   <p style={{ fontSize: 13, fontWeight: 600, color: '#5B6B87', marginTop: 12 }}>{homeFeed.totalPresent}/{homeFeed.totalSessions} classes</p>
                   {homeFeed.bestStreak >= 2 && (
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5, marginTop: 8 }}>
-                      <Flame size={13} color="#ea580c" />
-                      <span style={{ fontSize: 11.5, fontWeight: 700, color: '#ea580c' }}>{homeFeed.bestStreak}-class streak</span>
+                      <Flame size={13} color="#D9720F" />
+                      <span style={{ fontSize: 11.5, fontWeight: 700, color: '#D9720F' }}>{homeFeed.bestStreak}-class streak</span>
                     </div>
                   )}
                 </div>
@@ -1167,7 +1167,7 @@ export default function StudentHomePage() {
                     <div style={{ position: 'relative', display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 10 }}>
                       {allBadges.filter(b => b.earned).map(b => <BadgeSticker key={b.id} badge={b} earned size={44} />)}
                       {allBadges.filter(b => !b.earned).map(b => <BadgeSticker key={b.id} badge={b} earned={false} size={44} />)}
-                      <Star size={20} color="#EAC968" fill="#EAC968" style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%) rotate(12deg)', pointerEvents: 'none' }} />
+                      <Star size={20} color="#FFC93C" fill="#FFC93C" style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%) rotate(12deg)', pointerEvents: 'none' }} />
                     </div>
                   </div>
                 )}
@@ -1192,7 +1192,7 @@ export default function StudentHomePage() {
                           </div>
                           <p style={{ fontSize: 11.5, color: '#5B6B87', marginTop: 2 }}>{t.subjectLabel} · {t.totalMarks} marks</p>
                         </div>
-                        <span style={{ fontSize: 13, fontWeight: 800, color: '#3D6CB4', flexShrink: 0 }}>{formatTestDate(t.conductedOn)}</span>
+                        <span style={{ fontSize: 13, fontWeight: 800, color: '#D9720F', flexShrink: 0 }}>{formatTestDate(t.conductedOn)}</span>
                       </div>
                     ))}
                   </div>
@@ -1208,12 +1208,12 @@ export default function StudentHomePage() {
                     <p style={{ fontSize: 16, fontWeight: 800, color: '#1E2A44', letterSpacing: '-.3px' }}>Recent Lessons</p>
                     <div style={{ display: 'flex', gap: 6 }}>
                       <button onClick={() => scrollRecent(-1)} disabled={!recentScrollState.left}
-                        style={{ width: 28, height: 28, borderRadius: '50%', border: '2.5px solid rgba(30,42,68,0.22)', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: recentScrollState.left ? 'pointer' : 'default', opacity: recentScrollState.left ? 1 : 0.35 }}>
-                        <ChevronLeft size={15} color="#3D6CB4" />
+                        style={{ width: 28, height: 28, borderRadius: '50%', border: '2.5px solid #1E2A44', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: recentScrollState.left ? 'pointer' : 'default', opacity: recentScrollState.left ? 1 : 0.35 }}>
+                        <ChevronLeft size={15} color="#D9720F" />
                       </button>
                       <button onClick={() => scrollRecent(1)} disabled={!recentScrollState.right}
-                        style={{ width: 28, height: 28, borderRadius: '50%', border: '2.5px solid rgba(30,42,68,0.22)', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: recentScrollState.right ? 'pointer' : 'default', opacity: recentScrollState.right ? 1 : 0.35 }}>
-                        <ChevronRight size={15} color="#3D6CB4" />
+                        style={{ width: 28, height: 28, borderRadius: '50%', border: '2.5px solid #1E2A44', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: recentScrollState.right ? 'pointer' : 'default', opacity: recentScrollState.right ? 1 : 0.35 }}>
+                        <ChevronRight size={15} color="#D9720F" />
                       </button>
                     </div>
                   </div>
@@ -1228,7 +1228,7 @@ export default function StudentHomePage() {
                             <span style={{ position: 'absolute', top: 10, right: 10, width: 8, height: 8, borderRadius: '50%', background: '#1E2A44' }} />
                           )}
                           <p style={{ fontSize: 15, fontWeight: 800, color: '#1E2A44', lineHeight: 1.3, marginBottom: 10 }}>{t.topic}</p>
-                          <span style={{ display: 'inline-block', fontSize: 11, fontWeight: 700, color: '#1E3A55', background: '#DCEBF8', padding: '3px 9px', borderRadius: 7 }}>{t.subjectLabel}</span>
+                          <span style={{ display: 'inline-block', fontSize: 11, fontWeight: 700, color: '#1E62A8', background: '#DCEBF8', padding: '3px 9px', borderRadius: 7 }}>{t.subjectLabel}</span>
                           <p style={{ fontSize: 11.5, fontWeight: 600, color: '#5B6B87', marginTop: 8 }}>{formatPastDate(t.date)}</p>
                         </div>
                       )
@@ -1253,10 +1253,10 @@ export default function StudentHomePage() {
                     <button key={s.label} onClick={() => setSelectedLearnSubject(s.label)}
                       style={{
                         display: 'flex', alignItems: 'center', gap: 14, cursor: 'pointer', textAlign: 'left',
-                        background: palette.bg, border: `3px solid ${palette.border}`, borderRadius: 20,
+                        background: '#fff', border: '3px solid #1E2A44', borderRadius: 20,
                         padding: '18px 20px', width: '100%',
                       }}>
-                      <span style={{ width: 52, height: 52, borderRadius: '50%', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                      <span style={{ width: 52, height: 52, borderRadius: '50%', background: palette.bg, border: `2.5px solid ${palette.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                         <StickerIcon size={28} />
                       </span>
                       <div style={{ flex: 1, minWidth: 0 }}>
@@ -1264,7 +1264,7 @@ export default function StudentHomePage() {
                         <p style={{ fontSize: 13, fontWeight: 600, color: palette.text, opacity: 0.75, marginTop: 2 }}>{s.topics.length} topic{s.topics.length === 1 ? '' : 's'} taught</p>
                       </div>
                       {s.catchupTopics.length > 0 && (
-                        <span style={{ display: 'flex', alignItems: 'center', gap: 4, background: '#D97706', color: '#fff', fontSize: 10.5, fontWeight: 800, padding: '4px 9px', borderRadius: 20, flexShrink: 0 }}>
+                        <span style={{ display: 'flex', alignItems: 'center', gap: 4, background: '#D9720F', color: '#fff', fontSize: 10.5, fontWeight: 800, padding: '4px 9px', borderRadius: 20, flexShrink: 0 }}>
                           <Hourglass size={10} strokeWidth={2.5} /> {s.catchupTopics.length}
                         </span>
                       )}
@@ -1278,19 +1278,19 @@ export default function StudentHomePage() {
                 {/* ── Back to subjects + subject name ── */}
                 <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 2 }}>
                   <button onClick={() => { setSelectedLearnSubject(null); setLearnPreload(null) }}
-                    style={{ background: '#fff', border: '2.5px solid rgba(30,42,68,0.22)', borderRadius: '50%', width: 36, height: 36, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                    <ArrowLeft size={16} color="#3D6CB4" />
+                    style={{ background: '#fff', border: '2.5px solid #1E2A44', borderRadius: '50%', width: 36, height: 36, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    <ArrowLeft size={16} color="#D9720F" />
                   </button>
                   <p style={{ fontSize: 18, fontWeight: 800, color: '#1E2A44', letterSpacing: '-.3px' }}>{selectedLearnSubject}</p>
                 </div>
 
                 {/* Sub-tabs: Notes / Flashcards / Quiz / Adaptive / Syllabus (pill switcher) */}
-                <div style={{ display: 'flex', gap: 4, background: '#fff', borderRadius: 14, padding: 4, border: '2.5px solid rgba(30,42,68,0.22)', flexWrap: 'wrap' }}>
+                <div style={{ display: 'flex', gap: 4, background: '#fff', borderRadius: 14, padding: 4, border: '2.5px solid #1E2A44', flexWrap: 'wrap' }}>
                   {([['notes', 'Summary Notes'], ['flashcards', 'Flashcards'], ['quizzes', 'Quiz'], ['adaptive', 'Adaptive'], ['syllabus', 'Syllabus']] as const).map(([id, label]) => {
                     const isAct = learnTab === id
                     return (
                       <button key={id} onClick={() => setLearnTab(id)}
-                        style={{ flex: '1 1 30%', minWidth: 70, padding: '10px 6px', borderRadius: 11, border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontSize: 12, fontWeight: 800, transition: 'all .15s', background: isAct ? '#3D6CB4' : 'transparent', color: isAct ? '#fff' : '#5B6B87' }}>
+                        style={{ flex: '1 1 30%', minWidth: 70, padding: '10px 6px', borderRadius: 11, border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontSize: 12, fontWeight: 800, transition: 'all .15s', background: isAct ? '#D9720F' : 'transparent', color: isAct ? '#fff' : '#5B6B87' }}>
                         {label}
                       </button>
                     )
@@ -1335,10 +1335,10 @@ export default function StudentHomePage() {
                         <div>
                           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
                             <p style={{ fontSize: 13, fontWeight: 800, color: '#1E2A44' }}>{doneCount} of {topics.length} topics done</p>
-                            <p style={{ fontSize: 13, fontWeight: 800, color: '#3D6CB4' }}>{Math.round((doneCount / topics.length) * 100)}%</p>
+                            <p style={{ fontSize: 13, fontWeight: 800, color: '#D9720F' }}>{Math.round((doneCount / topics.length) * 100)}%</p>
                           </div>
                           <div style={{ height: 8, borderRadius: 4, background: 'rgba(30,42,68,0.1)', overflow: 'hidden' }}>
-                            <div style={{ height: '100%', width: `${Math.round((doneCount / topics.length) * 100)}%`, background: '#3D6CB4', borderRadius: 4, transition: 'width .4s ease' }} />
+                            <div style={{ height: '100%', width: `${Math.round((doneCount / topics.length) * 100)}%`, background: '#D9720F', borderRadius: 4, transition: 'width .4s ease' }} />
                           </div>
                         </div>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
@@ -1351,8 +1351,8 @@ export default function StudentHomePage() {
                                 ) : (
                                   <span style={{
                                     width: 20, height: 20, borderRadius: '50%', flexShrink: 0,
-                                    border: `2.5px solid ${isNext ? '#3D6CB4' : 'rgba(30,42,68,0.22)'}`,
-                                    background: isNext ? '#DCEBF8' : 'transparent',
+                                    border: `2.5px solid ${isNext ? '#D9720F' : '#1E2A44'}`,
+                                    background: isNext ? '#FFE8D1' : 'transparent',
                                   }} />
                                 )}
                                 <div style={{ flex: 1, minWidth: 0 }}>
@@ -1364,7 +1364,7 @@ export default function StudentHomePage() {
                                   )}
                                 </div>
                                 {isNext && (
-                                  <span style={{ fontSize: 10, fontWeight: 800, color: '#3D6CB4', background: '#DCEBF8', padding: '3px 9px', borderRadius: 8, flexShrink: 0 }}>NEXT</span>
+                                  <span style={{ fontSize: 10, fontWeight: 800, color: '#D9720F', background: '#FFE8D1', padding: '3px 9px', borderRadius: 8, flexShrink: 0 }}>NEXT</span>
                                 )}
                               </div>
                             )
@@ -1437,7 +1437,7 @@ export default function StudentHomePage() {
                           <p style={{ fontSize: 11.5, color: '#5B6B87', marginTop: 1 }}>{t.subjectLabel}</p>
                         </div>
                         <button onClick={() => openLesson('quizzes', t.subjectLabel, t.topic)}
-                          style={{ padding: '8px 14px', borderRadius: 12, background: '#DCEBF8', border: 'none', color: '#3D6CB4', fontSize: 12, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit', flexShrink: 0 }}>
+                          style={{ padding: '8px 14px', borderRadius: 12, background: '#FFE8D1', border: 'none', color: '#D9720F', fontSize: 12, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit', flexShrink: 0 }}>
                           Practice
                         </button>
                       </div>
@@ -1480,12 +1480,12 @@ export default function StudentHomePage() {
                       <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                         {peerData.incoming.map(r => (
                           <div key={r.id} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                            <div style={{ width: 36, height: 36, borderRadius: '50%', background: '#3D6CB4', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 15, fontWeight: 800, color: '#fff', flexShrink: 0 }}>
+                            <div style={{ width: 36, height: 36, borderRadius: '50%', background: '#D9720F', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 15, fontWeight: 800, color: '#fff', flexShrink: 0 }}>
                               {r.fromName[0]?.toUpperCase() ?? '?'}
                             </div>
                             <p style={{ flex: 1, fontSize: 13.5, fontWeight: 700, color: '#1E2A44' }}>{r.fromName} wants to be study buddies{r.subject ? ` for ${r.subject}` : ''}</p>
                             <button onClick={() => respondPeerRequest(r.id, 'accept')} disabled={peerActionId === r.id}
-                              style={{ padding: '8px 16px', borderRadius: 12, background: '#3D6CB4', border: 'none', color: '#fff', fontSize: 12, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit', flexShrink: 0, opacity: peerActionId === r.id ? 0.6 : 1 }}>
+                              style={{ padding: '8px 16px', borderRadius: 12, background: '#D9720F', border: 'none', color: '#fff', fontSize: 12, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit', flexShrink: 0, opacity: peerActionId === r.id ? 0.6 : 1 }}>
                               {peerActionId === r.id ? '…' : 'Accept'}
                             </button>
                           </div>
@@ -1530,7 +1530,7 @@ export default function StudentHomePage() {
                           <div key={r.id} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                             <p style={{ flex: 1, fontSize: 13.5, fontWeight: 600, color: '#5B6B87' }}>Sent to <strong style={{ color: '#1E2A44' }}>{r.toName}</strong></p>
                             <button onClick={() => respondPeerRequest(r.id, 'cancel')} disabled={peerActionId === r.id}
-                              style={{ padding: '7px 14px', borderRadius: 12, background: 'transparent', border: '2px solid rgba(30,42,68,0.22)', color: '#5B6B87', fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', flexShrink: 0, opacity: peerActionId === r.id ? 0.6 : 1 }}>
+                              style={{ padding: '7px 14px', borderRadius: 12, background: 'transparent', border: '2px solid #1E2A44', color: '#5B6B87', fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', flexShrink: 0, opacity: peerActionId === r.id ? 0.6 : 1 }}>
                               {peerActionId === r.id ? '…' : 'Cancel'}
                             </button>
                           </div>
@@ -1549,7 +1549,7 @@ export default function StudentHomePage() {
                       <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                         {peerData.matches.map(m => (
                           <div key={m.studentId} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                            <div style={{ width: 36, height: 36, borderRadius: '50%', background: '#DCEBF8', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 800, color: '#3D6CB4', flexShrink: 0 }}>
+                            <div style={{ width: 36, height: 36, borderRadius: '50%', background: '#FFE8D1', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 800, color: '#D9720F', flexShrink: 0 }}>
                               {m.name[0]?.toUpperCase() ?? '?'}
                             </div>
                             <div style={{ flex: 1, minWidth: 0 }}>
@@ -1557,7 +1557,7 @@ export default function StudentHomePage() {
                               <p style={{ fontSize: 11.5, color: '#5B6B87', marginTop: 1 }}>{m.reason}</p>
                             </div>
                             <button onClick={() => sendPeerRequest(m.studentId)} disabled={peerActionId === m.studentId}
-                              style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px', borderRadius: 12, background: '#3D6CB4', border: 'none', color: '#fff', fontSize: 12, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit', flexShrink: 0, opacity: peerActionId === m.studentId ? 0.6 : 1 }}>
+                              style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px', borderRadius: 12, background: '#D9720F', border: 'none', color: '#fff', fontSize: 12, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit', flexShrink: 0, opacity: peerActionId === m.studentId ? 0.6 : 1 }}>
                               <Send size={12} /> {peerActionId === m.studentId ? '…' : 'Request'}
                             </button>
                           </div>
@@ -1572,7 +1572,7 @@ export default function StudentHomePage() {
           ) : activeNavGroup === 'profile' ? (
             <>
               <div style={{ ...HCARD, display: 'flex', alignItems: 'center', gap: 14 }}>
-                <div style={{ width: 56, height: 56, borderRadius: '50%', background: '#3D6CB4', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 24, fontWeight: 800, color: '#fff', flexShrink: 0 }}>
+                <div style={{ width: 56, height: 56, borderRadius: '50%', background: '#D9720F', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 24, fontWeight: 800, color: '#fff', flexShrink: 0 }}>
                   {(student.name?.trim()?.[0] ?? '?').toUpperCase()}
                 </div>
                 <div style={{ minWidth: 0 }}>
@@ -1583,8 +1583,8 @@ export default function StudentHomePage() {
 
               <button onClick={openInterestsEditor}
                 style={{ ...HCARD, display: 'flex', alignItems: 'center', gap: 12, cursor: 'pointer' }}>
-                <div style={{ width: 38, height: 38, borderRadius: 11, background: '#DCEBF8', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                  <Pencil size={17} color="#3D6CB4" />
+                <div style={{ width: 38, height: 38, borderRadius: 11, background: '#FFE8D1', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <Pencil size={17} color="#D9720F" />
                 </div>
                 <div style={{ flex: 1, textAlign: 'left' }}>
                   <p style={{ fontSize: 14, fontWeight: 800, color: '#1E2A44' }}>My Interests</p>
@@ -1614,21 +1614,21 @@ export default function StudentHomePage() {
 
       {/* ════ BOTTOM NAV (mobile only) ════ */}
       {isMobile && (
-        <nav style={{ position: 'fixed', left: 0, right: 0, bottom: 0, zIndex: 100, background: '#fff', borderTop: '2.5px solid rgba(30,42,68,0.22)', display: 'flex', padding: '8px 6px', paddingBottom: 'max(8px, env(safe-area-inset-bottom))' }}>
+        <nav style={{ position: 'fixed', left: 0, right: 0, bottom: 0, zIndex: 100, background: '#fff', borderTop: '2.5px solid #1E2A44', display: 'flex', padding: '8px 6px', paddingBottom: 'max(8px, env(safe-area-inset-bottom))' }}>
           {NAV_GROUPS.map(group => {
             const isAct = activeNavGroup === group.id
             return (
               <button key={group.id} onClick={() => selectNav(group.id)}
                 style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3, padding: '6px 2px', background: 'transparent', border: 'none', cursor: 'pointer', fontFamily: 'inherit', position: 'relative' }}>
                 <div style={{ position: 'relative' }}>
-                  <group.Icon size={22} color={isAct ? '#3D6CB4' : '#1E2A44'} fill={isAct && group.id === 'home' ? '#3D6CB4' : 'none'} strokeWidth={isAct ? 2 : 1.8} />
+                  <group.Icon size={22} color={isAct ? '#D9720F' : '#1E2A44'} fill={isAct && group.id === 'home' ? '#D9720F' : 'none'} strokeWidth={isAct ? 2 : 1.8} />
                   {group.id === 'tests' && newTestCount > 0 && (
                     <span style={{ position: 'absolute', top: -4, right: -6, minWidth: 15, height: 15, borderRadius: 8, background: '#1E2A44', color: '#fff', fontSize: 9, fontWeight: 900, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 3px' }}>{newTestCount}</span>
                   )}
                 </div>
-                <span style={{ fontSize: 10.5, fontWeight: isAct ? 800 : 600, color: isAct ? '#3D6CB4' : '#1E2A44' }}>{group.label}</span>
+                <span style={{ fontSize: 10.5, fontWeight: isAct ? 800 : 600, color: isAct ? '#D9720F' : '#1E2A44' }}>{group.label}</span>
                 {isAct && (
-                  <span style={{ width: 18, height: 3, borderRadius: 2, background: '#3D6CB4', marginTop: 1 }} />
+                  <span style={{ width: 18, height: 3, borderRadius: 2, background: '#D9720F', marginTop: 1 }} />
                 )}
               </button>
             )
@@ -1640,11 +1640,11 @@ export default function StudentHomePage() {
       {showInterests && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(30,42,68,0.55)' }}
           onClick={e => { if (e.target === e.currentTarget) setShowInterests(false) }}>
-          <div style={{ background: '#FFFFFF', border: '2.5px solid rgba(30,42,68,0.22)', borderRadius: 24, width: '100%', maxWidth: 480, margin: '0 16px', display: 'flex', flexDirection: 'column', maxHeight: '90vh', overflow: 'hidden' }}>
+          <div style={{ background: '#FFFFFF', border: '2.5px solid #1E2A44', borderRadius: 24, width: '100%', maxWidth: 480, margin: '0 16px', display: 'flex', flexDirection: 'column', maxHeight: '90vh', overflow: 'hidden' }}>
 
             {/* Header */}
             <div style={{ padding: '20px 24px 16px', borderBottom: '2.5px solid rgba(30,42,68,0.18)', display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0 }}>
-              <div style={{ width: 38, height: 38, borderRadius: 12, background: '#3D6CB4', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              <div style={{ width: 38, height: 38, borderRadius: 12, background: '#D9720F', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                 <Pencil size={16} color="#fff" />
               </div>
               <div style={{ flex: 1 }}>
@@ -1668,7 +1668,7 @@ export default function StudentHomePage() {
                     const sel = draftInterests.includes(label)
                     return (
                       <button key={label} onClick={() => togglePreset(label)}
-                        style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px', borderRadius: 20, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', transition: 'all .12s', border: `3px solid ${sel ? '#3D6CB4' : 'rgba(30,42,68,0.22)'}`, background: sel ? '#DCEBF8' : 'transparent', color: sel ? '#1E3A55' : '#5B6B87' }}>
+                        style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px', borderRadius: 20, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', transition: 'all .12s', border: `3px solid ${sel ? '#2F8FE0' : '#1E2A44'}`, background: sel ? '#DCEBF8' : 'transparent', color: sel ? '#1E62A8' : '#5B6B87' }}>
                         <Icon size={14} />
                         {label}
                       </button>
@@ -1686,7 +1686,7 @@ export default function StudentHomePage() {
                     onChange={e => setCustomInput(e.target.value)}
                     onKeyDown={e => e.key === 'Enter' && addCustom()}
                     placeholder="e.g. Kabaddi, Painting…"
-                    style={{ flex: 1, border: '3px solid rgba(30,42,68,0.22)', borderRadius: 12, padding: '9px 14px', fontSize: 13, fontFamily: 'inherit', color: '#1E2A44', outline: 'none', background: '#fff' }}
+                    style={{ flex: 1, border: '3px solid #1E2A44', borderRadius: 12, padding: '9px 14px', fontSize: 13, fontFamily: 'inherit', color: '#1E2A44', outline: 'none', background: '#fff' }}
                   />
                   <button onClick={addCustom}
                     style={{ padding: '9px 18px', borderRadius: 12, background: '#1E2A44', border: 'none', color: '#fff', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap' }}>
@@ -1701,10 +1701,10 @@ export default function StudentHomePage() {
                   <p style={{ fontSize: 10.5, fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', color: '#5B6B87', marginBottom: 10 }}>Selected ({draftInterests.length})</p>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: 7 }}>
                     {draftInterests.map(i => (
-                      <span key={i} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '6px 12px', borderRadius: 20, background: '#DCEBF8', border: '2.5px solid #AACDEA', fontSize: 12.5, fontWeight: 700, color: '#1E3A55' }}>
+                      <span key={i} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '6px 12px', borderRadius: 20, background: '#DCEBF8', border: '2.5px solid #9CC3EA', fontSize: 12.5, fontWeight: 700, color: '#1E62A8' }}>
                         {i}
                         <button onClick={() => setDraftInterests(prev => prev.filter(x => x !== i))}
-                          style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, display: 'flex', alignItems: 'center', color: '#5B87AD' }}>
+                          style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, display: 'flex', alignItems: 'center', color: '#1E62A8' }}>
                           <X size={12} />
                         </button>
                       </span>
@@ -1717,11 +1717,11 @@ export default function StudentHomePage() {
             {/* Footer */}
             <div style={{ padding: '14px 24px', borderTop: '2.5px solid rgba(30,42,68,0.18)', display: 'flex', gap: 10, flexShrink: 0 }}>
               <button onClick={() => setShowInterests(false)}
-                style={{ flex: 1, padding: '12px 0', borderRadius: 14, border: '3px solid rgba(30,42,68,0.22)', background: '#fff', color: '#5B6B87', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
+                style={{ flex: 1, padding: '12px 0', borderRadius: 14, border: '3px solid #1E2A44', background: '#fff', color: '#5B6B87', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
                 Cancel
               </button>
               <button onClick={saveInterests} disabled={savingInterests}
-                style={{ flex: 2, padding: '12px 0', borderRadius: 14, border: 'none', background: '#3D6CB4', color: '#fff', fontSize: 13, fontWeight: 800, cursor: savingInterests ? 'not-allowed' : 'pointer', fontFamily: 'inherit', opacity: savingInterests ? 0.7 : 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7 }}>
+                style={{ flex: 2, padding: '12px 0', borderRadius: 14, border: 'none', background: '#D9720F', color: '#fff', fontSize: 13, fontWeight: 800, cursor: savingInterests ? 'not-allowed' : 'pointer', fontFamily: 'inherit', opacity: savingInterests ? 0.7 : 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7 }}>
                 {savingInterests ? <><Loader2 size={14} className="animate-spin" /> Saving…</> : <><CheckIcon size={14} /> Save Preferences</>}
               </button>
             </div>

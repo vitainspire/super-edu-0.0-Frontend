@@ -1,7 +1,8 @@
 'use client'
 import { useCallback, useRef, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
-import { Check, Mic, MicOff } from 'lucide-react'
+import { Check } from '@/components/ui/icons'
+import { Mic, MicOff } from 'lucide-react'
 import { useApp } from '@/lib/context'
 import type { FeedbackAnswer } from '@/lib/types'
 
@@ -137,7 +138,8 @@ export default function ClassroomModeFeedbackPage() {
             onChange={e => setOtherFeedback(e.target.value)}
             placeholder="Type or use voice — anything else worth remembering for next time…"
             rows={3}
-            className="w-full text-sm text-ink placeholder-ink-faint bg-black/[0.03] rounded-2xl px-3 py-2.5 border border-black/5 resize-none focus:outline-none focus:ring-2 focus:ring-[#AACDEA]"
+            className="w-full text-sm text-ink placeholder-ink-faint bg-white rounded-2xl px-3 py-2.5 border-2 resize-none focus:outline-none focus:ring-2 focus:ring-forest"
+            style={{ borderColor: 'var(--card-border)' }}
           />
         </div>
       </div>

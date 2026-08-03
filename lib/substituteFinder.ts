@@ -3,8 +3,8 @@ export interface SubstituteCandidate {
   name: string
   subjectsTaught: Set<string>
   busySlots: Set<string>   // `${dayOfWeek}|${periodNumber}` from the candidate's own published timetable
-  maxPeriodsPerDay?: number    // optional workload cap — undefined = no cap
-  maxPeriodsPerWeek?: number
+  maxPeriodsPerDay?: number | null    // optional workload cap — null/undefined = no cap
+  maxPeriodsPerWeek?: number | null
   weeklyLoad: number           // regular periods this week + substitute periods already picked up this week
 }
 
@@ -43,8 +43,13 @@ export function findSubstitute(
     !alreadyUsedThisSlot.has(c.teacherId) &&
     !c.busySlots.has(slotKey) &&
     (!requireSubjectMatch || c.subjectsTaught.has(need.subject)) &&
-    (c.maxPeriodsPerDay === undefined || periodsOnDay(c) < c.maxPeriodsPerDay) &&
-    (c.maxPeriodsPerWeek === undefined || c.weeklyLoad < c.maxPeriodsPerWeek)
+    // `== null` (not `=== undefined`): teachers.max_periods_per_* is a nullable
+    // column, so an uncapped teacher arrives as null on any path that doesn't
+    // run it through admin-queries' `?? undefined` mapping. Comparing a number
+    // against null coerces it to 0, which silently excluded *every* uncapped
+    // teacher and left periods uncovered.
+    (c.maxPeriodsPerDay == null || periodsOnDay(c) < c.maxPeriodsPerDay) &&
+    (c.maxPeriodsPerWeek == null || c.weeklyLoad < c.maxPeriodsPerWeek)
   )
   if (pool.length === 0) return null
 

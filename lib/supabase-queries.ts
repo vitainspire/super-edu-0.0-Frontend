@@ -5,6 +5,45 @@ import type {
   TeacherClassAssignment, School, StudentDoubt, TopicPoll, Worksheet, PrepMaterial, TaughtTopic, LessonFeedback,
 } from './types'
 
+// ─── Reading more than a page ─────────────────────────────────────────────────
+
+/**
+ * Fetch every row a query matches, not just the first page.
+ *
+ * PostgREST caps an unbounded select at 1000 rows (Supabase's `max-rows`), and
+ * it does so SILENTLY — no error, no flag, just a short array. Every analytic
+ * built on top then quietly computes on a fraction of the data.
+ *
+ * That is not hypothetical. A class report was showing 34% attendance for a
+ * class whose real figure is 93%: 3,072 attendance rows existed, the client
+ * received the most recent 1,000, and the class rate divided that slice by the
+ * full sessions x students it was supposed to cover. The per-student rates on
+ * the same screen still read 100%, because those divide by the loaded rows —
+ * so the page contradicted itself and neither number was flagged as partial.
+ *
+ * A term of attendance for one class passes 1000 rows in a few weeks, so this
+ * is the normal case, not the large-school case.
+ *
+ * Pass a builder that produces the query afresh for each page: PostgREST
+ * builders are single-use, and reusing one silently returns the first page again.
+ */
+const PAGE_SIZE = 1000
+
+export async function fetchAllPages<T>(
+  build: () => { range: (from: number, to: number) => PromiseLike<{ data: T[] | null; error: unknown }> },
+): Promise<T[]> {
+  const out: T[] = []
+  for (let from = 0; ; from += PAGE_SIZE) {
+    const { data, error } = await build().range(from, from + PAGE_SIZE - 1)
+    if (error) throw error
+    const page = data ?? []
+    out.push(...page)
+    // A short page means the end. Guarded on length rather than on a count
+    // header so it works with every query shape here.
+    if (page.length < PAGE_SIZE) return out
+  }
+}
+
 // ─── Schools ──────────────────────────────────────────────────────────────────
 
 function genJoinCode(): string {
@@ -290,9 +329,9 @@ export async function fetchMarks(teacherId: string): Promise<Mark[]> {
   const { data: tests, error: testError } = await supabase.from('tests').select('id').eq('teacher_id', teacherId)
   if (testError) throw testError
   if (!tests?.length) return []
-  const { data, error } = await supabase.from('marks').select('*').in('test_id', tests.map(t => t.id))
-  if (error) throw error
-  return (data ?? []).map(r => ({
+  const data = await fetchAllPages<Record<string, any>>(() => supabase
+    .from('marks').select('*').in('test_id', tests.map(t => t.id)))
+  return data.map(r => ({
     id: r.id, testId: r.test_id, studentId: r.student_id, score: r.score,
     feedback: r.feedback ?? undefined,
     breakdown: r.breakdown ?? undefined,
@@ -320,10 +359,9 @@ export async function upsertAttendanceRecord(a: Attendance) {
 
 export async function fetchAttendance(classIds: string[]): Promise<Attendance[]> {
   if (!classIds.length) return []
-  const { data, error } = await supabase
-    .from('attendance').select('*').in('class_id', classIds).order('date', { ascending: false })
-  if (error) throw error
-  return (data ?? []).map(r => ({
+  const data = await fetchAllPages<Record<string, any>>(() => supabase
+    .from('attendance').select('*').in('class_id', classIds).order('date', { ascending: false }))
+  return data.map(r => ({
     id: r.id,
     sessionId: r.session_id ?? '',
     studentId: r.student_id,
@@ -359,9 +397,9 @@ export async function fetchTopicMastery(teacherId: string, classIds?: string[]):
     : await supabase.from('students').select('id').eq('teacher_id', teacherId)
   if (studentsError) throw studentsError
   if (!students?.length) return []
-  const { data, error } = await supabase.from('student_topic_mastery').select('*').in('student_id', students.map(s => s.id))
-  if (error) throw error
-  return (data ?? []).map(r => ({
+  const data = await fetchAllPages<Record<string, any>>(() => supabase
+    .from('student_topic_mastery').select('*').in('student_id', students.map(s => s.id)))
+  return data.map(r => ({
     id: r.id, studentId: r.student_id, topic: r.topic, subject: r.subject,
     mastery: r.mastery, attempts: r.attempts, lastUpdated: r.last_updated,
   }))

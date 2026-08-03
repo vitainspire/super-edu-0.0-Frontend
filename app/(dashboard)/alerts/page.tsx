@@ -2,10 +2,11 @@
 import { useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import {
-  Bell, CheckCircle2, AlertTriangle, Info,
-  BookOpen, CheckCheck, ChevronDown, ChevronUp,
+  Bell, CheckCircle2, Info,
+  CheckCheck,
   UserX, TrendingDown, ArrowRight,
 } from 'lucide-react'
+import { AlertTriangle, BookOpen, ChevronDown, ChevronUp } from '@/components/ui/icons'
 import { useApp } from '@/lib/context'
 import clsx from 'clsx'
 import CatchupModal from '@/components/catchup/CatchupModal'
@@ -154,7 +155,7 @@ export default function AlertsPage() {
               key={group.classId}
               className="paper-card overflow-hidden"
               style={{
-                border: `1px solid ${group.hasCritical ? '#fecaca' : '#fde68a'}`,
+                border: '2px solid var(--card-border)',
               }}
             >
               {/* Tap target — full class row */}
@@ -369,8 +370,8 @@ function StudentWarningRow({
                       onClick={() => onViewPlan(existing)}
                       className="flex-1 py-2.5 rounded-xl text-xs font-bold text-center active:opacity-70 transition-opacity"
                       style={{
-                        background: existing.status === 'done' ? '#d1fae5' : '#DCEBF8',
-                        color: existing.status === 'done' ? '#065f46' : '#1E3A55',
+                        background: existing.status === 'done' ? '#d1fae5' : 'rgba(31,61,44,0.1)',
+                        color: existing.status === 'done' ? '#065f46' : 'var(--forest)',
                       }}
                     >
                       {STATUS_LABEL[existing.status]} — View Plan
@@ -389,7 +390,8 @@ function StudentWarningRow({
                   <button
                     type="button"
                     onClick={() => onCatchup({ studentId: sa.student.id, studentName: sa.student.name, topic: w.topic!, score })}
-                    className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-bold text-[#1E3A55] bg-white border border-[#AACDEA] active:bg-[#DCEBF8] transition-colors"
+                    className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-bold bg-white transition-colors"
+                    style={{ color: 'var(--forest)', border: '2px solid var(--card-border)' }}
                   >
                     <BookOpen size={13} /> Create Catch-up Plan
                   </button>

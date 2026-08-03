@@ -2,9 +2,11 @@
 import { useState, useCallback, useEffect } from 'react'
 import { useParams } from 'next/navigation'
 import {
-  RefreshCw, Users, Sparkles, Link2,
-  ChevronDown, ChevronUp, TrendingUp, BookOpen,
+  Users, Sparkles, ChevronDown, ChevronUp, BookOpen,
   ClipboardList, AlertTriangle,
+} from '@/components/ui/icons'
+import {
+  RefreshCw, Link2, TrendingUp,
 } from 'lucide-react'
 import { useApp } from '@/lib/context'
 import { aiKey, getAiCache, setAiCache, TTL } from '@/lib/ai-cache'
@@ -95,6 +97,14 @@ export default function ClassPulsePage() {
     }
   })
 
+  // Two definitions of "done" used to sit on this page at once: this tile
+  // counted is_completed, while the coverage table below called a topic
+  // "Taught" if a session was logged against it. The report therefore read
+  // "0/18 topics done" directly above eight rows marked Taught with test
+  // scores beside them. Taught is the one backed by evidence — a session
+  // happened — where is_completed is a checkbox many teachers never tick, so
+  // the tile now reports the same thing the table does.
+  const taughtTopics    = topicCoverage.filter(t => t.status !== 'Not Taught').length
   const completedTopics = syllabus.filter(t => t.isCompleted).length
   const avgMastery      = studentStats.length
     ? studentStats.reduce((s, st) => s + st.avgMastery, 0) / studentStats.length
@@ -121,8 +131,8 @@ export default function ClassPulsePage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          className: cls?.name ?? classId, subject: teacher?.subject ?? '',
-          grade: cls?.grade ?? teacher?.grade ?? '',
+          className: cls?.name || classId, subject: teacher?.subject || '',
+          grade: cls?.grade || teacher?.grade || '',
           students: studentStats.map(s => ({ name: s.name, avgMastery: s.avgMastery, attendanceRate: s.attendanceRate, interests: s.interests })),
           tests: testSummary, attendanceRate: classAttRate, topicCoverage: topicCoverage.map(t => ({ topic: t.topic, status: t.status })),
         }),
@@ -140,7 +150,7 @@ export default function ClassPulsePage() {
     if (students.length < 2) return
     const topic     = syllabus.find(t => t.id === selectedTopicId)?.topic ?? 'General'
     const studentKey = students.map(s => s.id).sort().join('~')
-    const ck = aiKey('peer-pair', { topic: topic.toLowerCase().trim(), subject: (teacher?.subject ?? '').toLowerCase(), studentKey })
+    const ck = aiKey('peer-pair', { topic: topic.toLowerCase().trim(), subject: (teacher?.subject || '').toLowerCase(), studentKey })
     const cached = getAiCache<PeerPair[]>(ck)
     if (cached) { setPairs(cached); return }
     setPairsLoading(true); setPairsError(''); setPairs([])
@@ -148,7 +158,7 @@ export default function ClassPulsePage() {
       const res = await fetch('/api/peer-pair', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ students: studentStats, topic, subject: teacher?.subject ?? '' }),
+        body: JSON.stringify({ students: studentStats, topic, subject: teacher?.subject || '' }),
       })
       if (!res.ok) throw new Error('Failed')
       const { pairs: p } = await res.json()
@@ -195,8 +205,10 @@ export default function ClassPulsePage() {
         {[
           { label: 'Avg Mastery',   value: pct(avgMastery),         sub: 'class average',       color: avgMastery >= 0.75 ? '#059669' : avgMastery >= 0.5 ? '#d97706' : '#dc2626' },
           { label: 'Attendance',    value: pct(classAttRate),        sub: `${sessions.length} sessions`,  color: classAttRate >= 0.75 ? '#059669' : '#d97706' },
-          { label: 'Syllabus',      value: `${completedTopics}/${syllabus.length}`, sub: 'topics done', color: '#5B87AD' },
-          { label: 'Tests',         value: String(classTests.length), sub: 'conducted',           color: '#8069B0' },
+          { label: 'Syllabus',      value: `${taughtTopics}/${syllabus.length}`,
+            sub: completedTopics > 0 ? `taught · ${completedTopics} ticked off` : 'topics taught',
+            color: '#1F3D2C' },
+          { label: 'Tests',         value: String(classTests.length), sub: 'conducted',           color: '#2C5540' },
         ].map(({ label, value, sub, color }) => (
           <div key={label} className="paper-card p-3 text-center">
             <p className="text-xl font-black" style={{ color }}>{value}</p>
@@ -273,7 +285,7 @@ export default function ClassPulsePage() {
                     <MiniBar value={s.avgMastery} color={s.avgMastery >= 0.75 ? '#059669' : s.avgMastery >= 0.5 ? '#d97706' : s.avgMastery > 0 ? '#dc2626' : '#e2e8f0'} />
                   </td>
                   <td className="px-3 py-3 min-w-[100px]">
-                    <MiniBar value={s.attendanceRate} color={s.attendanceRate >= 0.75 ? '#5B87AD' : '#d97706'} />
+                    <MiniBar value={s.attendanceRate} color={s.attendanceRate >= 0.75 ? '#1F3D2C' : '#d97706'} />
                   </td>
                   <td className="px-5 py-3 text-right">
                     <StatusChip mastery={s.avgMastery} />
@@ -308,7 +320,7 @@ export default function ClassPulsePage() {
                     <span className={clsx(
                       'inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold',
                       t.status === 'Completed' ? 'bg-emerald-100 text-emerald-700' :
-                      t.status === 'Taught'    ? 'bg-[#DCEBF8] text-[#1E3A55]' :
+                      t.status === 'Taught'    ? 'bg-[#DCEEE1] text-[#1F3D2C]' :
                       'bg-black/[0.05] text-ink-soft'
                     )}>
                       {t.status}
@@ -372,7 +384,7 @@ export default function ClassPulsePage() {
           className="w-full flex items-center justify-between px-5 py-3.5 hover:bg-black/[0.02] transition-colors"
         >
           <div className="flex items-center gap-2">
-            <AlertTriangle size={14} style={{ color: '#5B4A85' }} />
+            <AlertTriangle size={14} style={{ color: 'var(--forest)' }} />
             <p className="text-xs font-black uppercase tracking-wide text-ink-soft">AI Insights</p>
             <span className="text-[10px] text-ink-soft font-medium normal-case">generated summary</span>
           </div>
@@ -411,7 +423,7 @@ export default function ClassPulsePage() {
                   { label: 'Class Health',      key: 'health'   as const, color: 'text-emerald-600' },
                   { label: 'Concern Areas',     key: 'concerns' as const, color: 'text-amber-600' },
                   { label: 'Wins to Celebrate', key: 'wins'     as const, color: 'text-yellow-600' },
-                  { label: "This Week's Focus", key: 'focus'    as const, color: 'text-[#1E3A55]' },
+                  { label: "This Week's Focus", key: 'focus'    as const, color: 'text-[#1F3D2C]' },
                 ].map(({ label, key, color }) => (
                   <div key={key}>
                     <p className={clsx('text-[10px] font-black uppercase tracking-wide mb-1', color)}>{label}</p>
@@ -430,8 +442,8 @@ export default function ClassPulsePage() {
       {/* ── Study Partners ── */}
       <div className="space-y-3 pt-2">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-xl flex items-center justify-center" style={{ background: '#DCEBF8' }}>
-            <Link2 size={15} style={{ color: '#1E3A55' }} />
+          <div className="w-8 h-8 rounded-xl flex items-center justify-center" style={{ background: '#DCEEE1', border: '2px solid var(--card-border)' }}>
+            <Link2 size={15} style={{ color: 'var(--forest)' }} />
           </div>
           <span className="font-bold text-ink">Study Partners</span>
         </div>
@@ -475,16 +487,16 @@ export default function ClassPulsePage() {
                   <Link2 size={14} className="text-ink-faint shrink-0" />
                   <div className="flex-1 flex items-center gap-2 justify-end">
                     <div className="text-right">
-                      <p className="text-xs font-bold" style={{ color: '#1E3A55' }}>Mentee</p>
+                      <p className="text-xs font-bold" style={{ color: 'var(--forest)' }}>Mentee</p>
                       <p className="text-sm font-semibold text-ink">{pair.mentee}</p>
                     </div>
-                    <div className="w-8 h-8 rounded-xl flex items-center justify-center text-xs font-black" style={{ background: '#DCEBF8', color: '#1E3A55' }}>
+                    <div className="w-8 h-8 rounded-xl flex items-center justify-center text-xs font-black" style={{ background: '#DCEEE1', color: 'var(--forest)' }}>
                       {pair.mentee[0]}
                     </div>
                   </div>
                 </div>
                 {pair.sharedInterest && pair.sharedInterest !== 'different interests' && (
-                  <p className="text-xs font-semibold mb-1.5" style={{ color: '#5B4A85' }}>Shared: {pair.sharedInterest}</p>
+                  <p className="text-xs font-semibold mb-1.5" style={{ color: 'var(--forest)' }}>Shared: {pair.sharedInterest}</p>
                 )}
                 <div className="bg-black/[0.02] rounded-xl px-3 py-2">
                   <p className="text-xs font-bold text-ink-soft mb-0.5">Activity</p>

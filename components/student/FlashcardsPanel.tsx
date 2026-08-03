@@ -62,7 +62,7 @@ export function FlashcardsPanel({ subjects, interests, preselect, onTopicPicked,
       <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
         {error && <div style={{ padding: '10px 14px', borderRadius: 12, background: '#FBE3DC', border: '1.5px solid #F0A491', fontSize: 12.5, fontWeight: 600, color: '#8A3A28' }}>{error}</div>}
         <p style={{ fontSize: 13, color: '#5B6B87', lineHeight: 1.5 }}>Pick a topic to revise with flashcards. Tap a card to flip it.</p>
-        <TopicPicker subjects={subjects} activeColor="#3D6CB4" onPick={loadCards} hideSubjectHeading={hideSubjectHeading} />
+        <TopicPicker subjects={subjects} activeColor="#D9720F" onPick={loadCards} hideSubjectHeading={hideSubjectHeading} />
       </div>
     )
   }
@@ -70,7 +70,7 @@ export function FlashcardsPanel({ subjects, interests, preselect, onTopicPicked,
   if (phase === 'loading') {
     return (
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '48px 0', gap: 12 }}>
-        <Loader2 size={28} className="animate-spin" style={{ color: '#3D6CB4' }} />
+        <Loader2 size={28} className="animate-spin" style={{ color: '#D9720F' }} />
         <p style={{ fontSize: 13, fontWeight: 600, color: '#5B6B87' }}>Making flashcards for “{topic}”…</p>
       </div>
     )
@@ -82,14 +82,14 @@ export function FlashcardsPanel({ subjects, interests, preselect, onTopicPicked,
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
         <button onClick={reset} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#5B6B87', display: 'flex', alignItems: 'center', padding: 0 }}><ArrowLeft size={16} /></button>
         <span style={{ fontSize: 13, fontWeight: 800, color: '#1E2A44', flex: 1 }}>{topic}</span>
-        <span style={{ fontSize: 12, fontWeight: 700, color: '#3D6CB4', background: '#DCEBF8', padding: '3px 12px', borderRadius: 20 }}>{index + 1} / {cards.length}</span>
+        <span style={{ fontSize: 12, fontWeight: 700, color: '#D9720F', background: '#FFE8D1', padding: '3px 12px', borderRadius: 20 }}>{index + 1} / {cards.length}</span>
       </div>
 
       <button onClick={() => setFlipped(f => !f)}
         style={{ width: '100%', minHeight: 190, cursor: 'pointer', fontFamily: 'inherit', borderRadius: 20, padding: '28px 24px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 10, textAlign: 'center', transition: 'all .15s',
-          background: flipped ? '#3D6CB4' : '#fff',
-          border: flipped ? '2.5px solid transparent' : '2.5px solid #3D6CB4' }}>
-        <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: '.1em', textTransform: 'uppercase', color: flipped ? 'rgba(255,255,255,.7)' : '#3D6CB4' }}>{flipped ? 'Answer' : 'Question'}</span>
+          background: flipped ? '#D9720F' : '#fff',
+          border: flipped ? '2.5px solid transparent' : '2.5px solid #D9720F' }}>
+        <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: '.1em', textTransform: 'uppercase', color: flipped ? 'rgba(255,255,255,.7)' : '#D9720F' }}>{flipped ? 'Answer' : 'Question'}</span>
         <span className="font-kid" style={{ fontSize: 16, fontWeight: 600, lineHeight: 1.5, color: flipped ? '#fff' : '#1E2A44' }}>{flipped ? card.back : card.front}</span>
         <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 11, fontWeight: 600, color: flipped ? 'rgba(255,255,255,.75)' : '#94A3B8', marginTop: 4 }}>
           <Repeat size={12} /> Tap to flip

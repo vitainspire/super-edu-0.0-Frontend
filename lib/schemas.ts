@@ -342,6 +342,13 @@ export const YearPlanSchema = z.object({
   sessionsPerWeek: z.number().int().positive().max(14),
   subject:         reqStr(LEN.topic),
   grade:           anyStr(LEN.short),
+  // The exact session budget. Preferred over totalWeeks × sessionsPerWeek,
+  // which round-trips through an integer sessions-per-week and so can miss the
+  // real figure by several sessions either way.
+  totalSessions:   z.number().int().positive().max(840).optional(),
+  // Desired floor per topic. Honoured only where affordable — with more topics
+  // than sessions the route lowers it rather than blowing the budget.
+  minSessionsPerTopic: z.number().int().nonnegative().max(50).optional(),
 })
 
 export const SaveScoreSchema = z.object({

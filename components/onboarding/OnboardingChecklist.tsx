@@ -2,9 +2,9 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import {
-  CheckCircle2, ChevronRight, X,
-  BookOpen, Users, Calendar, GraduationCap, Sparkles, type LucideIcon,
-} from 'lucide-react'
+  ChevronRight, X, BookOpen, Users, GraduationCap, Sparkles,
+} from '@/components/ui/icons'
+import { CheckCircle2, Calendar, type LucideIcon } from 'lucide-react'
 import type { Class, Student, SyllabusTopic, TimetableEntry, Teacher } from '@/lib/types'
 import { isTeachingProfileComplete } from '@/lib/logic/teaching-profile'
 
@@ -188,7 +188,7 @@ export default function OnboardingChecklist({
               key={step.id}
               className="flex items-start gap-3.5 px-5 py-4 transition-colors"
               style={{
-                background: isActive ? 'rgba(170,205,234,0.18)' : 'transparent',
+                background: isActive ? 'rgba(31,61,44,0.08)' : 'transparent',
                 borderBottom: idx < steps.length - 1 ? '1px solid rgba(58,44,30,0.08)' : 'none',
               }}
             >
@@ -201,8 +201,8 @@ export default function OnboardingChecklist({
                   </div>
                 ) : isActive ? (
                   <div className="w-9 h-9 rounded-full flex items-center justify-center"
-                    style={{ background: '#DCEBF8' }}>
-                    <Icon size={18} style={{ color: '#5B87AD' }} />
+                    style={{ background: 'rgba(31,61,44,0.10)' }}>
+                    <Icon size={18} style={{ color: 'var(--forest)' }} />
                   </div>
                 ) : (
                   <div className="w-9 h-9 rounded-full flex items-center justify-center"

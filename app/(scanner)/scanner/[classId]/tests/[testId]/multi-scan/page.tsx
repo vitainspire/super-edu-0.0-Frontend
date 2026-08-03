@@ -13,6 +13,7 @@ import { cn } from "@/lib/utils";
 import { QualityWarning } from "@/components/scanner/quality-warning";
 import { ReviewFlag } from "@/components/scanner/review-flag";
 import { compressAndAssess, type ImageQuality } from "@/lib/scan-capture";
+import { SCANNER_THEME } from "@/lib/scanner-theme";
 
 interface Student { id: string; name: string; roll_number: number }
 interface TestInfo { topic: string; total_marks: number; subject: string; questions: unknown[] }
@@ -231,7 +232,7 @@ export default function MultiScanPage() {
         </div>
         <button
           onClick={handleContinueAfterFlag}
-          className="w-full max-w-sm bg-indigo-600 text-white font-black rounded-2xl px-8 py-4 shadow-xl shadow-indigo-200 active:scale-95 transition-transform"
+          className="w-full max-w-sm bg-[var(--scanner-blue)] text-white font-black rounded-2xl px-8 py-4 border-2 border-[var(--card-border)] active:scale-95 transition-transform"
         >
           Continue
         </button>
@@ -253,7 +254,7 @@ export default function MultiScanPage() {
         </div>
         <button
           onClick={() => router.push(`/scanner/${classId}/tests/${testId}/scan`)}
-          className="bg-indigo-600 text-white font-black rounded-2xl px-8 py-4 shadow-xl shadow-indigo-200 active:scale-95 transition-transform"
+          className="bg-[var(--scanner-blue)] text-white font-black rounded-2xl px-8 py-4 border-2 border-[var(--card-border)] active:scale-95 transition-transform"
         >
           View Results
         </button>
@@ -271,7 +272,7 @@ export default function MultiScanPage() {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4 px-6 text-center">
         <p className="text-gray-500 font-medium">No students to scan.</p>
-        <Link href={`/scanner/${classId}/tests/${testId}/scan`} className="text-indigo-600 font-bold text-sm">
+        <Link href={`/scanner/${classId}/tests/${testId}/scan`} className="text-[var(--scanner-blue-mid)] font-bold text-sm">
           View progress →
         </Link>
       </div>
@@ -285,7 +286,7 @@ export default function MultiScanPage() {
       {/* Header */}
       <div
         className="-mx-4 -mt-5 px-5 pt-4 pb-5 mb-4 shrink-0"
-        style={{ background: "linear-gradient(145deg, #1e1b4b 0%, #312e81 50%, #1e3a8a 100%)" }}
+        style={{ background: SCANNER_THEME.blue }}
       >
         <div className="flex items-center gap-3 mb-4">
           <Link
@@ -298,7 +299,7 @@ export default function MultiScanPage() {
             <h1 className="text-base font-black text-white leading-tight truncate">
               {testInfo?.topic ?? "Multi-Scan"}
             </h1>
-            <p className="text-xs font-bold text-indigo-300/70 mt-0.5">
+            <p className="text-xs font-bold text-[rgba(214,227,243,0.7)] mt-0.5">
               {teacherName ? `${teacherName} · ` : ""}{testInfo?.total_marks ?? 0}m · {testInfo?.subject ?? ""}
             </p>
           </div>
@@ -325,12 +326,12 @@ export default function MultiScanPage() {
       </div>
 
       {/* Current student card */}
-      <div className="bg-white rounded-2xl border border-indigo-100 shadow-sm px-4 py-3 mb-4 flex items-center gap-3">
-        <div className="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center text-white text-sm font-black shrink-0">
+      <div className="bg-white rounded-2xl border-2 border-[var(--card-border)] px-4 py-3 mb-4 flex items-center gap-3">
+        <div className="w-10 h-10 rounded-xl bg-[var(--scanner-blue)] flex items-center justify-center text-white text-sm font-black shrink-0">
           {String(current.roll_number).padStart(2, "0")}
         </div>
         <div className="flex-1 min-w-0">
-          <p className="text-xs text-indigo-500 font-bold uppercase tracking-wide">Current student</p>
+          <p className="text-xs text-[var(--scanner-blue-mid)] font-bold uppercase tracking-wide">Current student</p>
           <p className="font-black text-gray-900 truncate">{current.name}</p>
         </div>
         <div className="text-right shrink-0">
@@ -360,7 +361,7 @@ export default function MultiScanPage() {
               </div>
               <button
                 onClick={() => removePage(i)}
-                className="absolute top-1 right-1 w-6 h-6 rounded-full bg-red-500 flex items-center justify-center shadow"
+                className="absolute top-1 right-1 w-6 h-6 rounded-full bg-red-500 flex items-center justify-center"
               >
                 <Trash2 size={10} className="text-white" />
               </button>
@@ -371,12 +372,12 @@ export default function MultiScanPage() {
           <button
             onClick={() => fileInputRef.current?.click()}
             disabled={capturing}
-            className="aspect-[3/4] rounded-xl border-2 border-dashed border-indigo-200 flex flex-col items-center justify-center gap-1 bg-indigo-50 active:bg-indigo-100 transition-colors"
+            className="aspect-[3/4] rounded-xl border-2 border-dashed border-[var(--scanner-blue-mid)] flex flex-col items-center justify-center gap-1 bg-[var(--scanner-blue-soft)] active:bg-[#c2d6ef] transition-colors"
           >
             {capturing
-              ? <Loader2 size={20} className="text-indigo-400 animate-spin" />
-              : <Plus size={20} className="text-indigo-400" />}
-            <span className="text-[9px] font-bold text-indigo-400">{capturing ? "Loading…" : "Add page"}</span>
+              ? <Loader2 size={20} className="text-[var(--scanner-blue-mid)] animate-spin" />
+              : <Plus size={20} className="text-[var(--scanner-blue-mid)]" />}
+            <span className="text-[9px] font-bold text-[var(--scanner-blue-mid)]">{capturing ? "Loading…" : "Add page"}</span>
           </button>
         </div>
       )}
@@ -414,7 +415,7 @@ export default function MultiScanPage() {
           <button
             onClick={() => fileInputRef.current?.click()}
             disabled={capturing || stage === "grading"}
-            className="w-full min-h-[60px] bg-gradient-to-r from-indigo-600 to-indigo-700 text-white font-black text-lg rounded-2xl shadow-xl shadow-indigo-300/30 active:scale-[0.97] transition-transform flex items-center justify-center gap-3 disabled:opacity-50"
+            className="w-full min-h-[60px] bg-[var(--scanner-blue)] text-white font-black text-lg rounded-2xl border-2 border-[var(--card-border)] active:scale-[0.97] transition-transform flex items-center justify-center gap-3 disabled:opacity-50"
           >
             {capturing
               ? <><Loader2 size={22} className="animate-spin" /> Loading…</>
@@ -426,7 +427,7 @@ export default function MultiScanPage() {
             <button
               onClick={() => fileInputRef.current?.click()}
               disabled={capturing || stage === "grading"}
-              className="w-full min-h-[48px] border-2 border-indigo-200 text-indigo-700 font-bold text-base rounded-2xl active:scale-[0.97] transition-transform flex items-center justify-center gap-2 bg-indigo-50 disabled:opacity-50"
+              className="w-full min-h-[48px] border-2 border-[var(--scanner-blue-mid)] text-[var(--scanner-blue-mid)] font-bold text-base rounded-2xl active:scale-[0.97] transition-transform flex items-center justify-center gap-2 bg-[var(--scanner-blue-soft)] disabled:opacity-50"
             >
               {capturing
                 ? <><Loader2 size={18} className="animate-spin" /> Loading…</>
@@ -437,10 +438,10 @@ export default function MultiScanPage() {
               onClick={() => void handleDone()}
               disabled={stage === "grading"}
               className={cn(
-                "w-full min-h-[60px] font-black text-lg rounded-2xl transition-transform flex items-center justify-center gap-3",
+                "w-full min-h-[60px] font-black text-lg rounded-2xl transition-transform flex items-center justify-center gap-3 border-2",
                 stage === "grading"
-                  ? "bg-gray-200 text-gray-400 cursor-not-allowed"
-                  : "bg-gradient-to-r from-emerald-600 to-emerald-700 text-white shadow-xl shadow-emerald-300/30 active:scale-[0.97]"
+                  ? "bg-gray-200 text-gray-400 cursor-not-allowed border-gray-200"
+                  : "bg-[#1F3D2C] text-white border-[var(--card-border)] active:scale-[0.97]"
               )}
             >
               {stage === "grading"

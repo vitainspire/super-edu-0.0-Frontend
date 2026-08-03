@@ -97,6 +97,10 @@ export async function POST(req: NextRequest, { params }: { params: { schoolId: s
 
     const rows = classIds.map(classId => ({
       id: crypto.randomUUID(), class_id: classId, teacher_id: null,
+      // school_id was missing here, and every topic this route created was
+      // invisible to the endpoints that scope by tenant — the grade-syllabus
+      // reader and the progression writer both filter on it.
+      school_id: params.schoolId,
       grade, subject, definition_id: definitionId,
       topic, description: body?.description?.trim() ?? '',
       week_number: body?.weekNumber ?? null, order_index: nextOrder,
@@ -140,7 +144,26 @@ export async function PATCH(req: NextRequest, { params }: { params: { schoolId: 
   }
 }
 
-// DELETE — remove a topic across every section sharing its definitionId.
+// The rest of a PDF-imported ontology. persist_extraction writes seven tables;
+// chapters, concept dependencies and the extraction record are scoped to
+// school+grade+subject rather than to any one topic, so a bulk wipe has to
+// clear them explicitly or a re-import stacks on top of the old ontology.
+async function deleteSyllabusScoped(
+  ac: ReturnType<typeof createAdminClient>, schoolId: string, grade: string, subject: string,
+) {
+  for (const table of ['syllabus_chapters', 'syllabus_dependencies', 'syllabus_ontology_extractions']) {
+    const { error } = await ac.from(table).delete()
+      .eq('school_id', schoolId).eq('grade', grade).eq('subject', subject)
+    if (error) throw error
+  }
+}
+
+// DELETE — two modes:
+//   { definitionId }    remove one topic across every section sharing it
+//   { grade, subject }  remove that grade+subject's entire syllabus
+//
+// The bulk mode exists because an AI-imported textbook yields ~100 topics, and
+// clearing a bad import one row at a time is not a real option.
 export async function DELETE(req: NextRequest, { params }: { params: { schoolId: string } }) {
   const ctx = await auth(params.schoolId)
   if (!ctx) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
@@ -148,15 +171,64 @@ export async function DELETE(req: NextRequest, { params }: { params: { schoolId:
 
   const body = await req.json().catch(() => null)
   const definitionId = body?.definitionId
-  if (!definitionId) return NextResponse.json({ error: 'definitionId required' }, { status: 400 })
+  const grade = body?.grade, subject = body?.subject
+
+  if (!definitionId && !(grade && subject)) {
+    return NextResponse.json({ error: 'definitionId, or grade and subject, required' }, { status: 400 })
+  }
 
   try {
-    const { data: topicRows } = await ac.from('syllabus_topics').select('id').eq('definition_id', definitionId)
-    const topicIds = (topicRows ?? []).map(t => t.id)
-    if (topicIds.length > 0) await ac.from('syllabus_sub_topics').delete().in('topic_id', topicIds)
-    const { error } = await ac.from('syllabus_topics').delete().eq('definition_id', definitionId)
+    // Resolve the target rows. The bulk branch scopes by this school's classes
+    // for the grade and an exact subject match — the same filter GET uses, so
+    // "delete the syllabus" can only ever remove what the page was showing.
+    let topicIds: string[]
+    if (definitionId) {
+      const { data } = await ac.from('syllabus_topics').select('id').eq('definition_id', definitionId)
+      topicIds = (data ?? []).map(t => t.id)
+    } else {
+      const classIds = await gradeClassIds(ac, params.schoolId, grade)
+      if (classIds.length === 0) {
+        // No classes means no topics, but chapters/dependencies/extractions are
+        // keyed to school+grade+subject and can outlive them — fall through to
+        // the scoped cleanup below rather than returning early.
+        topicIds = []
+      } else {
+        const { data } = await ac.from('syllabus_topics').select('id').in('class_id', classIds).eq('subject', subject)
+        topicIds = (data ?? []).map(t => t.id)
+      }
+    }
+
+    if (topicIds.length === 0) {
+      // Nothing to remove, but a bulk wipe should still clear grade+subject
+      // scoped rows that outlive their topics (e.g. a part-cleared import).
+      if (!definitionId) await deleteSyllabusScoped(ac, params.schoolId, grade, subject)
+      return NextResponse.json({ ok: true, deletedTopics: 0 })
+    }
+
+    // Children first — all three hang off topic_id. A PDF import writes
+    // exercises and sidebars alongside sub-topics, and deleting only sub-topics
+    // (as this route used to) left them orphaned with no owning topic.
+    for (const table of ['syllabus_exercises', 'syllabus_sidebars', 'syllabus_sub_topics']) {
+      const { error } = await ac.from(table).delete().in('topic_id', topicIds)
+      if (error) throw error
+    }
+
+    // Delete by the ids we just resolved rather than re-running the filter, so
+    // a topic created between the two queries cannot be caught by surprise.
+    const { error } = await ac.from('syllabus_topics').delete().in('id', topicIds)
     if (error) throw error
-    return NextResponse.json({ ok: true })
+
+    if (definitionId) {
+      // Concept edges are keyed by definition_id, not topic_id, so they survive
+      // the delete above and would dangle. Both directions have to go.
+      for (const col of ['from_definition_id', 'to_definition_id']) {
+        await ac.from('syllabus_dependencies').delete().eq(col, definitionId)
+      }
+    } else {
+      await deleteSyllabusScoped(ac, params.schoolId, grade, subject)
+    }
+
+    return NextResponse.json({ ok: true, deletedTopics: topicIds.length })
   } catch (err) {
     console.error('[admin/syllabus DELETE] failed:', err)
     return NextResponse.json({ error: 'Server error' }, { status: 500 })

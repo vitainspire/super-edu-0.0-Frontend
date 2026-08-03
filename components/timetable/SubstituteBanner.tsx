@@ -49,7 +49,7 @@ export default function SubstituteBanner() {
   return (
     <div className="space-y-2">
       {status.onLeave && (
-        <div className="paper-card px-4 py-3 flex items-center gap-3" style={{ background: '#FEF3C7', borderColor: 'rgba(217,119,6,0.25)' }}>
+        <div className="paper-card px-4 py-3 flex items-center gap-3" style={{ background: '#FEF3C7', borderColor: 'var(--card-border)' }}>
           <Sticker tone="gold" size={36} radius={12}>
             <CalendarOff size={17} style={{ color: '#92400E' }} />
           </Sticker>

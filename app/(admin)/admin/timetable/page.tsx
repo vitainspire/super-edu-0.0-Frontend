@@ -10,6 +10,7 @@ import clsx from 'clsx'
 import type { Class, SchoolTimetablePeriod, ScheduleSlot, SchoolSchedule } from '@/lib/types'
 import GradeSubjectsEditor from '@/components/admin/GradeSubjectsEditor'
 import PageHeader from '@/components/theme/PageHeader'
+import { ADMIN_PALETTE as PALETTE, ADMIN_SUBJECT_COLORS as SUBJECT_COLORS, colorForLabel } from '@/lib/admin-theme'
 
 const DAYS_COUNT = 6
 
@@ -61,30 +62,7 @@ const DEFAULT_FORM: SetupForm = {
   ],
 }
 
-type Tone = 'blue' | 'green' | 'coral' | 'gold' | 'violet' | 'pink'
-const PALETTE: { tone: Tone; stat: string; ink: string }[] = [
-  { tone: 'blue',   stat: 'stat-card-blue',   ink: '#1E3A55' },
-  { tone: 'green',  stat: 'stat-card-green',  ink: '#234A1D' },
-  { tone: 'coral',  stat: 'stat-card-coral',  ink: '#5C2416' },
-  { tone: 'gold',   stat: 'stat-card-gold',   ink: '#4A3809' },
-  { tone: 'violet', stat: 'stat-card-violet', ink: '#31215C' },
-  { tone: 'pink',   stat: 'stat-card-pink',   ink: '#5C1F38' },
-]
-
 const DAY_NAMES = ['', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
-const SUBJECT_COLORS = [
-  { bg: '#C7B7E8', text: '#31215C' },
-  { bg: '#AACDEA', text: '#1E3A55' },
-  { bg: '#AAD6A0', text: '#234A1D' },
-  { bg: '#EAC968', text: '#4A3809' },
-  { bg: '#F0AFC6', text: '#5C1F38' },
-  { bg: '#F0A491', text: '#5C2416' },
-]
-function colorForLabel(label: string) {
-  let hash = 0
-  for (let i = 0; i < label.length; i++) hash = (hash * 31 + label.charCodeAt(i)) >>> 0
-  return SUBJECT_COLORS[hash % SUBJECT_COLORS.length]
-}
 
 export default function TimetablePage() {
   const { school } = useAdmin()
@@ -286,15 +264,15 @@ export default function TimetablePage() {
         <div className="px-5 md:px-6 max-w-3xl mx-auto relative z-10 space-y-5">
 
           {/* AI panel */}
-          <div className="paper-card p-5" style={{ background: 'rgba(199,183,232,0.16)' }}>
+          <div className="paper-card p-5" style={{ background: 'rgba(170,205,234,0.2)' }}>
             <div className="flex items-center justify-between mb-3 gap-3 flex-wrap">
               <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0 bg-sticker-violet">
-                  <Wand2 className="w-4 h-4" style={{ color: '#31215C' }} />
+                <div className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0 bg-sticker-blue">
+                  <Wand2 className="w-4 h-4" style={{ color: '#1E3A55' }} />
                 </div>
-                <p className="text-sm font-bold" style={{ color: '#31215C' }}>Generate with AI</p>
+                <p className="text-sm font-bold" style={{ color: '#1E3A55' }}>Generate with AI</p>
               </div>
-              <button onClick={() => setShowAiPanel(v => !v)} className="text-xs font-bold underline" style={{ color: '#31215C' }}>
+              <button onClick={() => setShowAiPanel(v => !v)} className="text-xs font-bold underline" style={{ color: '#1E3A55' }}>
                 {showAiPanel ? 'Hide' : 'Describe your schedule'}
               </button>
             </div>
@@ -310,7 +288,7 @@ export default function TimetablePage() {
                 </button>
               </div>
             ) : (
-              <p className="text-xs font-medium" style={{ color: '#31215C', opacity: 0.75 }}>Describe your school hours and breaks in plain text — AI will build the period structure for you.</p>
+              <p className="text-xs font-medium" style={{ color: '#1E3A55', opacity: 0.75 }}>Describe your school hours and breaks in plain text — AI will build the period structure for you.</p>
             )}
           </div>
 
@@ -548,7 +526,7 @@ export default function TimetablePage() {
           <div className="flex items-center justify-between mb-4 gap-3 flex-wrap">
             <div>
               <p className="text-sm font-bold text-ink flex items-center gap-2">
-                <Shuffle className="w-4 h-4" style={{ color: '#31215C' }} /> Subject Lineup &amp; Shuffle
+                <Shuffle className="w-4 h-4" style={{ color: '#1E3A55' }} /> Subject Lineup &amp; Shuffle
               </p>
               <p className="text-xs text-ink-faint mt-0.5">
                 Set periods/week per subject once for a grade, then auto-generate every section's timetable at once

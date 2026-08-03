@@ -3,8 +3,11 @@ import { useState } from 'react'
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
 import {
-  UserPlus, AlertTriangle, BookOpen,
+  UserPlus, AlertTriangle,
   ChevronUp, Check, ChevronRight, Pencil, Search, X,
+} from '@/components/ui/icons'
+import {
+  BookOpen,
   Trophy, Goal, Dumbbell, Tv, Clapperboard, ChefHat, Leaf, Music, Palette,
   Drama, FlaskConical, PawPrint, type LucideIcon,
 } from 'lucide-react'
@@ -114,7 +117,7 @@ export default function ClassStudentsPage() {
       {/* Search bar */}
       {students.length > 0 && (
         <div className="px-4 pb-3">
-          <div className="flex items-center gap-2 rounded-2xl px-3 py-2" style={{ background: 'rgba(58,44,30,0.05)' }}>
+          <div className="flex items-center gap-2 rounded-2xl px-3 py-2.5 bg-white" style={{ border: '2px solid var(--card-border)' }}>
             <Search size={15} className="text-ink-soft flex-shrink-0" />
             <input
               type="text"
@@ -133,8 +136,8 @@ export default function ClassStudentsPage() {
       )}
 
       {missingInterests > 0 && (
-        <div className="mx-4 mb-3 bg-amber-50 border border-amber-200 rounded-2xl px-4 py-3">
-          <p className="text-sm font-semibold text-amber-800">
+        <div className="mx-4 mb-3 rounded-2xl px-4 py-3" style={{ background: '#F7EFC4', border: '2px solid var(--card-border)' }}>
+          <p className="text-sm font-semibold text-ink">
             Tap <Pencil size={12} className="inline mx-0.5" /> on a student card to add interests — the AI uses them for engagement hints.
           </p>
         </div>
@@ -143,8 +146,8 @@ export default function ClassStudentsPage() {
       <div className="px-4 space-y-2.5 pb-4">
         {students.length === 0 ? (
           <div className="text-center py-16 paper-card">
-            <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4" style={{ background: '#DCEBF8' }}>
-              <BookOpen size={26} style={{ color: '#1E3A55' }} />
+            <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4" style={{ background: '#DCEEE1', border: '2px solid var(--card-border)' }}>
+              <BookOpen size={26} style={{ color: '#1F3D2C' }} />
             </div>
             <p className="font-bold text-ink text-lg">No students yet</p>
             <p className="text-sm text-ink-soft mt-1">Add students to start tracking their progress</p>
@@ -176,7 +179,8 @@ export default function ClassStudentsPage() {
                 key={student.id}
                 className="rounded-3xl bg-white transition-all"
                 style={{
-                  border: isExpanded ? '1.5px solid rgba(58,44,30,0.35)' : '1.5px solid rgba(58,44,30,0.16)',
+                  border: '2px solid var(--card-border)',
+                  boxShadow: isExpanded ? '0 0 0 3px rgba(31,61,44,0.18)' : 'none',
                 }}
               >
                 {/* Main row: left area → navigate to detail; pencil → expand editor */}
@@ -221,7 +225,7 @@ export default function ClassStudentsPage() {
                     <button
                       onClick={e => openEditor(e, student.id, student.interests, student.goal)}
                       className="w-8 h-8 flex items-center justify-center rounded-xl active:scale-90 transition-transform"
-                      style={{ background: 'rgba(58,44,30,0.06)' }}
+                      style={{ background: '#fff', border: '1.75px solid var(--card-border)' }}
                       title="Edit interests"
                     >
                       {isExpanded ? <ChevronUp size={15} className="text-ink" /> : <Pencil size={13} className="text-ink-soft" />}
@@ -230,7 +234,7 @@ export default function ClassStudentsPage() {
                     <Link
                       href={`/students/${student.id}`}
                       className="w-8 h-8 flex items-center justify-center rounded-xl active:scale-90 transition-transform"
-                      style={{ background: 'rgba(58,44,30,0.06)' }}
+                      style={{ background: '#fff', border: '1.75px solid var(--card-border)' }}
                     >
                       <ChevronRight size={15} className="text-ink-soft" />
                     </Link>
@@ -250,12 +254,10 @@ export default function ClassStudentsPage() {
                             key={label}
                             onClick={() => toggleInterest(student.id, label)}
                             className={clsx(
-                              'flex items-center gap-1.5 px-3 py-1.5 rounded-2xl text-sm font-semibold transition-all active:scale-95',
-                              localInterests.includes(label)
-                                ? 'text-white'
-                                : 'text-ink-soft',
+                              'flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-semibold transition-all active:scale-95',
+                              localInterests.includes(label) ? 'text-white' : 'text-ink',
                             )}
-                            style={{ background: localInterests.includes(label) ? 'var(--ink)' : 'rgba(58,44,30,0.06)' }}
+                            style={{ background: localInterests.includes(label) ? 'var(--forest)' : '#fff', border: '1.75px solid var(--card-border)' }}
                           >
                             <Icon size={13} /> {label}
                           </button>

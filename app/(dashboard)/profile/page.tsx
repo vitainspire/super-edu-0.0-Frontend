@@ -1,6 +1,6 @@
 'use client'
 import { useRouter } from 'next/navigation'
-import { LogOut, CalendarDays, ChevronRight, Sparkles } from 'lucide-react'
+import { LogOut, CalendarDays, ChevronRight, Sparkles } from '@/components/ui/icons'
 import { useApp } from '@/lib/context'
 import PageHeader from '@/components/theme/PageHeader'
 import { Sticker, NotebookSticker } from '@/components/theme/StickerIcon'
@@ -42,19 +42,19 @@ export default function ProfilePage() {
           onClick={() => router.push('/profile/teaching')}
           className="w-full flex items-center gap-3 px-4 py-4 rounded-2xl text-left"
           style={isTeachingProfileComplete(teacher?.teachingProfile)
-            ? { background: 'rgba(58,44,30,0.04)', border: '1.5px solid rgba(58,44,30,0.1)' }
-            : { background: '#E9E1F6', border: '1px solid #C7B7E8' }}
+            ? { background: 'rgba(58,44,30,0.04)', border: '2px solid var(--card-border)' }
+            : { background: 'rgba(31,61,44,0.08)', border: '2px solid var(--card-border)' }}
         >
-          <Sparkles size={18} style={{ color: '#31215C' }} className="shrink-0" />
+          <Sparkles size={18} style={{ color: 'var(--forest)' }} className="shrink-0" />
           <span className="flex-1 min-w-0">
-            <span className="block text-sm font-bold" style={{ color: '#31215C' }}>Teaching Profile</span>
-            <span className="block text-xs mt-0.5" style={{ color: '#6B5D8F' }}>
+            <span className="block text-sm font-bold" style={{ color: 'var(--forest)' }}>Teaching Profile</span>
+            <span className="block text-xs mt-0.5" style={{ color: 'var(--ink-soft)' }}>
               {isTeachingProfileComplete(teacher?.teachingProfile)
                 ? 'Complete — every lesson is personalized to you'
                 : `${teachingProfileCompletion(teacher?.teachingProfile)}% complete — finish it for more personalized lessons`}
             </span>
           </span>
-          <ChevronRight size={16} style={{ color: '#7A5FB8' }} className="shrink-0" />
+          <ChevronRight size={16} style={{ color: 'var(--forest)' }} className="shrink-0" />
         </button>
 
         <div className="paper-card p-5">

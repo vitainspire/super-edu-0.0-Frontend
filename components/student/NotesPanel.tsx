@@ -64,7 +64,7 @@ export function NotesPanel({ subjects, interests, preselect, onTopicPicked, onBa
       <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
         {error && <div style={{ padding: '10px 14px', borderRadius: 12, background: '#FBE3DC', border: '1.5px solid #F0A491', fontSize: 12.5, fontWeight: 600, color: '#8A3A28' }}>{error}</div>}
         <p style={{ fontSize: 13, color: '#5B6B87', lineHeight: 1.5 }}>Pick a topic and we&apos;ll write clear summary notes for you.</p>
-        <TopicPicker subjects={subjects} activeColor="#3D6CB4" onPick={load} hideSubjectHeading={hideSubjectHeading} />
+        <TopicPicker subjects={subjects} activeColor="#D9720F" onPick={load} hideSubjectHeading={hideSubjectHeading} />
       </div>
     )
   }
@@ -72,7 +72,7 @@ export function NotesPanel({ subjects, interests, preselect, onTopicPicked, onBa
   if (phase === 'loading') {
     return (
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '48px 0', gap: 12 }}>
-        <Loader2 size={28} className="animate-spin" style={{ color: '#3D6CB4' }} />
+        <Loader2 size={28} className="animate-spin" style={{ color: '#D9720F' }} />
         <p style={{ fontSize: 13, fontWeight: 600, color: '#5B6B87' }}>Writing notes on “{topic}”…</p>
       </div>
     )
@@ -89,7 +89,7 @@ export function NotesPanel({ subjects, interests, preselect, onTopicPicked, onBa
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
         <button onClick={() => { setPhase('pick'); setNotes(null); onBack?.() }} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#5B6B87', display: 'flex', alignItems: 'center', padding: 0 }}><ArrowLeft size={16} /></button>
         <span style={{ fontSize: 14, fontWeight: 800, color: '#1E2A44', flex: 1 }}>{topic}</span>
-        <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 11, fontWeight: 700, color: '#3D6CB4', background: '#DCEBF8', padding: '4px 10px', borderRadius: 20 }}><Sparkles size={11} /> AI Notes</span>
+        <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 11, fontWeight: 700, color: '#D9720F', background: '#FFE8D1', padding: '4px 10px', borderRadius: 20 }}><Sparkles size={11} /> AI Notes</span>
       </div>
 
       <p className="font-kid" style={{ fontSize: 19, fontWeight: 600, color: '#1E2A44', letterSpacing: '-.3px', marginBottom: 16 }}>Summary Notes</p>
@@ -104,7 +104,7 @@ export function NotesPanel({ subjects, interests, preselect, onTopicPicked, onBa
               <img src={notes.image.url} alt={notes.image.caption} style={{ display: 'block', width: '100%', maxHeight: 360, objectFit: 'contain', background: '#fff' }} />
               <figcaption style={{ fontSize: 10.5, fontWeight: 600, color: '#5B6B87', padding: '7px 8px 0', textAlign: 'center' }}>{notes.image.caption}</figcaption>
               <button onClick={() => setViewerOpen(true)}
-                style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5, width: 'calc(100% - 16px)', margin: '8px', padding: '6px 0', borderRadius: 9, border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontSize: 11.5, fontWeight: 700, color: '#3D6CB4', background: '#DCEBF8' }}>
+                style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5, width: 'calc(100% - 16px)', margin: '8px', padding: '6px 0', borderRadius: 9, border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontSize: 11.5, fontWeight: 700, color: '#D9720F', background: '#FFE8D1' }}>
                 <Maximize2 size={11} /> View Diagram
               </button>
             </figure>
@@ -118,7 +118,7 @@ export function NotesPanel({ subjects, interests, preselect, onTopicPicked, onBa
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               {sec.bullets.map((b, bi) => (
                 <div key={bi} style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
-                  <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#3D6CB4', flexShrink: 0, marginTop: 7 }} />
+                  <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#D9720F', flexShrink: 0, marginTop: 7 }} />
                   <p style={{ fontSize: 14, color: '#1E2A44', fontWeight: 600, lineHeight: 1.5 }}>{b}</p>
                 </div>
               ))}

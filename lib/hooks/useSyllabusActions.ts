@@ -2,6 +2,7 @@
 import { useCallback } from 'react'
 import type { RefObject, Dispatch, SetStateAction } from 'react'
 import * as sbq from '../supabase-queries'
+import { filterTopicsBySubject } from '../logic/subjectSyllabus'
 import type { Teacher, SyllabusTopic, SyllabusSubTopic, Class } from '../types'
 
 export function useSyllabusActions(
@@ -24,7 +25,7 @@ export function useSyllabusActions(
   // ─── Topics ─────────────────────────────────────────────────────────────────
 
   const addSyllabusTopic = useCallback(async (
-    classId: string, data: { topic: string; description?: string; weekNumber?: number },
+    classId: string, data: { topic: string; description?: string; weekNumber?: number; subject?: string },
   ): Promise<string> => {
     const sections = gradeSections(classId)
     const grade = sections.find(s => s.id === classId)?.grade ?? sections[0]?.grade ?? ''
@@ -35,7 +36,7 @@ export function useSyllabusActions(
       const secTopics = syllabusRef.current!.filter(t => t.classId === sec.id)
       return {
         id: crypto.randomUUID(), classId: sec.id, teacherId: teacher?.id,
-        grade, definitionId,
+        grade, subject: data.subject?.trim() || undefined, definitionId,
         topic: data.topic.trim(), description: data.description ?? '',
         weekNumber: data.weekNumber, orderIndex: secTopics.length,
         isCompleted: false, createdAt,
@@ -89,8 +90,14 @@ export function useSyllabusActions(
     sbq.deleteSyllabusTopics([...topicIds]).catch(console.error)
   }, [syllabusRef, subTopicsRef, setSyllabusTopics, setSyllabusSubTopics])
 
-  const getClassSyllabus = useCallback((classId: string) =>
-    syllabusRef.current!.filter(t => t.classId === classId).sort((a, b) => a.orderIndex - b.orderIndex),
+  // A class holds every subject's topics, distinguished only by `subject`, so a
+  // caller that knows which subject it's showing MUST pass it — otherwise a
+  // Maths screen lists the EVS syllabus too. Omitting it keeps the whole class.
+  const getClassSyllabus = useCallback((classId: string, subject?: string | string[] | null) =>
+    filterTopicsBySubject(
+      syllabusRef.current!.filter(t => t.classId === classId).sort((a, b) => a.orderIndex - b.orderIndex),
+      subject,
+    ),
   [syllabusRef])
 
   // ─── Sub-topics ───────────────────────────────────────────────────────────────
@@ -169,18 +176,32 @@ export function useSyllabusActions(
     const grade = cls.grade ?? ''
 
     const byDef = new Map<string, SyllabusTopic>()
+    // Which subject each definition belongs to, taken from whichever sibling row
+    // in the grade actually carries the tag — earlier backfills didn't copy
+    // `subject`, and an untagged row is invisible to every subject-scoped view.
+    const subjectByDef = new Map<string, string>()
     for (const t of syllabusRef.current!) {
       if ((t.grade ?? '') !== grade || !t.definitionId) continue
       if (!byDef.has(t.definitionId)) byDef.set(t.definitionId, t)
+      if (t.subject && !subjectByDef.has(t.definitionId)) subjectByDef.set(t.definitionId, t.subject)
     }
-    const haveDefs = new Set(
-      syllabusRef.current!.filter(t => t.classId === classId).map(t => t.definitionId)
-    )
+    const ownRows = syllabusRef.current!.filter(t => t.classId === classId)
+    const haveDefs = new Set(ownRows.map(t => t.definitionId))
     const missing = [...byDef.values()].filter(t => !haveDefs.has(t.definitionId))
+
+    // Repair untagged rows before anything else, so they reappear under their
+    // own subject instead of being filtered out of every screen.
+    const untagged = ownRows.filter(t => !t.subject && t.definitionId && subjectByDef.has(t.definitionId))
+    if (untagged.length) {
+      const repaired = new Map(untagged.map(t => [t.id, subjectByDef.get(t.definitionId!)!]))
+      setSyllabusTopics(prev => prev.map(t => repaired.has(t.id) ? { ...t, subject: repaired.get(t.id) } : t))
+      untagged.forEach(t => sbq.upsertSyllabusTopic({ ...t, subject: repaired.get(t.id) }).catch(console.error))
+    }
+
     if (!missing.length) return 0
 
     const createdAt = new Date().toISOString()
-    let order = syllabusRef.current!.filter(t => t.classId === classId).length
+    let order = ownRows.length
     const newTopics: SyllabusTopic[] = []
     const newSubs: SyllabusSubTopic[] = []
 
@@ -188,6 +209,7 @@ export function useSyllabusActions(
       const newTopicId = crypto.randomUUID()
       newTopics.push({
         id: newTopicId, classId, teacherId: teacher?.id, grade, definitionId: def.definitionId,
+        subject: def.subject ?? subjectByDef.get(def.definitionId!),
         topic: def.topic, description: def.description, weekNumber: def.weekNumber,
         estimatedSessions: def.estimatedSessions, orderIndex: order++, isCompleted: false, createdAt,
       })

@@ -1,15 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase-admin'
+import { fetchTextbookGrounding, textbookPromptBlock } from '@/lib/prep/textbook-grounding'
 import { getClientIp } from '@/lib/logger'
 import { checkVisionRateLimit } from '@/lib/rate-limit'
-import { generateIllustration } from '@/lib/ai'
+import { generateIllustration, storeIllustration, illustrationKey } from '@/lib/ai'
 import { personalizationTierLine } from '@/lib/logic/teaching-profile'
 import { resolveSubjectModule } from '@/lib/prep/subject-prompts'
 import { engagementLevelGuidance } from '@/lib/prompt-fragments'
+import { fetchPreviousTopic } from '@/lib/refresher-topic'
 import type { TeachingProfile } from '@/lib/types'
 
-// Raised back up from 60s: the v2 template generates one Explore image after the
-// main text call, and (rarely) a Tier 2 repair call on top of that.
+// Raised back up from 60s: after the main text call the route generates up to 3
+// board sketches (Concept always, plus Explore and one more where useful) — run
+// in PARALLEL so they cost ~one image of wall-time — and (rarely) a Tier 2 repair
+// call on top of that.
 export const maxDuration = 90
 
 // ── Low-resource activity bank + "v2" template ──────────────────────────────
@@ -99,68 +103,6 @@ async function fetchGrounding(admin: ReturnType<typeof createAdminClient>, topic
     return { chapterTitle, pageStart, pageEnd, exercises, sidebars }
   } catch {
     return null   // tables not migrated yet, or query failed — fall back to AI-only
-  }
-}
-
-// ── Previous topic for the refresher — what was ACTUALLY taught most recently,
-// not just the structurally-previous syllabus row. The real record is
-// taught_topics (written each day prep material is generated), which carries the
-// SUBTOPIC too — so if the class last did "Reading Large Numbers" (a subtopic of
-// "Large Numbers"), the refresher recaps that subtopic, not the parent topic.
-// Falls back to walking the syllabus by order_index only when there's no taught
-// history. Returns null for the very first lesson.
-async function fetchPreviousTopic(
-  admin: ReturnType<typeof createAdminClient>, classId: string, topic: string, topicDefinitionId?: string, currentSubtopic?: string,
-): Promise<string | null> {
-  const curTopic = topic.trim().toLowerCase()
-  const curSub = (currentSubtopic ?? '').trim().toLowerCase()
-
-  // 1. Real taught history — most recent first, skipping the exact thing we're
-  // generating now (so regenerating today's lesson doesn't recap itself).
-  try {
-    const { data: taught } = await admin
-      .from('taught_topics')
-      .select('topic, subtopic, date, created_at')
-      .eq('class_id', classId)
-      .order('date', { ascending: false })
-      .order('created_at', { ascending: false })
-      .limit(20)
-    const prev = (taught ?? []).find((r: { topic?: string; subtopic?: string | null }) => {
-      const t = (r.topic ?? '').trim().toLowerCase()
-      const s = (r.subtopic ?? '').trim().toLowerCase()
-      return !(t === curTopic && s === curSub)   // not the current topic+subtopic
-    })
-    if (prev) {
-      // Prefer the subtopic label when one was taught — that's the specific
-      // thing the class last did; else the topic.
-      const s = (prev.subtopic ?? '').trim()
-      const t = (prev.topic ?? '').trim()
-      if (s) return s
-      if (t) return t
-    }
-  } catch { /* fall through to syllabus order */ }
-
-  // 2. Fallback: nearest earlier syllabus topic (completed if any, else the one
-  // immediately before by order).
-  try {
-    const { data: rows } = await admin
-      .from('syllabus_topics')
-      .select('topic, definition_id, order_index, is_completed')
-      .eq('class_id', classId)
-      .order('order_index', { ascending: true })
-    if (!rows?.length) return null
-
-    const currentIndex = topicDefinitionId
-      ? rows.findIndex((r: { definition_id: string | null }) => r.definition_id === topicDefinitionId)
-      : rows.findIndex((r: { topic: string }) => r.topic.trim().toLowerCase() === curTopic)
-    if (currentIndex <= 0) return null
-
-    for (let i = currentIndex - 1; i >= 0; i--) {
-      if (rows[i].is_completed) return rows[i].topic
-    }
-    return rows[currentIndex - 1].topic
-  } catch {
-    return null
   }
 }
 
@@ -310,8 +252,17 @@ interface ParsedSmartLesson {
   explore: { points: ExpandableBullet[]; imageFocus?: string }
   challenge: { activity: string; points: ExpandableBullet[] }
   watchFor?: ExpandableBullet[]
+  sectionWatch?: {
+    refresher?: ExpandableBullet | null
+    concept?: ExpandableBullet | null
+    explore?: ExpandableBullet | null
+    challenge?: ExpandableBullet | null
+    levelSet?: ExpandableBullet | null
+  }
   materialsUsed: string[]
   levelSet: { points: ExpandableBullet[] }
+  textbookImages?: { section: string; imageId: string }[]
+  diagrams?: { section: string; focus: string }[]
   timings?: { refresher?: number; concept?: number; explore?: number; challenge?: number; levelSet?: number }
 }
 
@@ -472,11 +423,23 @@ export async function POST(req: NextRequest) {
     .map(([t]) => t)
     .slice(0, 2)
 
-  // 4. Grounding — real textbook content this topic was extracted from, if any
+  // 4. Grounding — two sources, and they answer different questions.
+  //    fetchGrounding gives the ontology's summary (exercises, sidebars, pages).
+  //    fetchTextbookGrounding gives the book's own words and its illustrations,
+  //    which is what stops the lesson teaching the right topic with invented
+  //    content. Null when nothing matched confidently; see textbook-grounding.
   const grounding = topicDefinitionId ? await fetchGrounding(admin, topicDefinitionId) : null
+  // The class is the only thing the request names that knows its school, and
+  // textbook content is scoped per school.
+  const { data: classRow } = await admin
+    .from('classes').select('school_id').eq('id', classId).maybeSingle()
+  const textbook = await fetchTextbookGrounding(admin, {
+    schoolId: classRow?.school_id ?? undefined,
+    grade: String(grade), subject, topic, subtopic,
+  })
 
   // 5. Previous topic (for the refresher) + recent Challenge activities (for rotation)
-  const previousTopic = await fetchPreviousTopic(admin, classId, topic, topicDefinitionId, subtopic)
+  const previousTopic = await fetchPreviousTopic(admin, classId, topic, topicDefinitionId, subtopic, subject)
   const avoidActivities = await fetchRecentChallengeActivities(admin, classId)
 
   // 6. Build the prompt
@@ -512,7 +475,29 @@ ${grounding.sidebars.length > 0 ? `\nActual sidebar notes/tips printed alongside
       ? `"materials" must be chosen ONLY from this exact list: ${resources.join(', ')} — never add chalk, slate, paper, or any other item not on this list, even if it seems like a harmless default.`
       : `No resources were listed for this classroom — use only the single most generic, universally-available item (e.g. chalkboard) and nothing else.`
 
-    return `This teacher's profile — ${lines} Explore and Challenge MUST reflect this profile, not just decorate a fixed structure. ${resourceRule} Never suggest something outside the teacher's comfort zone.`
+    // classSize → a concrete facilitation rule (not just a stated number).
+    const classSizeRule =
+      classSize === '>40'
+        ? `LARGE CLASS (40+): favour whole-class and small-group formats, choral/hands-up responses, and pair work over many individual turns. Every step must be runnable by ONE teacher with a big group — no step that needs checking 40 notebooks one by one.`
+      : classSize === '<20'
+        ? `SMALL CLASS (under 20): alongside the pair work you can use more individual turns and closer one-to-one moments.`
+      : classSize === '20-40'
+        ? `MEDIUM CLASS (20–40): mix pair work with a few individual turns; keep grouping simple to manage.`
+      : ''
+
+    // Resolve the SDT "always pair/group" rule against a teacher who isn't
+    // comfortable running group discussions — keep collaboration to quiet pairs.
+    const comfortHasGroups = comfortZones.some(c => /group/i.test(c))
+    const comfortPairRule = comfortZones.length > 0 && !comfortHasGroups
+      ? `This teacher is NOT comfortable running group discussions. Keep ALL collaboration to QUIET PAIR work (turn-and-tell with one partner). Do NOT require whole-class group discussions or students presenting in front of the class — the mandatory pairing must stay low-key and easy to manage.`
+      : ''
+
+    // Bias the Challenge activity toward the teacher's preferred formats.
+    const preferredBias = preferredActivities.length > 0
+      ? `When picking the Challenge activity from the bank, prefer the one that best resembles the teacher's preferred activities (${preferredActivities.join(', ')}) wherever a sensible match exists — without breaking the rotation/avoid-list rule.`
+      : ''
+
+    return `This teacher's profile — ${lines} Explore and Challenge MUST reflect this profile, not just decorate a fixed structure. ${resourceRule} ${classSizeRule} ${comfortPairRule} ${preferredBias} Never suggest something outside the teacher's comfort zone.`
   })()
 
   const weakTopicsContext = weakTopics.length > 0
@@ -535,8 +520,9 @@ ${grounding.sidebars.length > 0 ? `\nActual sidebar notes/tips printed alongside
     : ''
 
   const previousTopicLine = previousTopic
-    ? `The topic studied immediately before this one was: "${previousTopic}". previousTopicRefresher is REQUIRED for this lesson — you MUST include it, do NOT set it to null. Build it around this exact topic — a short, warm reminder, ending with a one-line bridge into today's topic. Make each recap bullet a SITUATION-SPECIFIC example, not an abstract restatement — set it in something this class cares about (see their interests above) so it reads like "remember counting runs on the scoreboard?" rather than "remember place value".`
-    : `This is the first topic in this syllabus — there is no previous topic. Set "previousTopicRefresher" to null.`
+    ? `The topic this class covered just before this one was: "${previousTopic}". Include previousTopicRefresher ONLY IF a skill from "${previousTopic}" is genuinely used in today's topic ("${topic}") — i.e. a student who forgot it would actually struggle today. If the two topics are unrelated (different strands that merely sit near each other in the syllabus), set "previousTopicRefresher" to null and omit the "refresher" timing. Do NOT manufacture a bridge between unrelated topics — a lesson with no refresher is much better than a recap that pretends one topic leads into another.
+When you DO include it: open it as a PAIR-START STUDENT ACTION — partners DO something together (hold, split, draw, guess with objects) that quietly re-uses the old skill BEFORE anyone explains, ending with a one-line bridge into today. Never a teacher quiz-question. Make each recap bullet a SITUATION-SPECIFIC example, not an abstract restatement — set it in something this class cares about (see their interests above) so it reads like "partners split the scoreboard runs in half" rather than "remember place value".`
+    : `No topic that leads into this one is on record for this class. Set "previousTopicRefresher" to null and omit the "refresher" timing.`
 
   const avoidLine = avoidActivities.length > 0
     ? `Do NOT pick any of these activities for the Challenge — they were used recently for this class and must not repeat: ${avoidActivities.join(', ')}. Pick a genuinely DIFFERENT one from the bank below.`
@@ -551,11 +537,22 @@ ${grounding.sidebars.length > 0 ? `\nActual sidebar notes/tips printed alongside
   // Calibrate how the whole lesson is pitched to the grade's engagement level.
   const engagementGuidance = engagementLevelGuidance(grade)
 
+  // The engagement backbone — Self-Determination Theory (autonomy, competence,
+  // relatedness) turned into structural rules, so students take part because
+  // they WANT to, not because they're told to.
+  const sdtEngagement = `ENGAGEMENT — design for SELF-DRIVEN participation (Self-Determination Theory). Students engage when three needs are met by the STRUCTURE of the activity itself, not by rewards or pressure:
+- AUTONOMY: give real, small choices ("solve with stones OR draw it in the dust"; pick your role). Never use controlling language ("you must", "copy this down").
+- COMPETENCE: pitch each task just hard enough to need thought but easy enough to succeed WITH A PARTNER; make progress visible and never label anyone as behind.
+- RELATEDNESS: ground everything in THIS class's real world (their interests, the local market / festival / cricket match, home and community) and let them do it WITH a partner, not alone under the teacher's eye.
+Shape the whole lesson as one motivating cycle: a CURIOSITY HOOK (a local puzzle they actually want to solve) → a PAIR-FIRST attempt → the concept emerges from what they tried → PLAY the challenge → a quick REFLECT ("what worked?") → ACT (apply it to a real textbook-style problem). Coercion, public shaming, and rote copying destroy motivation — design so that joining in is the EASIEST and most rewarding thing a student can do.`
+
   const systemPrompt = `You are an expert teacher-trainer designing a classroom-ready lesson for a resource-constrained school (government or NGO-run, India). A teacher opens this five minutes before class and follows it directly.
 
 ${LOW_RESOURCE_PRINCIPLES}
 
 ${engagementGuidance}
+
+${sdtEngagement}
 
 ${subjectModule.bank}
 
@@ -584,6 +581,8 @@ ${interestsLine}
 
 ${previousTopicLine}
 
+${textbook ? textbookPromptBlock(textbook) : ''}
+
 ${groundingContext}
 
 ${preferencesContext}
@@ -591,7 +590,7 @@ ${weakTopicsContext}
 ${contextNoteLine}
 ${avoidLine}
 
-This is a TEACHER'S prep sheet, not a student handout. The visible headline says WHAT happens; every "detail" must tell the teacher HOW to run it — what to actually SAY (a short script line in quotes), how long to wait, whether students answer aloud/in pairs/by hands, the expected student answer, and what to do if they struggle. A first-time teacher should be able to follow it without improvising.
+This is a TEACHER'S prep sheet, not a student handout. The visible headline says WHAT happens; every "detail" must tell the teacher HOW to run it — what to actually SAY (a short script line in quotes), how long to wait, whether students answer aloud/in pairs/by hands, the answer the teacher should quietly listen for (as a check, never announced to students as a verdict), and what to do if they struggle. A first-time teacher should be able to follow it without improvising.
 
 Return ONLY valid JSON (no markdown, no extra text), matching this exact shape:
 {
@@ -599,22 +598,36 @@ Return ONLY valid JSON (no markdown, no extra text), matching this exact shape:
   "objective": "a SINGLE short headline of the goal — 4 to 8 words, starting with a verb, NOT a full 'Students will be able to…' sentence and NOT a list. Good: 'Add two 2-digit numbers mentally'. Bad: 'Students will be able to mentally add two-digit numbers using strategies.'",
   "previousTopicRefresher": {
     "previousTopic": "the exact previous topic name given above, or null if none",
-    "recap": [${bulletShape}, "... up to 3 total — ACTIVE recall: each 'text' is a quick question the teacher asks, its 'detail' gives the expected answer (e.g. text: 'Which digit is worth most in 8,742?', detail: 'The 8 — it's in the thousands place, worth 8000.')"]
+    "recap": [${bulletShape}, "... up to 3 total — a PAIR-START student action, NOT a teacher question. First bullet: partners DO something together (hold, split, draw, guess) that quietly re-uses yesterday's skill; 'detail' gives the exact partner instruction and how they show their answer (fingers / stones / dust). Later bullets bridge into today. Never call it review — students should just feel they're playing, not being tested (e.g. text: 'Partners split one drawn ladoo into halves or quarters', detail: 'Say: \"One of you draws the ladoo, the other decides halves or quarters — show me with a line.\" They write 1/2 and 1/4; you only name it aloud after they try.')"]
   },
-  "concept": [${bulletShape}, "... up to 3 total — the strategies/ideas for today; each 'detail' SHOWS the method worked on real numbers, not just names it"],
+  "concept": [${bulletShape}, "... up to 3 total — DISCOVERED, not lectured. Students find the idea in pairs BEFORE you formalize it: each 'detail' gives a peer task (Partner A does X, Partner B does Y, then switch) using real numbers, and only the LAST detail has the teacher name/confirm the idea on the board. Never open a concept bullet with 'Explain that…' — open with what the students do."],
   "explore": {
-    "points": [${bulletShape}, "... up to 3 total — the real-life connection AND the creative activity. First bullet names the vivid scene; its 'detail' includes the teacher's opening SCRIPT in quotes. The rest are how it plays out, with the HOW in detail (what to say, wait time, how students respond)."],
+    "points": [${bulletShape}, "... EXACTLY 3 bullets in this order. (1) CURIOSITY HOOK — a vivid local scene built from the class's TOP interests that ends in ONE open-ended question students can't resist; 'text' is the scene, 'detail' is the teacher's opening SCRIPT in quotes ending with that question, plus one short instruction phrase in the classroom's home language (with its English in brackets). (2) PAIR-FIRST — students turn to a partner and try a guess BEFORE any explanation; 'detail' gives the exact prompt to say, the wait time, and that they answer in pairs (never cold-called alone). (3) The activity itself carrying ONE real micro-choice; 'detail' states the choice in the teacher's words (e.g. 'solve it with the stones OR draw it in the dust — your table decides') and how the concept emerges from what they tried."],
     "imageFocus": "one short phrase describing the single most useful thing to sketch on the board for this Explore activity"
   },
   "challenge": {
     "activity": "the exact name of ONE activity from the bank above, not Explore's activity, not in the avoid-list",
-    "points": [${bulletShape}, "... up to 3 total — how it plays out. Include a difficulty progression (an easy, a medium, and a harder example) across the bullets' details, each with its worked answer, so the teacher can pitch up or down."]
+    "points": [${bulletShape}, "... EXACTLY 3 bullets as PLAY → REFLECT → ACT. (1) PLAY — how the activity runs, carrying the SECOND real micro-choice (a role, a material, or the order they go in); state it as the STUDENTS' decision, not an assignment — e.g. 'your group decides who is the number, who is the operator, who is the result', not 'Partner A is the number'. Rotate the social format vs Explore (if Explore was pairs, make this small groups or a whole-class relay). (2) REFLECT — a 30-second 'what worked for you?' turn-and-tell; 'detail' gives the exact question, which is about the easiest or most interesting bit, NEVER about mistakes. (3) ACT — apply the idea to ONE real textbook-style problem; 'detail' states the problem and its fully worked answer so the teacher never computes live."]
   },
-  "watchFor": [${bulletShape}, "... EXACTLY 1 item — the single most likely misconception on THIS topic. 'text' is the mistake as a short headline; 'detail' is the one-line fix the teacher says/does."],
+  "sectionWatch": {
+    "refresher": ${bulletShape} + " OR null if there is no refresher — the single most likely slip DURING the refresher; 'text' is the mistake as a short headline, 'detail' is the one-line fix the teacher says/does",
+    "concept": ${bulletShape} + " — the single most likely misconception WHILE the concept is being discovered",
+    "explore": ${bulletShape} + " — the single most likely thing that goes wrong DURING the Explore activity (a rule misunderstood, a step skipped), with the one-line fix in detail",
+    "challenge": ${bulletShape} + " — the single most likely slip DURING the Challenge play, with the one-line fix in detail",
+    "levelSet": ${bulletShape} + " — the single most likely wrong self-judgement at the close (e.g. thinking they've mastered it when they haven't), with the gentle one-line fix"
+  },
   "materialsUsed": ["every item actually referenced across explore/challenge — nothing invented, nothing unused"],
   "levelSet": {
-    "points": [${bulletShape}, "... up to 3 total — a recap tied back to the Explore scene; the last bullet may invite another real-life connection"]
+    "points": [${bulletShape}, "... EXACTLY 3 bullets, a WARM close students run themselves — NOT a test. (1) A topic-specific SELF-CHECK framed as 'Can you do this?' that partners tick together without the teacher (e.g. text: 'Tick with your partner: can you find the tenths place?', detail names the 2-3 concrete things they check — e.g. 'I found the ones place, I found the tenths place, I explained one price to my partner'). (2) A quick reflection on what was EASIEST or MOST INTERESTING today (never on errors). (3) A FINAL EITHER/OR autonomy choice that carries the idea home (e.g. 'A: draw one price you see at home tonight — OR — B: write a trick price for another pair'), framed as an invitation, not homework."]
   },
+  "textbookImages": [
+    { "section": "concept", "imageId": "the id of a REAL illustration listed under the textbook pages, e.g. img_c5ch3_04" },
+    "... 0 to 3 items. Use these whenever a listed illustration genuinely fits a section — it is the picture the children already have in front of them, which no drawing can beat. Only ask for a drawing in \"diagrams\" for a section no listed picture suits. \"section\" must be one of \"concept\", \"explore\", \"challenge\", \"refresher\", \"levelSet\"; each id must be copied exactly from the list."
+  ],
+  "diagrams": [
+    { "section": "concept", "focus": "describe ONE clean, concrete picture that makes this section's worked example intuitive using REAL relatable objects a child knows — name the exact objects, their quantities/values and arrangement (e.g. 'a roti cut into 4 equal parts with 3 parts shaded to show 3/4', or 'seven ₹1 coins grouped together and three loose ₹1 coins to show 7 + 3'). Prefer real things over abstract number lines or place-value grids. Keep it to a single idea, numbers exactly matching the example, at most a couple of short labels — never a busy multi-diagram scene." },
+    "... 1 to 3 items total. ALWAYS include one for \"concept\" (the worked example should be seen, not only read). Add one for another section (\"explore\", \"challenge\", \"refresher\", \"levelSet\") ONLY where picturing its example genuinely makes it clearer — do not force it. \"section\" must be one of those exact keys; each \"focus\" must describe ONE clean concrete picture of THAT section's example with correct quantities — real objects over abstract diagrams, no number-line/text-banner collages. The server generates each image and attaches it to that section — do NOT describe or reference the image inside any bullet text."
+  ],
   "timings": { "refresher": 3, "concept": 5, "explore": 10, "challenge": 12, "levelSet": 5 }
 }
 
@@ -622,12 +635,26 @@ Rules:
 - EVERYTHING is bullets. Every bullet list (recap, concept, explore.points, challenge.points, levelSet.points) has AT MOST 3 items.
 - Each bullet's "text" is a compact 6-to-12-word headline that conveys the point. Bad (too terse): "Rounding". Bad (too long): "We often round numbers to the nearest ten before adding them together." Good: "Round each number to the nearest ten first" (with the why/example in "detail").
 - "detail" carries the substance and should be present on almost every bullet (one or two sentences) — that's what appears when the teacher taps "+".
-- TEACH THE HOW, not just the what: for every explore and challenge bullet, the "detail" must give the facilitation — a short line the teacher SAYS (in quotes), how students respond (aloud / hands / pairs), a wait time where it matters, and the expected answer. A first-time teacher should not have to invent any of this.
-- "objective" is ONE short verb-first headline (not a sentence, not a list). "watchFor" is EXACTLY ONE misconception (headline in text, one-line fix in detail) — the single most important one, not several.
+- BRIEF BUT DETAILED, ALWAYS: even the "detail" stays tight — at most 2 sentences, never a paragraph. Brief does not mean vague: pack the concrete how/number/script in, then stop. If an idea needs more than 2 sentences to land, it needs a DIAGRAM, not more text — request one in "diagrams" instead of writing longer.
+- SHOW, DON'T JUST TELL: the Concept must always come with a diagram (see "diagrams"), and any section whose idea is easier to grasp as a picture should get one too. The sketch does the explaining the words don't have to.
+- TEACH THE HOW, not just the what: for every explore and challenge bullet, the "detail" must give the facilitation — a short line the teacher SAYS (in quotes), how students respond (aloud / hands / pairs), a wait time where it matters, and the answer the teacher quietly listens for (per the "answers are for the teacher" rule — never announced as a verdict). A first-time teacher should not have to invent any of this.
+- "objective" is ONE short verb-first headline (not a sentence, not a list). "sectionWatch" carries EXACTLY ONE watch-for per section (headline in text, one-line fix in detail) — each specific to THAT section's activity, never a generic repeat across sections. Set sectionWatch.refresher to null when there is no refresher.
 - WORKED NUMBERS: whenever a bullet names a strategy or gives an example, its "detail" must SHOW the actual worked numbers, not just the label. Bad: "Break numbers apart to add." Good detail: "45 + 30 → 40 + 30 + 5 = 75." Any Challenge or example that has a computable answer MUST state that answer in its "detail" (e.g. "75 + 25 − 15 = 85"), so the teacher never has to compute it live while managing the class.
 - CONSISTENCY: use ONE currency for the whole lesson — Indian rupees (₹) — never mix ₹ and $. Every concrete number the board sketch (imageFocus) shows must match the numbers used in explore's points, so a teacher copying the sketch and reading the cards sees the same values.
 - GRADE-APPROPRIATE NUMBERS: the numbers in examples/Challenge must match this grade and topic — don't drop to trivially small numbers a much younger child would use. If the previous-topic refresher was about larger numbers, either bridge explicitly ("today we use the same idea on smaller numbers we can hold in our heads") or include at least one grade-level example, so the refresher and the activities don't feel mismatched.
 - explore and levelSet must connect to the SAME real-life idea — levelSet returns to it, doesn't introduce a new one.
+- STUDENT ACTION FIRST, EVERY SECTION: every section (refresher, concept, explore, challenge, levelSet) OPENS with something the students DO — pair up, try, decide, guess, build with objects — never with the teacher explaining. The teacher's naming/confirming of the idea comes only AFTER students have had a go. If a bullet's "text" starts with "Explain…", "Tell them…", or "Say that…", rewrite it to start with the student action.
+- TWO NAMED INTERESTS: at least TWO of this class's ranked interests must appear by name in the sheet — in the hook and/or the choice options (e.g. a cricket price AND a festival sweet), not one generic "sweets". Weave them into the scene, don't just tack them on.
+- HOOK, NEVER A DEFINITION: the lesson never opens by defining or stating the concept. explore's first bullet is always a curiosity hook (a puzzle/scene from the class's top interests ending in an open question); the concept emerges only after students have guessed in pairs.
+- EXACTLY TWO real choices in the whole lesson — one in explore, one in challenge — each a genuine either/or the students decide (material, role, or order), phrased in the teacher's own words. Not more (it overwhelms), not zero (it removes ownership).
+- ALWAYS PAIR OR GROUP, NEVER ALONE UNDER PRESSURE: students first try with a partner before answering the class; no cold-calling an individual to perform. A partner lowers the fear of being wrong.
+- BILINGUAL SCAFFOLD: include exactly one short, key instruction phrase in the classroom's home/first language (with English in brackets) in explore — so the least-confident students still know what to do.
+- WEAK-TOPIC SUPPORT IS INVISIBLE: if there are weak-area basics to shore up, fold them in as a natural warm-up step INSIDE the play — never as a separate 'revision' step and never named as something they're behind on. No student should be able to tell it's there for them.
+- REFLECT ON THE GOOD, NEVER THE BAD: every reflection asks what was easiest, what worked, or what was most interesting — never what they got wrong. Competence grows from noticing success.
+- ANSWERS ARE FOR THE TEACHER, NOT A VERDICT: the "detail" must still tell the teacher the worked answer so they're confident — but the SCRIPT spoken to students stays invitational. Never write "the answer is X", "they should show X", or "they respond, saying it's X". Instead frame it as what to LISTEN/WATCH for and what partners DISCUSS. Bad: "They respond aloud, saying it's 100/100." Good: "Listen for partners landing on about 100/100 — if one says 99 and one says 101, ask how they counted. There's no single 'right way' to show it with fingers."
+- KEEP EXAMPLES AT THE CLEAREST SCALE: choose the smallest, cleanest numbers that make the idea obvious — don't inflate them in a way that buries the concept under arithmetic. For decimals/place value, show hundredths as ₹0.50 = 50 hundredths (50 of 100 equal parts of 1 rupee), NOT ₹50 = 5000 hundredths. The number should illuminate the concept, not test stamina.
+- DON'T REFERENCE THE IMAGE IN TEXT: never write "see the image / picture above / reference chart" in any "text" or "detail" — each bullet must stand on its own in words. The picture is generated and shown separately (request it in "diagrams"); the words carry what to say and do, the image does the visual work — the two never point at each other.
+- NAME THE RESOURCE, not the category: say "use the stones / bottle caps / chalk lines", not "use the materials" — the teacher and students should know the exact object to pick up.
 - Every step in explore/challenge must only need ${materialsRule}. materialsUsed must list exactly what was actually used.
 - "timings": rough whole-minute estimate per section (omit "refresher" if previousTopicRefresher is null). They should sum to roughly one class period (about 35 minutes).
 - Never use the words "quiz", "test", "evaluate", "assess", "review", "recall", "prerequisite".
@@ -730,20 +757,98 @@ Before returning: confirm "challenge.activity" is copied character-for-character
     lesson = sanitizeLesson(await repairLesson(lesson, issues, apiKey), resources)
   }
 
-  // One reference sketch for Explore — deliberately a simple black-and-white line
-  // diagram (not a colorful illustration), since the point is for the teacher to
-  // copy it onto the blackboard, not to show students finished artwork. It hangs
-  // off the first Explore bullet's "+" expansion (never shown inline), matching
-  // "even the image goes in the plus expansion". Never throws; a failed/timed-out
-  // sketch just leaves the bullet with no image and the section still renders fine.
-  const firstExploreBullet = lesson.explore?.points?.[0]
-  const imageFocus = lesson.explore?.imageFocus?.trim() || firstExploreBullet?.text
-  if (imageFocus && firstExploreBullet) {
-    const lessonContext = `${topic}${subtopic ? ` — ${subtopic}` : ''} (Grade ${grade} ${subject})`
-    const imgPrompt = `A simple black-and-white line diagram, sketch-style, that a teacher could redraw by hand on a classroom blackboard with chalk. Depicts: ${imageFocus}. Context: ${lessonContext}. Bold clean outlines only, no shading, no color, no gradients, minimal or no text — this must be simple enough to copy by hand in under a minute.`
-    const generated = await generateIllustration(imgPrompt, { timeoutMs: 25_000 })
-    if (generated) firstExploreBullet.image = { url: generated.url }
+  // Reference illustrations — clean workbook-style figures that depict the
+  // section's SPECIFIC worked example accurately (real objects in the exact
+  // quantities, with correct printed numbers/labels), which the teacher SHOWS
+  // students to explain that example. The section's own example text is fed into
+  // the image prompt so the picture matches the content's numbers, not a vague
+  // scene. Each
+  // hangs off the FIRST bullet of its section (shown in that bullet's "+"
+  // expansion / deck slide and in the banner card). Concept always gets one so
+  // the idea is visual; the model may request more where a picture makes the
+  // content click. Generated in PARALLEL so several images cost about the same
+  // wall-time as one, and capped at 4 to keep within maxDuration. Never throws —
+  // a failed/timed-out image just leaves that bullet image-less and the section
+  // still renders fine.
+  const sectionFirstBullet: Record<string, ExpandableBullet | undefined> = {
+    refresher: lesson.previousTopicRefresher?.recap?.[0],
+    concept:   lesson.concept?.[0],
+    explore:   lesson.explore?.points?.[0],
+    challenge: lesson.challenge?.points?.[0],
+    levelSet:  lesson.levelSet?.points?.[0],
   }
+  // Start from the model's requested diagrams, then guarantee Explore (back-compat
+  // with the old imageFocus field) and Concept always have one.
+  const diagramReqs: { section: string; focus: string }[] = []
+  const addReq = (section: string, focus?: string) => {
+    if (!focus || !focus.trim()) return
+    if (!sectionFirstBullet[section]) return                 // no bullet to hang it on
+    if (usedTextbookSections.has(section)) return             // the book already supplied one
+    if (diagramReqs.some(r => r.section === section)) return  // one image per section
+    diagramReqs.push({ section, focus: focus.trim() })
+  }
+  // Real textbook illustrations come first and win their section outright: the
+  // book's own picture is the one on the desk in front of the children, and a
+  // generated sketch of the same idea is strictly worse. Only sections no real
+  // picture fits fall through to being drawn.
+  const usedTextbookSections = new Set<string>()
+  if (textbook?.images.length) {
+    const byAnchor = new Map(textbook.images.map(i => [i.imageId, i]))
+    const picks = Array.isArray(lesson.textbookImages) ? lesson.textbookImages : []
+    for (const pick of picks) {
+      if (!pick || typeof pick.section !== 'string' || typeof pick.imageId !== 'string') continue
+      const image = byAnchor.get(pick.imageId.trim())
+      const bullet = sectionFirstBullet[pick.section]
+      // A hallucinated id resolves to nothing and is simply dropped — the
+      // section then gets a drawing like any other.
+      if (!image || !bullet || usedTextbookSections.has(pick.section)) continue
+      bullet.image = { url: `/api/textbook-image/${image.id}` }
+      usedTextbookSections.add(pick.section)
+    }
+  }
+
+  const modelDiagrams = Array.isArray(lesson.diagrams)
+    ? lesson.diagrams.filter((d): d is { section: string; focus: string } => !!d && typeof d.section === 'string' && typeof d.focus === 'string')
+    : []
+  const focusFor = (section: string) => modelDiagrams.find(d => d.section === section)?.focus
+  // Concept, Explore AND the Challenge activity ALWAYS get a picture, queued FIRST
+  // so they survive the image cap even when the model requested diagrams for other
+  // sections. Fall back to the section's first bullet text when no focus was
+  // supplied (the model often drops imageFocus under the fuller prompt).
+  addReq('concept', focusFor('concept') || sectionFirstBullet.concept?.text)
+  addReq('explore', focusFor('explore') || lesson.explore?.imageFocus || sectionFirstBullet.explore?.text)
+  addReq('challenge', focusFor('challenge') || sectionFirstBullet.challenge?.text || lesson.challenge?.activity)
+  for (const d of modelDiagrams) addReq(d.section, d.focus)   // fill remaining slot(s) with other requested sections
+  const finalReqs = diagramReqs.slice(0, 4)
+
+  await Promise.all(finalReqs.map(async r => {
+    const bullet = sectionFirstBullet[r.section]
+    // Feed the section's ACTUAL example (headline + worked detail) to the image
+    // model so the picture matches the numbers in the content, not a vague guess.
+    const exampleText = [bullet?.text, bullet?.detail].filter(Boolean).join(' — ')
+    const imgPrompt = `A clean, friendly primary-school WORKBOOK illustration that explains ONE worked example using concrete, real, relatable objects a child recognises — so the idea is obvious at a glance while a teacher points at it.
+
+Illustrate this: ${r.focus}
+It must accurately match this example from the lesson: "${exampleText}"
+
+Requirements:
+- Use CONCRETE real-life objects to make the idea intuitive (coins, notes, fruits, rotis, sweets, blocks, groups of children, a pizza/roti cut into parts, etc.). AVOID abstract number lines, place-value grids, and bar charts — a picture of real things explains better than a diagram. Only use a number line if the concept is literally about position/order on a line.
+- Show ONE single clear representation. Do NOT crowd several diagrams into one image — no "number-line + text banner + coin piles" collages. One clean idea with plenty of white space.
+- Quantities must be EXACTLY right and countable: if the example says 7, show exactly 7; the picture must be arithmetically correct and the coin/object values must match the example (₹0.50 is half a rupee, NOT ₹50).
+- At most a few short, correctly-spelled labels or the single key number, placed neatly — NO long sentences, paragraphs, or explanation banners inside the image.
+- Plain white background, bright flat colours, bold simple shapes; nothing decorative or unrelated, no watermarks or logos.
+Clean, accurate, and genuinely explanatory — a child should understand the idea just by looking.`
+    const generated = await generateIllustration(imgPrompt, { timeoutMs: 25_000 })
+    if (!generated || !bullet) return
+    // Into storage, not into the row. See storeIllustration — inlining the
+    // base64 is what made a lesson 3MB.
+    const stored = await storeIllustration(
+      admin,
+      generated.url,
+      illustrationKey([classId, topic, subtopic, r.section]),
+    )
+    bullet.image = { url: stored ?? generated.url }
+  }))
 
   return NextResponse.json({
     topic,

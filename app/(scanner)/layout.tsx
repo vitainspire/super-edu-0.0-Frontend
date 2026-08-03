@@ -4,11 +4,12 @@ import { SchoolNameDisplay } from "@/components/scanner/school-name-display";
 
 export default function ScannerLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="min-h-screen flex flex-col" style={{ backgroundColor: "#f1f3f8" }}>
+    <div className="min-h-screen flex flex-col" style={{ backgroundColor: "var(--paper-bg)" }}>
       <header
         className="sticky top-0 z-10 px-4 flex items-center justify-between shrink-0"
         style={{
-          backgroundColor: "#0d1b3e",
+          backgroundColor: "var(--scanner-blue)",
+          borderBottom: "2.5px solid var(--card-border)",
           height: "calc(3.5rem + env(safe-area-inset-top, 0px))",
           paddingTop: "env(safe-area-inset-top, 0px)",
           paddingLeft: "max(1rem, env(safe-area-inset-left, 0px))",

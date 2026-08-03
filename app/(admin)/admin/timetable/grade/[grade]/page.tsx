@@ -7,18 +7,9 @@ import type { Class, SchoolTimetablePeriod, SchoolSchedule } from '@/lib/types'
 import Link from 'next/link'
 import clsx from 'clsx'
 import PageHeader from '@/components/theme/PageHeader'
+import { ADMIN_PALETTE as PALETTE } from '@/lib/admin-theme'
 
 const DAYS_COUNT = 6
-
-type Tone = 'blue' | 'green' | 'coral' | 'gold' | 'violet' | 'pink'
-const PALETTE: { tone: Tone; stat: string; ink: string }[] = [
-  { tone: 'blue',   stat: 'stat-card-blue',   ink: '#1E3A55' },
-  { tone: 'green',  stat: 'stat-card-green',  ink: '#234A1D' },
-  { tone: 'coral',  stat: 'stat-card-coral',  ink: '#5C2416' },
-  { tone: 'gold',   stat: 'stat-card-gold',   ink: '#4A3809' },
-  { tone: 'violet', stat: 'stat-card-violet', ink: '#31215C' },
-  { tone: 'pink',   stat: 'stat-card-pink',   ink: '#5C1F38' },
-]
 
 export default function GradeTimetablePage() {
   const { school } = useAdmin()

@@ -1,6 +1,7 @@
 'use client'
 import { useState, useEffect } from 'react'
-import { Clock, Trash2, HelpCircle, RefreshCw, Handshake, Loader2, TrendingUp } from 'lucide-react'
+import { Trash2, RefreshCw, Handshake, Loader2, TrendingUp } from 'lucide-react'
+import { Clock, HelpCircle } from '@/components/ui/icons'
 import { useApp } from '@/lib/context'
 import FeatureTour from '@/components/onboarding/FeatureTour'
 import FlowGuide from '@/components/onboarding/FlowGuide'

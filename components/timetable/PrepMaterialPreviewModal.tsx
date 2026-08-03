@@ -1,9 +1,13 @@
 'use client'
-import { Sparkles, ClipboardList, PlayCircle } from 'lucide-react'
-import { useRouter } from 'next/navigation'
+import { useEffect, useState } from 'react'
+import { Sparkles, ClipboardList } from 'lucide-react'
+import { PlayCircle, GameController } from '@/components/ui/icons'
 import Modal from '@/components/ui/Modal'
 import { useApp } from '@/lib/context'
+import { nextTopicFor } from '@/lib/logic/nextTopic'
 import { isCurrentSmartLesson } from '@/lib/types'
+import { simulationUrl, simulationExists } from '@/lib/simulation-url'
+import { blackboardImageUrl, blackboardImageExists } from '@/lib/blackboard-image-url'
 import PrepSheetView from './PrepSheetView'
 
 interface PrepMaterialPreviewModalProps {
@@ -14,28 +18,71 @@ interface PrepMaterialPreviewModalProps {
   grade: string
   endTime?: string   // this period's end time, e.g. "14:30" — passed through to Classroom Mode's countdown
   onGenerateInstead: () => void
+  onEnterClassroom: () => void   // opens ClassroomModeModal — this modal no longer navigates anywhere itself
 }
 
 // Read-only view of whatever prep material is already saved for today's topic —
 // used during a live period, where the teacher wants a quick glance, not the
 // full topic-picker/generate form that PrepMaterialModal shows outside class time.
 export default function PrepMaterialPreviewModal({
-  open, onClose, classId, subject, grade, endTime, onGenerateInstead,
+  open, onClose, classId, subject, grade, onGenerateInstead, onEnterClassroom,
 }: PrepMaterialPreviewModalProps) {
-  const router = useRouter()
-  const { getTaughtTopicToday, getPrepMaterial, prepMaterials } = useApp()
+  const { getTaughtTopicToday, getPrepMaterial, prepMaterials, getClassSyllabus } = useApp()
 
   const taught = classId ? getTaughtTopicToday(classId) : null
-  const material = taught
-    ? getPrepMaterial(classId, taught.topic, taught.subtopic) ??
-      [...prepMaterials]
-        .filter(p => p.classId === classId && p.topic.trim().toLowerCase() === taught.topic.trim().toLowerCase() && isCurrentSmartLesson(p.lesson))
-        .sort((a, b) => b.createdAt.localeCompare(a.createdAt))[0] ??
-      null
-    : null
+
+  // What the admin's progression says to teach next, using the same rule as the
+  // schedule card and the prep sheet. currentWeek is not needed: nextTopicFor
+  // picks the first unfinished topic in the plan and only uses the week to
+  // LABEL it, so this needs no calendar fetch of its own.
+  const planned = classId ? nextTopicFor(getClassSyllabus(classId, subject), null) : null
+  const plannedTopic = planned && planned.reason !== 'all-done' ? planned.topic.topic : null
+
+  /** The newest usable saved sheet for a topic, whatever subtopic it was for. */
+  const newestFor = (topic: string, subtopic?: string) =>
+    getPrepMaterial(classId, topic, subtopic) ??
+    [...prepMaterials]
+      .filter(p =>
+        p.classId === classId &&
+        p.topic.trim().toLowerCase() === topic.trim().toLowerCase() &&
+        isCurrentSmartLesson(p.lesson))
+      .sort((a, b) => b.createdAt.localeCompare(a.createdAt))[0] ??
+    null
+
+  // The planned topic wins over whatever was last recorded as taught today.
+  //
+  // This modal used to key entirely off taught_topics, which answers a
+  // different question: what was taught earlier today, not what is due now.
+  // Once a topic was finished, the schedule card moved on to the next one while
+  // this still opened the completed topic's sheet — the card said "Shapes" and
+  // Preview showed "Pre-Mathematical Concepts", with nothing explaining why.
+  //
+  // Today's record is still the fallback, so a topic taught off-plan is not
+  // lost, and "Generate instead" covers anything else.
+  const material =
+    (plannedTopic ? newestFor(plannedTopic) : null) ??
+    (taught ? newestFor(taught.topic, taught.subtopic) : null)
+
+  // Same Storage-only lookup ClassroomModeModal uses — lets a teacher peek at
+  // the simulation without needing to take attendance first.
+  const materialId = material?.id ?? null
+  const [simUrl, setSimUrl] = useState<string | null>(null)
+  const [boardUrl, setBoardUrl] = useState<string | null>(null)
+  const [view, setView] = useState<'sheet' | 'sim' | 'board'>('sheet')
+  useEffect(() => {
+    if (!materialId || !classId) { setSimUrl(null); setBoardUrl(null); setView('sheet'); return }
+    let cancelled = false
+    simulationExists(classId, materialId).then(exists => {
+      if (!cancelled) setSimUrl(exists ? simulationUrl(classId, materialId) : null)
+    })
+    blackboardImageExists(classId, materialId).then(exists => {
+      if (!cancelled) setBoardUrl(exists ? blackboardImageUrl(classId, materialId) : null)
+    })
+    return () => { cancelled = true }
+  }, [materialId, classId])
 
   return (
-    <Modal open={open} onClose={onClose} title="Prep Material">
+    <Modal open={open} onClose={onClose} title="Prep Material" fullscreen>
       <div className="space-y-4">
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-2 text-sm text-ink-soft font-medium min-w-0">
@@ -45,18 +92,54 @@ export default function PrepMaterialPreviewModal({
           {classId && (
             <button
               type="button"
-              onClick={() => { onClose(); router.push(`/classroom-mode/${classId}${endTime ? `?endTime=${encodeURIComponent(endTime)}` : ''}`) }}
-              title="Enter Classroom Mode"
-              className="w-8 h-8 shrink-0 flex items-center justify-center rounded-full text-white active:scale-90 transition-all"
+              onClick={() => { onClose(); onEnterClassroom() }}
+              className="flex items-center gap-1.5 px-3 h-8 shrink-0 rounded-full text-xs font-bold text-white active:scale-95 transition-all"
               style={{ background: 'var(--ink)' }}
             >
-              <PlayCircle size={15} />
+              <PlayCircle size={14} /> Classroom Mode
             </button>
           )}
         </div>
 
         {material ? (
-          <PrepSheetView lesson={material.lesson} topic={material.topic} subtopic={material.subtopic} fromCache />
+          <>
+            {(simUrl || boardUrl) && (
+              <div className="flex items-center gap-2 p-1 rounded-2xl" style={{ background: 'rgba(58,44,30,0.06)' }}>
+                <button type="button" onClick={() => setView('sheet')}
+                  className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-bold transition-all"
+                  style={{ background: view === 'sheet' ? '#fff' : 'transparent', color: view === 'sheet' ? 'var(--forest)' : 'var(--ink-soft)' }}>
+                  <ClipboardList size={13} /> Prep Sheet
+                </button>
+                {simUrl && (
+                  <button type="button" onClick={() => setView('sim')}
+                    className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-bold transition-all"
+                    style={{ background: view === 'sim' ? '#fff' : 'transparent', color: view === 'sim' ? 'var(--forest)' : 'var(--ink-soft)' }}>
+                    <GameController size={13} /> Simulation
+                  </button>
+                )}
+                {boardUrl && (
+                  <button type="button" onClick={() => setView('board')}
+                    className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-bold transition-all"
+                    style={{ background: view === 'board' ? '#fff' : 'transparent', color: view === 'board' ? 'var(--forest)' : 'var(--ink-soft)' }}>
+                    Blackboard
+                  </button>
+                )}
+              </div>
+            )}
+
+            {view === 'sim' && simUrl ? (
+              <div className="rounded-2xl overflow-hidden" style={{ border: '2px solid var(--card-border)', height: '60vh' }}>
+                <iframe src={simUrl} title="Simulation" sandbox="allow-scripts" className="w-full h-full" style={{ border: 0 }} />
+              </div>
+            ) : view === 'board' && boardUrl ? (
+              <div className="rounded-2xl overflow-hidden" style={{ border: '2px solid var(--card-border)', background: '#0F1810' }}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={boardUrl} alt="Blackboard sketch of today's example" className="w-full h-auto block" />
+              </div>
+            ) : (
+              <PrepSheetView lesson={material.lesson} topic={material.topic} subtopic={material.subtopic} fromCache />
+            )}
+          </>
         ) : (
           <div className="text-center py-10 space-y-3">
             <Sparkles size={28} className="mx-auto text-ink-faint" />

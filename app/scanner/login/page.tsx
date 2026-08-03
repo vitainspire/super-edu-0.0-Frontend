@@ -4,8 +4,9 @@ import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { Eye, EyeOff, ScanLine, UserCheck, ArrowLeft } from 'lucide-react'
 import DoodleBackground from '@/components/theme/DoodleBackground'
+import { SCANNER_THEME } from '@/lib/scanner-theme'
 
-const TONE = { bg: '#AAD6A0', ink: '#234A1D' }
+const TONE = { bg: SCANNER_THEME.blueSoft, ink: SCANNER_THEME.blue }
 
 function setRoleCookie(role: 'scanner') {
   document.cookie = `edu-role=${role}; path=/; SameSite=Strict; max-age=604800`

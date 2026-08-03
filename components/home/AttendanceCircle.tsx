@@ -1,6 +1,7 @@
 'use client'
 import { useEffect, useState } from 'react'
-import { CalendarCheck, CalendarOff, Loader2 } from 'lucide-react'
+import { CalendarCheck } from '@/components/ui/icons'
+import { CalendarOff, Loader2 } from 'lucide-react'
 import Modal from '@/components/ui/Modal'
 
 const REASONS: { value: string; label: string }[] = [
@@ -59,7 +60,7 @@ export default function AttendanceCircle() {
       <button
         onClick={() => setOpen(true)}
         className="fixed bottom-56 md:bottom-40 right-4 z-40 w-11 h-11 flex items-center justify-center rounded-full text-white active:scale-90 transition-transform"
-        style={{ background: reason ? '#D97706' : '#5C8F52', border: '1.5px solid rgba(58,44,30,0.18)' }}
+        style={{ background: reason ? '#D97706' : '#5C8F52', border: '2px solid var(--card-border)' }}
         title="Mark today's status"
       >
         {reason ? <CalendarOff size={17} /> : <CalendarCheck size={17} />}

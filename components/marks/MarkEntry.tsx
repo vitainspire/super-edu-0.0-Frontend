@@ -564,7 +564,7 @@ export default function MarkEntry({ students, totalMarks, questions, prefillScor
           type="button"
           onClick={onCancel}
           className="flex-1 py-3.5 rounded-2xl text-ink-soft font-bold text-sm active:scale-95 transition-transform"
-          style={{ background: 'rgba(58,44,30,0.06)' }}
+          style={{ background: '#fff', border: '1.75px solid var(--card-border)' }}
         >
           Cancel
         </button>

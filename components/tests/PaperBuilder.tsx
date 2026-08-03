@@ -12,9 +12,12 @@ import {
 import { CSS } from '@dnd-kit/utilities'
 import {
   ListChecks, PenLine, AlignLeft, FileText, CheckSquare, ArrowLeftRight,
-  GripVertical, Trash2, Plus, X, Sparkles, BookOpen, ChevronRight, ChevronLeft,
-  ClipboardList, CalendarDays, CalendarRange, GraduationCap, Check,
+  GripVertical, Trash2, ChevronLeft, CalendarRange,
 } from 'lucide-react'
+import {
+  Plus, X, Sparkles, BookOpen, ChevronRight,
+  ClipboardList, CalendarDays, GraduationCap, Check,
+} from '@/components/ui/icons'
 import { useApp } from '@/lib/context'
 import type { PaperQType, PaperDifficulty, PaperTemplateBlock, WsSection } from '@/lib/types'
 import clsx from 'clsx'
@@ -47,7 +50,7 @@ const META: Record<PaperQType, QTypeMeta> = Object.fromEntries(Q_TYPES.map(m => 
 const DIFFICULTIES: PaperDifficulty[] = ['easy', 'medium', 'hard', 'mixed']
 
 // Exam types shown on the first step. `match` categorises existing tests by their term string.
-const EXAM_TYPES: { label: string; icon: typeof ListChecks; match: (term: string) => boolean }[] = [
+const EXAM_TYPES: { label: string; icon: React.ComponentType<{ className?: string }>; match: (term: string) => boolean }[] = [
   { label: 'Unit Test',        icon: ClipboardList,  match: t => t.includes('unit') },
   { label: 'Quarterly Exam',   icon: CalendarDays,   match: t => t.includes('quarter') },
   { label: 'Half-Yearly Exam', icon: CalendarRange,  match: t => t.includes('half') },
@@ -69,7 +72,7 @@ function PaletteItem({ meta, onAdd }: { meta: QTypeMeta; onAdd: () => void }) {
       onClick={onAdd}
       type="button"
       className="flex items-center gap-2.5 px-3 py-2.5 rounded-2xl border-2 bg-white text-left transition-shadow active:scale-[0.98] touch-none"
-      style={{ borderColor: 'rgba(58,44,30,0.14)', opacity: isDragging ? 0.4 : 1, cursor: 'grab' }}
+      style={{ borderColor: 'var(--card-border)', opacity: isDragging ? 0.4 : 1, cursor: 'grab' }}
     >
       <div className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0" style={{ background: 'rgba(58,44,30,0.06)' }}>
         <Icon className="w-4 h-4 text-ink-soft" />
@@ -174,18 +177,18 @@ function SortableBlock({
           <span className="font-semibold">Qs</span>
           <input type="number" min={1} max={50} value={block.count}
             onChange={e => onChange({ count: Math.max(1, Math.min(50, Number(e.target.value) || 1)) })}
-            className="w-14 px-2 py-1 rounded-lg border text-sm text-center bg-white" style={{ borderColor: 'rgba(58,44,30,0.18)' }} />
+            className="w-14 px-2 py-1 rounded-lg border-2 text-sm text-center bg-white" style={{ borderColor: 'var(--card-border)' }} />
         </label>
         <label className="flex items-center gap-1.5 text-xs text-ink-soft">
           <span className="font-semibold">Marks each</span>
           <input type="number" min={1} max={100} value={block.marksEach}
             onChange={e => onChange({ marksEach: Math.max(1, Math.min(100, Number(e.target.value) || 1)) })}
-            className="w-14 px-2 py-1 rounded-lg border text-sm text-center bg-white" style={{ borderColor: 'rgba(58,44,30,0.18)' }} />
+            className="w-14 px-2 py-1 rounded-lg border-2 text-sm text-center bg-white" style={{ borderColor: 'var(--card-border)' }} />
         </label>
         <label className="flex items-center gap-1.5 text-xs text-ink-soft">
           <span className="font-semibold">Difficulty</span>
           <select value={block.difficulty} onChange={e => onChange({ difficulty: e.target.value as PaperDifficulty })}
-            className="px-2 py-1 rounded-lg border text-sm bg-white capitalize" style={{ borderColor: 'rgba(58,44,30,0.18)' }}>
+            className="px-2 py-1 rounded-lg border-2 text-sm bg-white capitalize" style={{ borderColor: 'var(--card-border)' }}>
             {DIFFICULTIES.map(d => <option key={d} value={d}>{d}</option>)}
           </select>
         </label>
@@ -196,7 +199,7 @@ function SortableBlock({
         {showNote && (
           <input value={block.instructions ?? ''} onChange={e => onChange({ instructions: e.target.value })}
             placeholder="Optional: e.g. focus on word problems, avoid diagrams…"
-            className="w-full px-3 py-2 rounded-lg border text-xs bg-white" style={{ borderColor: 'rgba(58,44,30,0.18)' }} />
+            className="w-full px-3 py-2 rounded-lg border-2 text-xs bg-white" style={{ borderColor: 'var(--card-border)' }} />
         )}
       </div>
     </div>
@@ -479,11 +482,11 @@ export default function PaperBuilder({ classId, className, grade, subject }: Pro
                   const selCount = subtopicSel[t.id]?.size ?? 0
                   return (
                     <div key={t.id} className="rounded-2xl overflow-hidden border-2 transition-colors"
-                      style={{ borderColor: selected ? 'var(--ink)' : 'rgba(58,44,30,0.12)', background: selected ? 'rgba(58,44,30,0.05)' : '#fff' }}>
+                      style={{ borderColor: selected ? 'var(--ink)' : 'var(--card-border)', background: selected ? 'rgba(58,44,30,0.05)' : '#fff' }}>
                       <div className="flex items-center gap-2.5 px-3.5 py-2.5">
                         <button type="button" onClick={() => toggleTopic(t.id)} className="flex items-center gap-2.5 flex-1 min-w-0 text-left">
                           <span className="w-5 h-5 rounded-md flex items-center justify-center shrink-0 border-2"
-                            style={{ borderColor: selected ? 'var(--ink)' : 'rgba(58,44,30,0.25)', background: selected ? 'var(--ink)' : 'transparent' }}>
+                            style={{ borderColor: selected ? 'var(--ink)' : 'var(--card-border)', background: selected ? 'var(--ink)' : 'transparent' }}>
                             {selected && <CheckSquare className="w-3 h-3 text-white" strokeWidth={3} />}
                           </span>
                           <span className="flex-1 min-w-0">

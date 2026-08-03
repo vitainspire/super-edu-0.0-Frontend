@@ -17,13 +17,56 @@
   --primary-dark: #3730a3;
   --primary-light: #e0e7ff;
 
-  /* ── Paper / notebook theme ─────────────────────────────── */
-  --paper-bg: #FFFFFF;
-  --paper-soft: #FFFFFF;
-  --ink: #3A2C1E;
-  --ink-soft: #6B5A45;
+  /* ── Warm cream + bold-outline redesign theme ───────────── */
+  --paper-bg: #F1EDDF;    /* warm ivory page canvas */
+  --paper-soft: #FBFAF3;  /* card surface (near-white, warm) */
+  --card: #FFFFFF;
+  --card-border: #1B180F;             /* BOLD near-black outline on everything */
+  --card-border-soft: rgba(27, 24, 15, 0.55);
+  --ink: #17140F;         /* near-black — headings, text, dark buttons */
+  --ink-soft: #4A4740;
+  --forest: #1F3D2C;      /* nav + darkest green — teacher portal accent */
+  --forest-soft: #2C5540; /* active nav item */
+  --forest-bright: #3E7A57;
   --shadow-paper: none;
   --shadow-paper-sm: none;
+  /* Admin portal's main color is black — it reuses --ink/--ink-soft directly
+     (see components/admin/AdminSideNav.tsx) rather than a dedicated token.
+     Its component-level color-coding (grades/subjects/avatars) is a
+     blue/orange/yellow/green/red set — see lib/admin-theme.ts and the
+     .stat-card-* tones below. */
+
+  /* ── Student portal — bright, poppy yellow/orange-led "cute & kiddish" theme ──
+     Same bones as the teacher/admin paper aesthetic (bold flat-matte outline,
+     depth from borders not shadows, active:scale press) so it still reads as
+     one app family — the difference is purely color, radius and the doodle
+     motif: a sunny yellow→orange gradient canvas, rounder cards, and colorful
+     doodles as a loved-not-just-tolerated background concept. Blue is kept as
+     a supporting third accent, not co-equal with yellow/orange. See
+     components/student/studentTheme.ts for the matching JS-side constants. */
+  --kid-bg-top: #FFE9A8;
+  --kid-bg-bottom: #FFC978;
+  --kid-ink: #1E2A44;
+  --kid-ink-soft: #5B6B87;
+  --kid-border: #1E2A44;
+  --kid-blue: #2F8FE0;
+  --kid-blue-dark: #1E62A8;
+  --kid-blue-soft: #DCEBF8;
+  --kid-orange: #FF9F43;
+  --kid-orange-dark: #D9720F;
+  --kid-orange-soft: #FFE8D1;
+  --kid-yellow: #FFC93C;
+  --kid-yellow-dark: #C98A0A;
+  --kid-yellow-soft: #FFF2CC;
+
+  /* ── Scanner portal — same paper/bold-outline bones as teacher/admin,
+     accent color is blue. Reuses the app's existing "blue" vocabulary
+     (the pastel already used by .stat-card-blue and admin's blue ink)
+     rather than inventing a fourth unrelated blue. See
+     lib/scanner-theme.ts for the matching JS-side constants. */
+  --scanner-blue: #1E3A55;      /* deep ink-blue — header bar, primary buttons */
+  --scanner-blue-mid: #3D6CB4;  /* brighter blue — active states, icons, links */
+  --scanner-blue-soft: #D6E3F3; /* pastel blue — chip/pill backgrounds */
 }
 
 @layer base {
@@ -38,8 +81,8 @@
     font-family: var(--font-jakarta), -apple-system, BlinkMacSystemFont, sans-serif;
     font-size: 16px;
     line-height: 1.5;
-    background-color: #f1f5f9;
-    color: #0f172a;
+    background-color: var(--paper-bg);
+    color: var(--ink);
     overflow-x: hidden;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
@@ -151,17 +194,18 @@ button, a, [role='button'] { min-height: 44px; cursor: pointer; }
     background: #dc2626;
   }
 
-  /* ── CARDS ───────────────────────────────────────────────── */
+  /* ── CARDS — bold outline aesthetic ──────────────────────── */
   .card {
-    @apply bg-white rounded-3xl p-4 border border-slate-100;
+    @apply bg-white rounded-3xl p-4;
+    border: 2px solid var(--card-border);
   }
   .card-interactive {
-    @apply bg-white rounded-3xl p-4 border border-slate-100
-      active:bg-slate-50 transition-all cursor-pointer;
+    @apply bg-white rounded-3xl p-4 active:bg-black/[0.03] transition-all cursor-pointer;
+    border: 2px solid var(--card-border);
   }
   .card-hover {
-    @apply bg-white rounded-3xl p-4 border border-slate-100
-      active:scale-[0.98] transition-all cursor-pointer;
+    @apply bg-white rounded-3xl p-4 active:scale-[0.98] transition-all cursor-pointer;
+    border: 2px solid var(--card-border);
   }
 
   /* ── GLASS CARD (flattened — no blur, solid tint) ─────────── */
@@ -231,16 +275,17 @@ button, a, [role='button'] { min-height: 44px; cursor: pointer; }
   }
   .paper-card {
     @apply rounded-3xl bg-white;
-    border: 1.5px solid rgba(58, 44, 30, 0.16);
+    border: 2px solid var(--card-border);
   }
   .paper-card-interactive {
     @apply rounded-3xl bg-white active:scale-[0.98] transition-transform cursor-pointer;
-    border: 1.5px solid rgba(58, 44, 30, 0.16);
+    border: 2px solid var(--card-border);
   }
   .paper-pill {
     @apply text-xs font-bold px-3 py-1 rounded-full;
-    background: #F3F2F2;
-    color: var(--ink-soft);
+    background: rgba(255, 255, 255, 0.7);
+    border: 1.5px solid var(--card-border);
+    color: var(--ink);
   }
   .paper-btn-primary {
     @apply font-bold py-3 px-6 rounded-2xl text-sm text-white active:scale-95 transition-transform
@@ -250,21 +295,71 @@ button, a, [role='button'] { min-height: 44px; cursor: pointer; }
   .menu-row {
     @apply w-full flex items-center gap-4 px-5 py-4 bg-white text-left active:bg-black/[0.03] transition-colors;
   }
+
+  /* ── KID THEME (student portal) ─────────────────────────────
+     Same flat-matte, border-only-depth convention as the paper theme
+     (no drop shadows — see the "Matte theme" note at the top of this
+     file) so the structural DNA matches teacher/admin exactly. Only
+     color, radius and the doodle motif make this portal feel distinct
+     and kid-friendly. */
+  .kid-page {
+    @apply min-h-screen relative;
+    /* No background here on purpose — the fixed doodle SVGs (z-index -10,
+       see components/student/DoodleBackground.tsx) paint the sunny gradient
+       themselves. A background set directly on this normal-flow div would
+       paint in front of (not behind) those fixed negative-z-index elements
+       and hide the doodles entirely. */
+  }
+  .kid-card {
+    @apply rounded-[28px] bg-white;
+    border: 2.5px solid var(--kid-border);
+  }
+  .kid-card-interactive {
+    @apply rounded-[28px] bg-white active:scale-[0.98] transition-transform cursor-pointer;
+    border: 2.5px solid var(--kid-border);
+  }
+  .kid-pill {
+    @apply text-xs font-bold px-3 py-1 rounded-full bg-white;
+    border: 2px solid var(--kid-border);
+    color: var(--kid-ink);
+  }
+  .kid-btn-primary {
+    @apply font-bold py-3 px-6 rounded-2xl text-sm text-white active:scale-95 transition-transform
+      min-h-[48px] flex items-center justify-center gap-2
+      disabled:opacity-50 disabled:cursor-not-allowed;
+    background: var(--kid-orange);
+    border: 2.5px solid var(--kid-border);
+  }
+  .kid-btn-blue {
+    @apply font-bold py-3 px-6 rounded-2xl text-sm text-white active:scale-95 transition-transform
+      min-h-[48px] flex items-center justify-center gap-2
+      disabled:opacity-50 disabled:cursor-not-allowed;
+    background: var(--kid-blue);
+    border: 2.5px solid var(--kid-border);
+  }
 }
 
 /* ── Stat / class cards (solid pastel, "sticker note" style) ── */
 .stat-card {
-  border-radius: 26px;
+  border-radius: 20px;
   padding: 18px 18px 16px;
-  border: 2px solid rgba(58, 44, 30, 0.22);
+  border: 2px solid var(--card-border);
   position: relative;
 }
-.stat-card-blue   { background: #AACDEA; }
-.stat-card-green  { background: #AAD6A0; }
-.stat-card-coral  { background: #F0A491; }
-.stat-card-gold   { background: #EAC968; }
-.stat-card-violet { background: #C7B7E8; }
-.stat-card-pink   { background: #F0AFC6; }
+/* Softer reference pastels — mint / peach / gold / blue (teacher portal) */
+.stat-card-blue   { background: #D6E3F3; }
+.stat-card-green  { background: #DCEEE1; }
+.stat-card-coral  { background: #F4D6C0; }
+.stat-card-gold   { background: #F7EFC4; }
+.stat-card-violet { background: #DED3F2; }
+.stat-card-pink   { background: #F4D7E1; }
+
+/* Admin portal's component color-coding — see lib/admin-theme.ts
+   ADMIN_PALETTE, which pairs each of these with an "ink" text color.
+   blue/green/gold/coral already existed above (teacher portal shares them);
+   this adds the one genuinely missing hue, red, to complete the
+   blue/orange(coral)/yellow(gold)/green/red set. */
+.stat-card-red { background: #F5D3D0; }
 
 .stat-progress-track {
   width: 100%;
@@ -276,7 +371,7 @@ button, a, [role='button'] { min-height: 44px; cursor: pointer; }
 .stat-progress-fill {
   height: 100%;
   border-radius: 99px;
-  background: rgba(58,44,30,0.85);
+  background: var(--forest);
 }
 
 /* ── SOLID HEADERS (flattened — no gradient/gloss) ────────── */
@@ -337,4 +432,19 @@ button, a, [role='button'] { min-height: 44px; cursor: pointer; }
 }
 .icon-box-lg {
   @apply w-14 h-14 rounded-3xl flex items-center justify-center shrink-0;
+}
+
+/* ── Workbook printing ──────────────────────────────────────────────────────
+   Scoped to when the Workbook modal triggers a print (it adds .printing-workbook
+   to <html>), so it never interferes with the worksheet print page. Everything
+   is hidden except the printable workbook; teacher-only blocks carry .no-print. */
+@media print {
+  html.printing-workbook body * { visibility: hidden; }
+  html.printing-workbook .workbook-printable,
+  html.printing-workbook .workbook-printable * { visibility: visible; }
+  html.printing-workbook .workbook-printable {
+    position: absolute; left: 0; top: 0; width: 100%;
+    padding: 24px !important; margin: 0 !important;
+  }
+  html.printing-workbook .no-print { display: none !important; }
 }

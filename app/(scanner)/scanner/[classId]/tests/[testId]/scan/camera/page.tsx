@@ -11,6 +11,7 @@ import { BreadcrumbBar } from "@/components/scanner/breadcrumb-bar";
 import { QualityWarning } from "@/components/scanner/quality-warning";
 import { ReviewFlag } from "@/components/scanner/review-flag";
 import { compressAndAssess, type CapturedImage } from "@/lib/scan-capture";
+import { SCANNER_THEME } from "@/lib/scanner-theme";
 
 interface Student { id: string; name: string; roll_number: number; }
 type Stage = "capture" | "preview" | "grading" | "manual" | "flagged";
@@ -215,7 +216,7 @@ function CameraPageInner() {
 
   return (
     <div className="flex flex-col" style={{ minHeight: "calc(100dvh - 3.5rem - env(safe-area-inset-top, 0px))" }}>
-      <div className="-mx-4 -mt-5 px-5 pt-4 pb-5 mb-4" style={{ background: stage === "manual" ? "linear-gradient(145deg, #78350f 0%, #92400e 100%)" : "linear-gradient(145deg, #1e1b4b 0%, #312e81 50%, #1e3a8a 100%)" }}>
+      <div className="-mx-4 -mt-5 px-5 pt-4 pb-5 mb-4" style={{ background: stage === "manual" ? "#92400e" : SCANNER_THEME.blue }}>
         <div className="flex items-center gap-3">
           <Link href={backHref} className="w-10 h-10 flex items-center justify-center rounded-xl bg-white/10 text-white active:scale-95 transition-transform shrink-0">
             <ArrowLeft size={20} />
@@ -223,7 +224,7 @@ function CameraPageInner() {
           <div className="min-w-0 flex-1">
             <h1 className="text-lg font-black text-white leading-tight">{stageTitle}</h1>
             {preSelectedStudentId ? (
-              <p className="text-xs font-bold text-indigo-300/80 truncate mt-0.5">{preSelectedStudentName}</p>
+              <p className="text-xs font-bold text-[rgba(214,227,243,0.8)] truncate mt-0.5">{preSelectedStudentName}</p>
             ) : (
               <div className="mt-0.5 [&_*]:text-white/50 [&_*]:text-xs"><BreadcrumbBar /></div>
             )}
@@ -236,19 +237,19 @@ function CameraPageInner() {
 
       {stage === "capture" && (
         <div className="flex-1 flex flex-col items-center justify-between gap-5 pb-safe">
-          <div className="w-full flex-1 rounded-3xl overflow-hidden flex flex-col items-center justify-center gap-4" style={{ background: "linear-gradient(160deg, #0f172a 0%, #1e1b4b 100%)", minHeight: "min(55vw, 40vh)" }}>
+          <div className="w-full flex-1 rounded-3xl overflow-hidden flex flex-col items-center justify-center gap-4" style={{ background: "#0f172a", border: "2px solid var(--card-border)", minHeight: "min(55vw, 40vh)" }}>
             <div className="relative w-40 h-52">
-              <div className="absolute top-0 left-0 w-7 h-7 border-t-[3px] border-l-[3px] border-indigo-400 rounded-tl-lg" />
-              <div className="absolute top-0 right-0 w-7 h-7 border-t-[3px] border-r-[3px] border-indigo-400 rounded-tr-lg" />
-              <div className="absolute bottom-0 left-0 w-7 h-7 border-b-[3px] border-l-[3px] border-indigo-400 rounded-bl-lg" />
-              <div className="absolute bottom-0 right-0 w-7 h-7 border-b-[3px] border-r-[3px] border-indigo-400 rounded-br-lg" />
+              <div className="absolute top-0 left-0 w-7 h-7 border-t-[3px] border-l-[3px] border-[#3D6CB4] rounded-tl-lg" />
+              <div className="absolute top-0 right-0 w-7 h-7 border-t-[3px] border-r-[3px] border-[#3D6CB4] rounded-tr-lg" />
+              <div className="absolute bottom-0 left-0 w-7 h-7 border-b-[3px] border-l-[3px] border-[#3D6CB4] rounded-bl-lg" />
+              <div className="absolute bottom-0 right-0 w-7 h-7 border-b-[3px] border-r-[3px] border-[#3D6CB4] rounded-br-lg" />
               <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
-                <ScanLine size={28} className="text-indigo-400/60" />
-                <p className="text-xs text-indigo-300/50 font-medium text-center px-2">Align answer sheet here</p>
+                <ScanLine size={28} className="text-[rgba(61,108,180,0.6)]" />
+                <p className="text-xs text-[rgba(214,227,243,0.5)] font-medium text-center px-2">Align answer sheet here</p>
               </div>
             </div>
           </div>
-          <button onClick={() => fileInputRef.current?.click()} className="w-full min-h-[60px] bg-gradient-to-r from-indigo-600 to-indigo-700 text-white font-black text-lg rounded-2xl shadow-xl shadow-indigo-300/30 active:scale-[0.97] transition-transform flex items-center justify-center gap-3">
+          <button onClick={() => fileInputRef.current?.click()} className="w-full min-h-[60px] bg-[var(--scanner-blue)] text-white font-black text-lg rounded-2xl border-2 border-[var(--card-border)] active:scale-[0.97] transition-transform flex items-center justify-center gap-3">
             <Camera size={24} /> Take Photo
           </button>
         </div>
@@ -261,11 +262,11 @@ function CameraPageInner() {
             <img src={previewUrl} alt="Captured answer sheet" className="w-full h-full object-contain" />
             {stage === "grading" && (
               <div className="absolute inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center rounded-3xl">
-                <div className="bg-white rounded-3xl px-8 py-7 flex flex-col items-center gap-4 mx-8 shadow-2xl">
-                  <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-indigo-500 to-indigo-700 flex items-center justify-center"><Spinner size="lg" /></div>
+                <div className="bg-white rounded-3xl px-8 py-7 flex flex-col items-center gap-4 mx-8 border-2 border-[var(--card-border)]">
+                  <div className="w-14 h-14 rounded-2xl bg-[var(--scanner-blue)] flex items-center justify-center"><Spinner size="lg" /></div>
                   <div className="text-center">
                     <p className="font-black text-gray-900 text-lg">{gradingLabel}</p>
-                    {preSelectedStudentId && <p className="text-sm font-bold text-indigo-600 mt-0.5">{preSelectedStudentName}</p>}
+                    {preSelectedStudentId && <p className="text-sm font-bold text-[var(--scanner-blue-mid)] mt-0.5">{preSelectedStudentName}</p>}
                     <p className="text-xs text-gray-400 mt-1.5">Please keep the screen on…</p>
                   </div>
                 </div>
@@ -284,7 +285,7 @@ function CameraPageInner() {
                 <button onClick={handleRetake} className="flex-1 min-h-[56px] border-2 border-gray-200 text-gray-700 font-bold text-base rounded-2xl active:scale-95 transition-transform flex items-center justify-center gap-2 bg-white">
                   <RefreshCw size={18} /> Retake
                 </button>
-                <button onClick={handleConfirmAndGrade} className="flex-[2] min-h-[56px] bg-gradient-to-r from-indigo-600 to-indigo-700 text-white font-black text-base rounded-2xl shadow-xl shadow-indigo-200 active:scale-[0.97] transition-transform flex items-center justify-center gap-2">
+                <button onClick={handleConfirmAndGrade} className="flex-[2] min-h-[56px] bg-[var(--scanner-blue)] text-white font-black text-base rounded-2xl border-2 border-[var(--card-border)] active:scale-[0.97] transition-transform flex items-center justify-center gap-2">
                   <Zap size={18} /> Grade with AI
                 </button>
               </div>
@@ -294,7 +295,7 @@ function CameraPageInner() {
           {stage === "flagged" && reviewReason && (
             <div className="flex flex-col gap-3">
               <ReviewFlag reason={reviewReason} />
-              <button onClick={handleContinueAfterFlag} className="w-full min-h-[56px] bg-gradient-to-r from-indigo-600 to-indigo-700 text-white font-black text-base rounded-2xl shadow-xl shadow-indigo-200 active:scale-[0.97] transition-transform flex items-center justify-center gap-2">
+              <button onClick={handleContinueAfterFlag} className="w-full min-h-[56px] bg-[var(--scanner-blue)] text-white font-black text-base rounded-2xl border-2 border-[var(--card-border)] active:scale-[0.97] transition-transform flex items-center justify-center gap-2">
                 Continue
               </button>
             </div>
@@ -312,7 +313,7 @@ function CameraPageInner() {
                   onFocus={() => { setTimeout(() => document.getElementById("manual-score")?.scrollIntoView({ behavior: "smooth", block: "center" }), 350); }} />
                 {manualScore !== "" && !isNaN(Number(manualScore)) && (
                   <div className="mt-2">
-                    <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden"><div className="h-full bg-gradient-to-r from-indigo-500 to-indigo-600 rounded-full transition-all" style={{ width: `${Math.min(100, (Number(manualScore) / totalMarks) * 100)}%` }} /></div>
+                    <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden"><div className="h-full bg-[var(--scanner-blue)] rounded-full transition-all" style={{ width: `${Math.min(100, (Number(manualScore) / totalMarks) * 100)}%` }} /></div>
                     <p className="text-xs text-gray-400 text-right mt-1 font-medium">{totalMarks > 0 ? Math.round((Number(manualScore) / totalMarks) * 100) : 0}%</p>
                   </div>
                 )}
@@ -322,7 +323,7 @@ function CameraPageInner() {
                 <button onClick={handleRetake} className="flex-1 min-h-[56px] border-2 border-gray-200 text-gray-700 font-bold text-base rounded-2xl active:scale-95 transition-transform flex items-center justify-center gap-2 bg-white">
                   <RefreshCw size={18} /> Retake
                 </button>
-                <button onClick={() => void handleManualSave()} disabled={isManualSaveDisabled} className={cn("flex-[2] min-h-[56px] font-black text-base rounded-2xl transition-transform flex items-center justify-center gap-2", isManualSaveDisabled ? "bg-gray-200 text-gray-400 cursor-not-allowed" : "bg-gradient-to-r from-indigo-600 to-indigo-700 text-white shadow-xl shadow-indigo-200 active:scale-[0.97]")}>
+                <button onClick={() => void handleManualSave()} disabled={isManualSaveDisabled} className={cn("flex-[2] min-h-[56px] font-black text-base rounded-2xl transition-transform flex items-center justify-center gap-2 border-2", isManualSaveDisabled ? "bg-gray-200 text-gray-400 cursor-not-allowed border-gray-200" : "bg-[var(--scanner-blue)] text-white border-[var(--card-border)] active:scale-[0.97]")}>
                   {isSavingManual ? <Spinner size="sm" /> : <Save size={18} />} Save Score
                 </button>
               </div>

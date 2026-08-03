@@ -1,6 +1,7 @@
 'use client'
 import { useState } from 'react'
-import { Mail, HelpCircle } from 'lucide-react'
+import { Mail } from 'lucide-react'
+import { HelpCircle } from '@/components/ui/icons'
 import PageHeader from '@/components/theme/PageHeader'
 import { Sticker, ChatQuestionSticker } from '@/components/theme/StickerIcon'
 import FeatureTour from '@/components/onboarding/FeatureTour'

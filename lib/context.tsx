@@ -8,6 +8,7 @@ import { computeWarnings } from './logic/warnings'
 import { buildFingerprint } from './logic/fingerprint'
 import { detectHiddenPotential } from './logic/potential'
 import { computeBriefingFindings } from './logic/briefing'
+import { deriveClassSubjects, filterTopicsBySubject } from './logic/subjectSyllabus'
 import * as sbq from './supabase-queries'
 import { genStudentCode } from './studentCode'
 import { useStudentActions }   from './hooks/useStudentActions'
@@ -78,12 +79,16 @@ interface AppContextType {
   getStudentTopicCoverage: (studentId: string, syllabusTopicId: string) => TopicCoverageStatus | null
   saveSessionSnapshot: (sessionId: string, snapshot: LessonSnapshot) => Promise<void>
 
-  addSyllabusTopic: (classId: string, data: { topic: string; description?: string; weekNumber?: number }) => Promise<string>
+  addSyllabusTopic: (classId: string, data: { topic: string; description?: string; weekNumber?: number; subject?: string }) => Promise<string>
   toggleTopicComplete: (topicId: string, isCompleted: boolean) => Promise<void>
   updateSyllabusTopicEstimate: (topicId: string, estimatedSessions: number) => Promise<void>
   updateSyllabusTopicPrerequisite: (topicId: string, prerequisiteDefinitionId: string | null) => Promise<void>
   deleteSyllabusTopic: (topicId: string) => Promise<void>
-  getClassSyllabus: (classId: string) => SyllabusTopic[]
+  // A class holds every subject's syllabus. Pass `subject` when the screen is
+  // about one subject (a timetable period, say); omit it to get the subject(s)
+  // this teacher actually teaches in that class.
+  getClassSyllabus: (classId: string, subject?: string | string[] | null) => SyllabusTopic[]
+  getClassSubjects: (classId: string) => string[]
   ensureClassSyllabus: (classId: string) => Promise<number>
 
   syllabusSubTopics: SyllabusSubTopic[]
@@ -587,6 +592,22 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const syllabusActions  = useSyllabusActions(teacher, syllabusRef, subTopicsRef, classesRef, setSyllabusTopics, setSyllabusSubTopics)
   const scheduleActions  = useScheduleActions(teacher, timetableEntries, catchupMaterials, setTimetableEntries, setCatchupMaterials)
 
+  // ─── Subject scoping ──────────────────────────────────────────────────────────
+  // Which subject(s) this teacher teaches in a class, from the admin's real
+  // wiring (subject assignment first, then timetable period labels). Empty =
+  // unknown (e.g. a teacher-created class with no admin timetable), which every
+  // caller treats as "don't filter".
+  const getClassSubjects = useCallback((classId: string): string[] =>
+    deriveClassSubjects(classId, assignments ?? [], timetableEntries ?? []),
+  [assignments, timetableEntries])
+
+  // Wraps the raw reader so a caller that doesn't name a subject still gets only
+  // its own subjects' topics instead of every subject taught to that class.
+  const { getClassSyllabus: getClassSyllabusRaw } = syllabusActions
+  const getClassSyllabus = useCallback((classId: string, subject?: string | string[] | null) =>
+    getClassSyllabusRaw(classId, subject === undefined ? getClassSubjects(classId) : subject),
+  [getClassSyllabusRaw, getClassSubjects])
+
   // ─── Admin actions ────────────────────────────────────────────────────────────
 
   const clearAllData = useCallback(async () => {
@@ -711,9 +732,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
     ])
     return (classes ?? []).filter(c => assignedIds.has(c.id)).map(cls => {
       const classStudents = students.filter(s => s.classId === cls.id && s.isActive)
-      const classSyllabus = syllabusTopics
-        .filter(t => t.classId === cls.id)
-        .sort((a, b) => a.orderIndex - b.orderIndex)
+      // Scoped to this teacher's own subject(s) — the class's rows cover every
+      // subject, so an unscoped read briefs a Maths teacher on the EVS syllabus.
+      const classSyllabus = filterTopicsBySubject(
+        syllabusTopics
+          .filter(t => t.classId === cls.id)
+          .sort((a, b) => a.orderIndex - b.orderIndex),
+        getClassSubjects(cls.id),
+      )
       const classSessions = sessions
         .filter(s => s.classId === cls.id)
         .sort((a, b) => b.date.localeCompare(a.date))
@@ -781,7 +807,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         totalTopics: classSyllabus.length,
       }
     })
-  }, [classes, students, syllabusTopics, sessions, attendance, mastery])
+  }, [classes, students, syllabusTopics, sessions, attendance, mastery, assignments, teacher?.id, getClassSubjects])
 
   const saveWorksheet = useCallback(async (data: Omit<Worksheet, 'id' | 'teacherId' | 'createdAt'>): Promise<string> => {
     if (!teacher) throw new Error('Not logged in')
@@ -903,6 +929,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
       ...marksActions,
       ...attendanceActions,
       ...syllabusActions,
+      // After the spread: the subject-scoped wrapper must win over the raw
+      // reader inside syllabusActions.
+      getClassSyllabus, getClassSubjects,
       ...scheduleActions,
       syllabusSubTopics, timetableEntries, catchupMaterials,
       prepMaterials, savePrepMaterial, getPrepMaterial,

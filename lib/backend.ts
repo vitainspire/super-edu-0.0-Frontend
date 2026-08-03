@@ -14,6 +14,12 @@ export async function backendFetch(path: string, init: RequestInit = {}): Promis
   const { data: { session } } = await supabase.auth.getSession()
   const headers = new Headers(init.headers)
   if (session?.access_token) headers.set('Authorization', `Bearer ${session.access_token}`)
-  if (init.body && !headers.has('Content-Type')) headers.set('Content-Type', 'application/json')
+  // FormData must set its own Content-Type: the header carries the multipart
+  // boundary, which only fetch can generate. Forcing application/json on it
+  // makes the body unparseable server-side, so leave those alone.
+  const isFormData = typeof FormData !== 'undefined' && init.body instanceof FormData
+  if (init.body && !isFormData && !headers.has('Content-Type')) {
+    headers.set('Content-Type', 'application/json')
+  }
   return fetch(`${BACKEND_URL}${path}`, { ...init, headers })
 }

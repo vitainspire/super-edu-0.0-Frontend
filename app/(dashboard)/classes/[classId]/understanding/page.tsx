@@ -1,7 +1,8 @@
 'use client'
 import { useState, useEffect } from 'react'
 import { useParams } from 'next/navigation'
-import { BarChart3, Users, BookOpen, CheckCircle2, HelpCircle, XCircle, AlertTriangle } from 'lucide-react'
+import { BarChart3, Users, BookOpen, HelpCircle, AlertTriangle } from '@/components/ui/icons'
+import { CheckCircle2, XCircle } from 'lucide-react'
 import { useApp } from '@/lib/context'
 import * as sbq from '@/lib/supabase-queries'
 import type { TopicPoll } from '@/lib/types'
@@ -52,25 +53,24 @@ export default function UnderstandingPage() {
     <div className="paper-page">
 
       <div className="mx-4 mt-4 mb-1">
-        <div className="rounded-3xl p-5"
-          style={{ background: '#AACDEA', border: '2px solid rgba(58,44,30,0.12)' }}>
+        <div className="paper-card p-5">
           <div className="flex items-center gap-2 mb-1">
-            <BarChart3 size={15} style={{ color: '#1E3A55' }} />
-            <p className="text-[11px] font-bold uppercase tracking-widest" style={{ color: '#1E3A55', opacity: 0.7 }}>Anonymous Poll</p>
+            <BarChart3 size={15} style={{ color: 'var(--forest)' }} />
+            <p className="text-[11px] font-bold uppercase tracking-widest text-ink-soft">Anonymous Poll</p>
           </div>
-          <p className="font-display font-bold text-2xl leading-tight" style={{ color: '#1E3A55' }}>Topic Understanding</p>
+          <p className="font-display font-extrabold text-2xl leading-tight text-ink">Topic Understanding</p>
           <div className="flex items-center gap-4 mt-2 flex-wrap">
-            <span className="text-xs font-medium flex items-center gap-1" style={{ color: '#1E3A55', opacity: 0.75 }}>
+            <span className="text-xs font-medium flex items-center gap-1 text-ink-soft">
               <Users size={11} /> {studentCount} student{studentCount !== 1 ? 's' : ''}
             </span>
-            <span className="text-xs font-medium flex items-center gap-1" style={{ color: '#1E3A55', opacity: 0.75 }}>
+            <span className="text-xs font-medium flex items-center gap-1 text-ink-soft">
               <BookOpen size={11} /> {completedTopics.length} topic{completedTopics.length !== 1 ? 's' : ''} taught
             </span>
             {totalResponses > 0 && (
-              <span className="text-xs font-medium" style={{ color: '#1E3A55', opacity: 0.75 }}>{totalResponses} total responses</span>
+              <span className="text-xs font-medium text-ink-soft">{totalResponses} total responses</span>
             )}
           </div>
-          <p className="text-[11px] mt-2" style={{ color: '#1E3A55', opacity: 0.6 }}>Student names are never shown — only counts per option.</p>
+          <p className="text-[11px] mt-2 text-ink-faint">Student names are never shown — only counts per option.</p>
         </div>
       </div>
 
@@ -101,8 +101,8 @@ export default function UnderstandingPage() {
 
           return (
             <div key={topic.id}
-              className="rounded-3xl p-5 bg-white border transition-colors"
-              style={{ borderColor: needsAttention ? '#e6a99a' : 'rgba(58,44,30,0.16)', borderWidth: 1.5 }}>
+              className="rounded-3xl p-5 bg-white transition-colors"
+              style={{ border: needsAttention ? '2px solid #e6a99a' : '2px solid var(--card-border)' }}>
 
               <div className="flex items-start gap-3 mb-4">
                 <div className="flex-1 min-w-0">

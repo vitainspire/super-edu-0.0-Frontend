@@ -1,5 +1,5 @@
 'use client'
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft } from '@/components/ui/icons'
 import { useRouter } from 'next/navigation'
 import type { ReactNode } from 'react'
 
@@ -15,8 +15,8 @@ export default function PageHeader({
             <button
               type="button"
               onClick={() => router.back()}
-              className="w-9 h-9 -ml-1.5 mb-3 flex items-center justify-center rounded-full active:scale-90 transition-transform"
-              style={{ background: 'rgba(58,44,30,0.08)' }}
+              className="w-10 h-10 mb-3 flex items-center justify-center rounded-full bg-white active:scale-90 transition-transform"
+              style={{ border: '1.75px solid var(--card-border)' }}
             >
               <ArrowLeft size={18} className="text-ink" />
             </button>
@@ -24,7 +24,7 @@ export default function PageHeader({
           {eyebrow && (
             <p className="text-[11px] font-bold uppercase tracking-widest text-ink-soft mb-1">{eyebrow}</p>
           )}
-          <h1 className="font-display font-bold text-ink text-3xl md:text-4xl leading-tight truncate">
+          <h1 className="font-display font-extrabold text-ink text-3xl md:text-4xl leading-tight truncate" style={{ letterSpacing: '-0.02em' }}>
             {title}
           </h1>
           {subtitle && <p className="text-sm text-ink-soft font-medium mt-1.5">{subtitle}</p>}

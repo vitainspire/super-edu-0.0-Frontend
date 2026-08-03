@@ -22,7 +22,13 @@ const PUBLIC_PREFIXES = [
   '/sw.js',
   '/workbox',
   '/icons',
+  // Must be the full filename: isPublic() matches exact, '<p>/' or '<p>-', so a
+  // bare '/manifest' never matched '/manifest.json' and every manifest fetch
+  // fell through to the Supabase auth check below.
+  '/manifest.json',
   '/manifest',
+  // next-pwa also emits '/swe-worker-<hash>.js' alongside sw.js and workbox-*.
+  '/swe-worker',
   '/screenshots',
   '/api/health',
   // Student-facing AI routes — protected by rate-limit, not Supabase session
@@ -53,6 +59,35 @@ function isPublic(pathname: string): boolean {
   )
 }
 
+// `auth.getUser()` is a network call, and it runs on nearly every request. When
+// the Supabase project is unreachable (e.g. paused free-tier project, which
+// answers with a Cloudflare 522 only after ~20s) an unbounded await turns every
+// single navigation into a multi-second stall — and because several calls chain
+// per page load, observed request times reached minutes.
+//
+// Bounding it fails *closed*: a timeout resolves to "no user", so the caller
+// takes its existing unauthenticated branch (login redirect / 401). A slow
+// backend can therefore cost a redirect, never a hang.
+const AUTH_TIMEOUT_MS = 2500
+
+type SupabaseClient = ReturnType<typeof createServerClient>
+
+async function getUserOrNull(supabase: SupabaseClient) {
+  try {
+    const result = await Promise.race([
+      supabase.auth.getUser(),
+      new Promise<null>(resolve => setTimeout(() => resolve(null), AUTH_TIMEOUT_MS)),
+    ])
+    if (!result) {
+      console.warn(`[middleware] Supabase auth.getUser() exceeded ${AUTH_TIMEOUT_MS}ms — treating as unauthenticated`)
+      return null
+    }
+    return result.data.user
+  } catch {
+    return null
+  }
+}
+
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl
 
@@ -81,7 +116,7 @@ export async function middleware(req: NextRequest) {
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
       { cookies: { getAll: () => req.cookies.getAll(), setAll: () => {} } }
     )
-    const { data: { user: rootUser } } = await rootSupabase.auth.getUser()
+    const rootUser = await getUserOrNull(rootSupabase)
     if (rootUser) {
       return NextResponse.redirect(new URL(role === 'scanner' ? '/scanner/connect' : '/home', req.url))
     }
@@ -110,7 +145,7 @@ export async function middleware(req: NextRequest) {
     }
   )
 
-  const { data: { user } } = await supabase.auth.getUser()
+  const user = await getUserOrNull(supabase)
 
   if (!user) {
     // API routes return JSON; page routes redirect to login

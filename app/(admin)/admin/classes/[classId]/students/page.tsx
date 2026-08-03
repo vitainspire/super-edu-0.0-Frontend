@@ -8,6 +8,7 @@ import {
 import { useParams, useRouter } from 'next/navigation'
 import type { Student } from '@/lib/types'
 import PageHeader from '@/components/theme/PageHeader'
+import { ADMIN_AVATAR_COLORS as AVATAR_COLORS } from '@/lib/admin-theme'
 import * as XLSX from 'xlsx'
 
 interface StudentRow { name: string; rollNumber: string }
@@ -513,12 +514,3 @@ export default function StudentsPage() {
   )
 }
 
-const AVATAR_COLORS = [
-  { bg: '#C7B7E8', text: '#31215C' },
-  { bg: '#AACDEA', text: '#1E3A55' },
-  { bg: '#AAD6A0', text: '#234A1D' },
-  { bg: '#EAC968', text: '#4A3809' },
-  { bg: '#F0AFC6', text: '#5C1F38' },
-  { bg: '#9FDDE0', text: '#164e63' },
-  { bg: '#F0A491', text: '#5C2416' },
-]

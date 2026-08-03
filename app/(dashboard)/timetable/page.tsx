@@ -2,7 +2,8 @@
 import { useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useApp } from '@/lib/context'
-import { CalendarDays, ClipboardList, Sparkles, BookOpenCheck } from 'lucide-react'
+import { BookOpenCheck } from 'lucide-react'
+import { CalendarDays, ClipboardList, Sparkles } from '@/components/ui/icons'
 import type { TimetableEntry } from '@/lib/types'
 import PrepMaterialModal from '@/components/timetable/PrepMaterialModal'
 import SubstituteBanner from '@/components/timetable/SubstituteBanner'
@@ -164,7 +165,7 @@ export default function TimetablePage() {
         <SubstituteBanner />
 
         {/* Current / next class banner */}
-        <div className="rounded-3xl p-5" style={{ background: heroIsLive ? '#AACDEA' : 'rgba(58,44,30,0.06)', border: '2px solid rgba(58,44,30,0.12)' }}>
+        <div className="rounded-3xl p-5" style={{ background: heroIsLive ? '#AACDEA' : 'rgba(58,44,30,0.06)', border: '2px solid var(--card-border)' }}>
           <p className="text-xs font-bold uppercase tracking-wide mb-1" style={{ color: heroIsLive ? '#1E3A55' : 'var(--ink-soft)' }}>
             {heroIsLive ? 'Current Class' : heroEntry ? 'Up Next' : 'No Class Right Now'}
           </p>
@@ -254,7 +255,7 @@ export default function TimetablePage() {
                   className={`w-full flex items-center gap-3 text-left rounded-2xl px-3 py-2.5 transition-transform ${isToday ? 'active:scale-[0.98] cursor-pointer' : 'cursor-default'}`}
                   style={{
                     background: isToday ? color.bg : 'rgba(58,44,30,0.06)',
-                    border: '1.5px solid rgba(58,44,30,0.12)',
+                    border: '2px solid var(--card-border)',
                     opacity: isToday ? 1 : 0.85,
                   }}
                 >
@@ -321,7 +322,7 @@ export default function TimetablePage() {
                             left:  `calc(${col * colPct}% + 2px)`,
                             width: `calc(${colPct}% - 4px)`,
                             background: isToday ? color.bg : 'rgba(58,44,30,0.08)',
-                            border: '1.5px solid rgba(58,44,30,0.15)',
+                            border: '2px solid var(--card-border)',
                             opacity: isToday ? 1 : 0.8,
                           }}
                         >

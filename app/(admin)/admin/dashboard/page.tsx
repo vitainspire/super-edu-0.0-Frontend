@@ -1,10 +1,13 @@
 'use client'
 import { useEffect, useState, useRef } from 'react'
 import { useAdmin } from '@/lib/admin-context'
-import { Loader2, ArrowRight, Users, BookOpen, GraduationCap, UserPlus, CalendarDays, type LucideIcon } from 'lucide-react'
+import { Loader2, ArrowRight, Users, BookOpen, GraduationCap, HelpCircle, type LucideIcon } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import PageHeader from '@/components/theme/PageHeader'
 import { Sticker } from '@/components/theme/StickerIcon'
+import SchoolReadiness, { type Readiness } from '@/components/admin/SchoolReadiness'
+import TodayAtSchool, { type Operations } from '@/components/admin/TodayAtSchool'
+import AdminTour from '@/components/admin/AdminTour'
 import clsx from 'clsx'
 
 interface Overview {
@@ -13,6 +16,10 @@ interface Overview {
   studentCount: number
   timetableCoverage: number
   totalPeriods: number
+  // Both added later than the counts above, so an older cached response — or a
+  // failed request that yielded {} — must not take the page down.
+  readiness?: Readiness
+  operations?: Operations
 }
 
 // ── Rolling counter ────────────────────────────────────────────────────────
@@ -89,6 +96,7 @@ export default function AdminDashboard() {
   const [overview, setOverview] = useState<Overview | null>(null)
   const [loading, setLoading] = useState(true)
   const [visible, setVisible] = useState(false)
+  const [tourOpen, setTourOpen] = useState(false)
   const router = useRouter()
 
   useEffect(() => {
@@ -99,17 +107,31 @@ export default function AdminDashboard() {
       .finally(() => setLoading(false))
   }, [school])
 
+  // Runs itself the first time an admin lands here, and never again — the
+  // flag is written when it OPENS rather than when it finishes, so closing it
+  // halfway is respected as an answer.
+  useEffect(() => {
+    if (!admin?.id) return
+    const key = `eduteach_admin_tour_${admin.id}`
+    if (localStorage.getItem(key)) return
+    const t = setTimeout(() => {
+      localStorage.setItem(key, 'seen')
+      setTourOpen(true)
+    }, 700)
+    return () => clearTimeout(t)
+  }, [admin?.id])
+
   const CARDS: CardDef[] = [
     {
       label: 'Teachers', sublabel: 'on teaching staff',
       value: overview?.teacherCount ?? 0, delay: 0,
-      stat: 'stat-card-violet', ink: '#31215C',
+      stat: 'stat-card-blue', ink: '#1E3A55',
       href: '/admin/teachers', Icon: Users,
     },
     {
       label: 'Classes', sublabel: 'active this year',
       value: overview?.classCount ?? 0, delay: 90,
-      stat: 'stat-card-blue', ink: '#1E3A55',
+      stat: 'stat-card-coral', ink: '#5C2416',
       href: '/admin/classes', Icon: BookOpen,
     },
     {
@@ -120,12 +142,6 @@ export default function AdminDashboard() {
     },
   ]
 
-  const ACTIONS: { label: string; desc: string; href: string; Icon: LucideIcon; tone: 'blue' | 'green' | 'violet'; ink: string }[] = [
-    { label: 'Add Teachers', desc: 'Invite teaching staff', href: '/admin/teachers', Icon: UserPlus, tone: 'violet', ink: '#31215C' },
-    { label: 'Create Classes', desc: 'Set up class sections', href: '/admin/classes', Icon: BookOpen, tone: 'blue', ink: '#1E3A55' },
-    { label: 'Build Timetable', desc: 'Schedule & assign periods', href: '/admin/timetable', Icon: CalendarDays, tone: 'green', ink: '#234A1D' },
-  ]
-
   return (
     <div className="paper-page pb-16">
 
@@ -134,7 +150,19 @@ export default function AdminDashboard() {
         title={`Welcome back, ${admin?.name?.split(' ')[0] ?? 'Admin'}`}
         subtitle={school?.name ? `${school.name} — School Overview` : 'School Overview'}
         back={false}
+        action={
+          <button
+            type="button"
+            onClick={() => setTourOpen(true)}
+            className="flex items-center gap-1.5 px-3 h-9 rounded-xl text-xs font-bold text-ink bg-white active:scale-95 transition-transform whitespace-nowrap"
+            style={{ border: '2px solid var(--card-border)' }}
+          >
+            <HelpCircle size={14} /> Guide
+          </button>
+        }
       />
+
+      <AdminTour open={tourOpen} onClose={() => setTourOpen(false)} />
 
       <div className="px-5 pt-3 relative z-10 max-w-5xl mx-auto">
 
@@ -151,27 +179,17 @@ export default function AdminDashboard() {
               ))}
             </div>
 
-            {/* ── Quick Actions ── */}
-            <div className="paper-card p-5">
-              <p className="text-[11px] font-bold text-ink-soft uppercase tracking-widest mb-4">Quick Actions</p>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                {ACTIONS.map(a => (
-                  <button
-                    key={a.href}
-                    type="button"
-                    onClick={() => router.push(a.href)}
-                    className="text-left rounded-2xl p-4 active:scale-[0.98] transition-transform"
-                    style={{ background: 'rgba(58,44,30,0.05)', border: '1px solid rgba(58,44,30,0.1)' }}
-                  >
-                    <Sticker tone={a.tone} size={40} radius={14} style={{ marginBottom: 12 }}>
-                      <a.Icon size={19} style={{ color: a.ink }} strokeWidth={2.25} />
-                    </Sticker>
-                    <p className="font-bold text-ink text-sm">{a.label}</p>
-                    <p className="text-xs mt-0.5 text-ink-soft">{a.desc}</p>
-                  </button>
-                ))}
+            {/* ── What needs fixing, then what needs watching ── */}
+            {overview?.readiness && (
+              <div data-tour="dash-readiness">
+                <SchoolReadiness readiness={overview.readiness} classCount={overview.classCount} />
               </div>
-            </div>
+            )}
+            {overview?.operations && (
+              <div data-tour="dash-today">
+                <TodayAtSchool operations={overview.operations} />
+              </div>
+            )}
           </>
         )}
       </div>

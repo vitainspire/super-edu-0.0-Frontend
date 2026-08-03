@@ -1,7 +1,9 @@
 const API_KEY        = process.env.OPENROUTER_API_KEY        || ''
 const MODEL          = process.env.OPENROUTER_MODEL          || 'google/gemini-2.5-flash'
 const FALLBACK_MODEL = process.env.OPENROUTER_FALLBACK_MODEL || 'meta-llama/llama-3.1-8b-instruct:free'
-const IMAGE_MODEL     = process.env.OPENROUTER_IMAGE_MODEL     || 'google/gemini-2.5-flash-image'
+// Nano Banana 2 — far stronger at rendering correct numbers/labels in workbook
+// figures than 2.5-flash-image (which garbled digits, e.g. "₹50" for ₹0.50).
+const IMAGE_MODEL     = process.env.OPENROUTER_IMAGE_MODEL     || 'google/gemini-3.1-flash-image'
 
 type ContentPart =
   | { type: 'text';      text: string }
@@ -186,4 +188,60 @@ export async function generateIllustration(
   } finally {
     clearTimeout(timer)
   }
+}
+
+// ── Storing a generated illustration ─────────────────────────────────────────
+
+const LESSON_IMAGE_BUCKET = 'lesson-images'
+
+/**
+ * Put a generated illustration in storage and return its public URL.
+ *
+ * generateIllustration hands back a `data:` URL — the image inline, base64. Left
+ * that way it is written verbatim into prep_materials.lesson, and three pictures
+ * turn a ~5KB lesson into a 3.16MB row. That is measured, not hypothetical: two
+ * such rows were already 2.58MB and 1.50MB, and lib/supabase-queries.ts loads
+ * EVERY prep material a teacher owns with select('*') on each app start. Ten
+ * lessons would be a 30MB download before the home page renders.
+ *
+ * The path is derived from what the picture is of, so regenerating a lesson
+ * overwrites its images instead of leaving the old ones orphaned in the bucket.
+ *
+ * Returns null on any failure, and callers fall back to the data URL: one
+ * oversized row is a better outcome than a lesson with no picture.
+ */
+export async function storeIllustration(
+  admin: { storage: { from: (b: string) => any } },
+  dataUrl: string,
+  key: string,
+): Promise<string | null> {
+  try {
+    const match = /^data:(image\/[a-z+]+);base64,(.+)$/i.exec(dataUrl)
+    if (!match) return dataUrl.startsWith('http') ? dataUrl : null
+    const [, contentType, base64] = match
+    const bytes = Buffer.from(base64, 'base64')
+    const ext = contentType === 'image/png' ? 'png' : contentType === 'image/webp' ? 'webp' : 'jpg'
+    const path = `${key}.${ext}`
+
+    const { error } = await admin.storage
+      .from(LESSON_IMAGE_BUCKET)
+      .upload(path, bytes, { contentType, upsert: true })
+    if (error) {
+      console.warn(`[ai] illustration upload failed: ${error.message}`)
+      return null
+    }
+    const { data } = admin.storage.from(LESSON_IMAGE_BUCKET).getPublicUrl(path)
+    return data?.publicUrl ?? null
+  } catch (err) {
+    console.warn(`[ai] illustration upload failed: ${err}`)
+    return null
+  }
+}
+
+/** A filesystem-safe, stable key for one section's picture in one lesson. */
+export function illustrationKey(parts: (string | undefined)[]): string {
+  return parts
+    .filter(Boolean)
+    .map(p => String(p).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 48))
+    .join('/')
 }

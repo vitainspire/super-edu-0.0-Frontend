@@ -9,17 +9,8 @@ import GradeSubjectsEditor from '@/components/admin/GradeSubjectsEditor'
 import GradeSyllabusEditor from '@/components/admin/GradeSyllabusEditor'
 import PageHeader from '@/components/theme/PageHeader'
 import { Sticker } from '@/components/theme/StickerIcon'
+import { ADMIN_PALETTE as PALETTE } from '@/lib/admin-theme'
 import clsx from 'clsx'
-
-type Tone = 'blue' | 'green' | 'coral' | 'gold' | 'violet' | 'pink'
-const PALETTE: { tone: Tone; stat: string; ink: string }[] = [
-  { tone: 'blue',   stat: 'stat-card-blue',   ink: '#1E3A55' },
-  { tone: 'green',  stat: 'stat-card-green',  ink: '#234A1D' },
-  { tone: 'coral',  stat: 'stat-card-coral',  ink: '#5C2416' },
-  { tone: 'gold',   stat: 'stat-card-gold',   ink: '#4A3809' },
-  { tone: 'violet', stat: 'stat-card-violet', ink: '#31215C' },
-  { tone: 'pink',   stat: 'stat-card-pink',   ink: '#5C1F38' },
-]
 
 export default function GradeSectionsPage() {
   const { school } = useAdmin()

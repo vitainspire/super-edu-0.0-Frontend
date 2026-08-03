@@ -3,7 +3,7 @@ import DoodleBackground from '@/components/student/DoodleBackground'
 
 export default function StudentLayout({ children }: { children: ReactNode }) {
   return (
-    <div className="min-h-screen relative">
+    <div className="kid-page font-kid">
       <DoodleBackground />
       {children}
     </div>

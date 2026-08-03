@@ -455,12 +455,12 @@ export default function AcademicCalendarPage() {
         )}
 
         {/* ── Seed Indian holidays ── */}
-        <div className="paper-card p-5" style={{ background: 'rgba(199,183,232,0.14)' }}>
+        <div className="paper-card p-5" style={{ background: 'rgba(170,205,234,0.2)' }}>
           <div className="flex items-center gap-2 mb-2">
-            <Sparkles className="w-4 h-4" style={{ color: '#31215C' }} />
-            <p className="text-sm font-bold" style={{ color: '#31215C' }}>Auto-fill Indian holidays</p>
+            <Sparkles className="w-4 h-4" style={{ color: '#1E3A55' }} />
+            <p className="text-sm font-bold" style={{ color: '#1E3A55' }}>Auto-fill Indian holidays</p>
           </div>
-          <p className="text-xs mb-3" style={{ color: '#31215C', opacity: 0.75 }}>
+          <p className="text-xs mb-3" style={{ color: '#1E3A55', opacity: 0.75 }}>
             Fills in India&apos;s national public holidays (Republic Day, Independence Day, etc. — computed for the exact year(s)) as confirmed Holiday events. Major festivals (Diwali, Holi...) are offered separately below as suggestions to confirm, since exact festival dates need verifying against a local calendar.
             {academicYearEvent && seedYears.length > 1 && (
               <> Your Academic Year spans {seedYears.join(' and ')}, so this seeds <strong>both</strong> years in one go.</>
@@ -479,18 +479,18 @@ export default function AcademicCalendarPage() {
               onClick={seedHolidays}
               disabled={seeding}
               className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-bold text-white disabled:opacity-60"
-              style={{ background: '#31215C' }}
+              style={{ background: '#1E3A55' }}
             >
               {seeding ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5" />}
               Seed Holidays for {seedYears.length > 1 ? `${seedYears[0]}–${seedYears[seedYears.length - 1]}` : seedYears[0]}
             </button>
           </div>
           {!academicYearEvent && (
-            <p className="text-[11px] mt-2" style={{ color: '#31215C', opacity: 0.6 }}>
+            <p className="text-[11px] mt-2" style={{ color: '#1E3A55', opacity: 0.6 }}>
               Set your Academic Year above to seed its full span automatically instead of one year at a time.
             </p>
           )}
-          {seedMsg && <p className="text-xs font-semibold mt-2" style={{ color: '#31215C' }}>{seedMsg}</p>}
+          {seedMsg && <p className="text-xs font-semibold mt-2" style={{ color: '#1E3A55' }}>{seedMsg}</p>}
         </div>
 
         {/* ── Suggested festivals — require individual confirmation ── */}

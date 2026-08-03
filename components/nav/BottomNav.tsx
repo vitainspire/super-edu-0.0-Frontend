@@ -1,7 +1,7 @@
 'use client'
 import { useMemo } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
-import { Home, LayoutGrid, CalendarDays, ClipboardList, MoreHorizontal } from 'lucide-react'
+import { Home, LayoutGrid, CalendarDays, ClipboardList, MoreHorizontal } from '@/components/ui/icons'
 import clsx from 'clsx'
 import { useApp } from '@/lib/context'
 import { computeHomeAlerts } from '@/lib/logic/home-alerts'
@@ -27,8 +27,8 @@ export default function BottomNav() {
   )
 
   return (
-    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 safe-bottom"
-      style={{ background: 'var(--paper-soft)', borderTop: '1.5px solid rgba(58,44,30,0.12)' }}>
+    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 safe-bottom text-white"
+      style={{ background: 'var(--forest)' }}>
       <div className="max-w-[480px] mx-auto flex items-center px-2 py-2">
         {NAV_ITEMS.map(({ href, label, Icon, match }) => {
           const active = match(path)
@@ -41,15 +41,16 @@ export default function BottomNav() {
               onClick={() => router.push(href)}
               className="flex-1 flex flex-col items-center justify-center gap-1 py-1.5 min-h-[56px]"
             >
-              <div className="relative">
+              <div className="relative flex items-center justify-center h-7 w-14 rounded-full transition-colors"
+                style={{ background: active ? 'var(--forest-soft)' : 'transparent' }}>
                 <Icon
-                  size={22}
+                  size={21}
                   strokeWidth={active ? 2.4 : 1.8}
-                  style={{ color: active ? 'var(--ink)' : '#B7A489' }}
+                  style={{ color: active ? '#fff' : 'rgba(255,255,255,0.55)' }}
                 />
                 {badge > 0 && (
                   <span
-                    className="absolute -top-1.5 -right-2 min-w-[15px] h-[15px] px-1 rounded-full bg-red-500 text-white text-[9px] font-black flex items-center justify-center leading-none"
+                    className="absolute -top-1 right-2 min-w-[15px] h-[15px] px-1 rounded-full bg-red-400 text-forest text-[9px] font-black flex items-center justify-center leading-none"
                   >
                     {badge > 9 ? '9+' : badge}
                   </span>
@@ -57,7 +58,7 @@ export default function BottomNav() {
               </div>
               <span
                 className={clsx('text-[10.5px] font-bold')}
-                style={{ color: active ? 'var(--ink)' : '#B7A489' }}
+                style={{ color: active ? '#fff' : 'rgba(255,255,255,0.55)' }}
               >
                 {label}
               </span>

@@ -1,7 +1,8 @@
 'use client'
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { ArrowLeft, Printer, Key, Sparkles, PenLine, Check, Save, AlertTriangle } from 'lucide-react'
+import { Printer, Key, PenLine, Save } from 'lucide-react'
+import { ArrowLeft, Sparkles, Check, AlertTriangle } from '@/components/ui/icons'
 import { useApp } from '@/lib/context'
 import type { WsSection } from '@/lib/types'
 
@@ -107,23 +108,23 @@ export default function WorksheetPage() {
     if (!draft) return null
     if (keyStage === 'prompt') {
       return (
-        <div style={{ background: 'var(--ink)', padding: '20px 24px', display: 'flex', flexDirection: 'column', gap: 14 }}>
+        <div style={{ background: 'var(--paper-bg)', padding: '20px 24px', display: 'flex', flexDirection: 'column', gap: 14 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <Key size={15} color="#EAC968" />
-            <p style={{ fontSize: 15, fontWeight: 800, color: '#fff' }}>Would you like an answer key?</p>
+            <Key size={15} color="var(--forest)" />
+            <p style={{ fontSize: 15, fontWeight: 800, color: 'var(--ink)' }}>Would you like an answer key?</p>
           </div>
           <div style={{ display: 'flex', gap: 10 }}>
             <button onClick={() => setKeyStage('manual')}
-              style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, padding: '14px 0', borderRadius: 14, border: '2px solid rgba(255,255,255,.2)', background: 'rgba(255,255,255,.08)', color: '#fff', fontWeight: 700, fontSize: 13, cursor: 'pointer', fontFamily: 'inherit' }}>
+              style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, padding: '14px 0', borderRadius: 14, border: '2px solid var(--card-border)', background: '#fff', color: 'var(--ink)', fontWeight: 700, fontSize: 13, cursor: 'pointer', fontFamily: 'inherit' }}>
               <PenLine size={14} /> I'll enter answers myself
             </button>
             <button onClick={generateAiKey}
-              style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, padding: '14px 0', borderRadius: 14, border: 'none', background: '#8069B0', color: '#fff', fontWeight: 700, fontSize: 13, cursor: 'pointer', fontFamily: 'inherit' }}>
+              style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, padding: '14px 0', borderRadius: 14, border: '2px solid var(--card-border)', background: 'var(--forest)', color: '#fff', fontWeight: 700, fontSize: 13, cursor: 'pointer', fontFamily: 'inherit' }}>
               <Sparkles size={14} /> Generate with AI
             </button>
           </div>
           <button onClick={() => setKeyStage('done')}
-            style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,.35)', fontSize: 11, fontWeight: 600, fontFamily: 'inherit', textAlign: 'center' }}>
+            style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--ink-soft)', fontSize: 11, fontWeight: 600, fontFamily: 'inherit', textAlign: 'center' }}>
             Skip — save without answer key
           </button>
         </div>
@@ -132,11 +133,11 @@ export default function WorksheetPage() {
 
     if (keyStage === 'ai-loading') {
       return (
-        <div style={{ background: 'var(--ink)', padding: '22px 24px', display: 'flex', alignItems: 'center', gap: 14 }}>
-          <div style={{ width: 22, height: 22, borderRadius: '50%', border: '2.5px solid #8069B0', borderTopColor: 'transparent', animation: 'spin .7s linear infinite', flexShrink: 0 }} />
+        <div style={{ background: 'var(--paper-bg)', padding: '22px 24px', display: 'flex', alignItems: 'center', gap: 14 }}>
+          <div style={{ width: 22, height: 22, borderRadius: '50%', border: '2.5px solid var(--forest)', borderTopColor: 'transparent', animation: 'spin .7s linear infinite', flexShrink: 0 }} />
           <div>
-            <p style={{ fontSize: 13, fontWeight: 700, color: '#C7B7E8' }}>AI is writing the answer key…</p>
-            <p style={{ fontSize: 11, color: 'rgba(255,255,255,.35)', marginTop: 2 }}>This takes about 10 seconds</p>
+            <p style={{ fontSize: 13, fontWeight: 700, color: 'var(--forest)' }}>AI is writing the answer key…</p>
+            <p style={{ fontSize: 11, color: 'var(--ink-soft)', marginTop: 2 }}>This takes about 10 seconds</p>
           </div>
           <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
         </div>
@@ -145,17 +146,17 @@ export default function WorksheetPage() {
 
     // manual or done
     return (
-      <div style={{ background: 'var(--ink)', display: 'flex', flexDirection: 'column' }}>
+      <div style={{ background: 'var(--paper-bg)', display: 'flex', flexDirection: 'column' }}>
 
         {/* Manual editor */}
         {keyStage === 'manual' && (
-          <div style={{ overflowY: 'auto', maxHeight: 300, padding: '18px 24px', display: 'flex', flexDirection: 'column', gap: 16, borderBottom: '1px solid rgba(255,255,255,.07)' }}>
+          <div style={{ overflowY: 'auto', maxHeight: 300, padding: '18px 24px', display: 'flex', flexDirection: 'column', gap: 16, borderBottom: '2px solid var(--card-border)' }}>
             {draft.sections.map((sec, si) => {
               let prev = 0
               for (let i = 0; i < si; i++) prev += draft.sections[i].questions.length
               return (
                 <div key={si}>
-                  <p style={{ fontSize: 10.5, fontWeight: 700, color: 'rgba(255,255,255,.5)', textTransform: 'uppercase', letterSpacing: '.08em', marginBottom: 10 }}>{sec.label}</p>
+                  <p style={{ fontSize: 10.5, fontWeight: 700, color: 'var(--ink-soft)', textTransform: 'uppercase', letterSpacing: '.08em', marginBottom: 10 }}>{sec.label}</p>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                     {sec.questions.map((q, qi) => {
                       const k = `${si}-${qi}`
@@ -164,15 +165,16 @@ export default function WorksheetPage() {
                       const isMatch = sec.type === 'match'
                       return (
                         <div key={qi} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                          <span style={{ fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,.45)', minWidth: 22 }}>{prev + qi + 1}.</span>
-                          <p style={{ fontSize: 11, color: 'rgba(255,255,255,.5)', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{q.text}</p>
+                          <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--ink-soft)', minWidth: 22 }}>{prev + qi + 1}.</span>
+                          <p style={{ fontSize: 11, color: 'var(--ink-soft)', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{q.text}</p>
                           {isMcq ? (
                             <div style={{ display: 'flex', gap: 4, flexShrink: 0 }}>
                               {['A', 'B', 'C', 'D'].map(l => (
                                 <button key={l} onClick={() => setAnswerKey(p => ({ ...p, [k]: l }))}
-                                  style={{ width: 28, height: 28, borderRadius: 7, border: 'none', cursor: 'pointer', fontWeight: 800, fontSize: 11, fontFamily: 'inherit',
-                                    background: answerKey[k] === l ? '#8069B0' : 'rgba(255,255,255,.08)',
-                                    color: answerKey[k] === l ? '#fff' : 'rgba(255,255,255,.45)' }}>
+                                  style={{ width: 28, height: 28, borderRadius: 7, cursor: 'pointer', fontWeight: 800, fontSize: 11, fontFamily: 'inherit',
+                                    border: answerKey[k] === l ? '2px solid var(--forest)' : '2px solid var(--card-border)',
+                                    background: answerKey[k] === l ? 'var(--forest)' : '#fff',
+                                    color: answerKey[k] === l ? '#fff' : 'var(--ink-soft)' }}>
                                   {l}
                                 </button>
                               ))}
@@ -181,9 +183,10 @@ export default function WorksheetPage() {
                             <div style={{ display: 'flex', gap: 4, flexShrink: 0 }}>
                               {['True', 'False'].map(l => (
                                 <button key={l} onClick={() => setAnswerKey(p => ({ ...p, [k]: l }))}
-                                  style={{ padding: '0 12px', height: 28, borderRadius: 7, border: 'none', cursor: 'pointer', fontWeight: 800, fontSize: 11, fontFamily: 'inherit',
-                                    background: answerKey[k] === l ? '#8069B0' : 'rgba(255,255,255,.08)',
-                                    color: answerKey[k] === l ? '#fff' : 'rgba(255,255,255,.45)' }}>
+                                  style={{ padding: '0 12px', height: 28, borderRadius: 7, cursor: 'pointer', fontWeight: 800, fontSize: 11, fontFamily: 'inherit',
+                                    border: answerKey[k] === l ? '2px solid var(--forest)' : '2px solid var(--card-border)',
+                                    background: answerKey[k] === l ? 'var(--forest)' : '#fff',
+                                    color: answerKey[k] === l ? '#fff' : 'var(--ink-soft)' }}>
                                   {l}
                                 </button>
                               ))}
@@ -191,8 +194,8 @@ export default function WorksheetPage() {
                           ) : (
                             <input value={answerKey[k] ?? ''} onChange={e => setAnswerKey(p => ({ ...p, [k]: e.target.value }))}
                               placeholder={isMatch ? 'e.g. 1-C, 2-A, 3-B' : 'Answer…'}
-                              style={{ fontSize: 11, border: '1px solid rgba(255,255,255,.12)', borderRadius: 8, padding: '5px 10px', width: 200, flexShrink: 0,
-                                fontFamily: 'inherit', background: 'rgba(255,255,255,.05)', color: 'rgba(255,255,255,.85)' }} />
+                              style={{ fontSize: 11, border: '2px solid var(--card-border)', borderRadius: 8, padding: '5px 10px', width: 200, flexShrink: 0,
+                                fontFamily: 'inherit', background: '#fff', color: 'var(--ink)' }} />
                           )}
                         </div>
                       )
@@ -215,12 +218,12 @@ export default function WorksheetPage() {
               {saved ? <><Check size={14} /> Saved!</> : saving ? 'Saving…' : <><Save size={14} /> Save Worksheet</>}
             </button>
             <button onClick={() => window.print()}
-              style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '13px 20px', borderRadius: 14, border: '2px solid rgba(255,255,255,.15)', background: 'transparent', color: 'rgba(255,255,255,.7)', fontWeight: 700, fontSize: 13, cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap' }}>
+              style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '13px 20px', borderRadius: 14, border: '2px solid var(--card-border)', background: '#fff', color: 'var(--ink)', fontWeight: 700, fontSize: 13, cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap' }}>
               <Printer size={14} /> Print / PDF
             </button>
           </div>
           {saveError && (
-            <p style={{ fontSize: 11, color: '#fca5a5', textAlign: 'center', padding: '0 24px 12px', fontFamily: 'inherit', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5 }}>
+            <p style={{ fontSize: 11, color: '#C46B54', textAlign: 'center', padding: '0 24px 12px', fontFamily: 'inherit', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5 }}>
               <AlertTriangle size={11} /> {saveError}
             </p>
           )}
@@ -246,17 +249,17 @@ export default function WorksheetPage() {
       <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: 'var(--paper-bg)' }}>
 
         {/* ── Top bar ── */}
-        <div className="ws-no-print" style={{ background: 'var(--ink)', padding: '12px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0, position: 'sticky', top: 0, zIndex: 50, borderBottom: '1px solid rgba(255,255,255,.07)' }}>
+        <div className="ws-no-print" style={{ background: 'var(--paper-bg)', padding: '12px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0, position: 'sticky', top: 0, zIndex: 50, borderBottom: '2px solid var(--card-border)' }}>
           <button onClick={() => router.back()}
-            style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'rgba(255,255,255,.7)', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700, fontSize: 13, fontFamily: 'inherit' }}>
+            style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'var(--ink)', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700, fontSize: 13, fontFamily: 'inherit' }}>
             <ArrowLeft size={16} /> Back to Tests
           </button>
-          <p style={{ color: '#fff', fontWeight: 700, fontSize: 14, flex: 1, textAlign: 'center', padding: '0 16px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+          <p style={{ color: 'var(--ink)', fontWeight: 700, fontSize: 14, flex: 1, textAlign: 'center', padding: '0 16px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
             {draft.topic}
-            {draft.className && <span style={{ color: 'rgba(255,255,255,.4)', fontWeight: 500, fontSize: 12, marginLeft: 8 }}>· {draft.className}</span>}
+            {draft.className && <span style={{ color: 'var(--ink-soft)', fontWeight: 500, fontSize: 12, marginLeft: 8 }}>· {draft.className}</span>}
           </p>
           <button onClick={() => window.print()}
-            style={{ display: 'flex', alignItems: 'center', gap: 6, color: 'rgba(255,255,255,.6)', background: 'rgba(255,255,255,.08)', border: 'none', borderRadius: 8, padding: '7px 14px', fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap' }}>
+            style={{ display: 'flex', alignItems: 'center', gap: 6, color: 'var(--ink)', background: '#fff', border: '2px solid var(--card-border)', borderRadius: 8, padding: '7px 14px', fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap' }}>
             <Printer size={13} /> Print
           </button>
         </div>
@@ -387,7 +390,7 @@ export default function WorksheetPage() {
         </div>
 
         {/* ── Sticky answer-key panel ── */}
-        <div className="ws-no-print" style={{ flexShrink: 0, borderTop: '1px solid rgba(255,255,255,.12)' }}>
+        <div className="ws-no-print" style={{ flexShrink: 0, borderTop: '2px solid var(--card-border)' }}>
           <KeyPanel />
         </div>
 
