@@ -269,7 +269,7 @@ export default function AdminAskAssistant() {
         <button
           type="button"
           onClick={() => setOpen(true)}
-          title="Admin Agent"
+          title="Argus"
           className="fixed bottom-6 right-6 z-40 w-14 h-14 flex items-center justify-center rounded-full active:scale-90 transition-transform"
           style={{ background: 'var(--ink)', boxShadow: '0 6px 20px rgba(0,0,0,0.25)' }}
         >
@@ -277,7 +277,7 @@ export default function AdminAskAssistant() {
         </button>
       )}
 
-      <Modal open={open} onClose={() => setOpen(false)} title="Admin Agent">
+      <Modal open={open} onClose={() => setOpen(false)} title="Argus">
         <div className="space-y-4">
           {speechOutputSupported && (
             <div className="flex justify-end">

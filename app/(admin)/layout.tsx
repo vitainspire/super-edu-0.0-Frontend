@@ -5,6 +5,7 @@ import { supabase } from '@/lib/supabase'
 import { AdminProvider } from '@/lib/admin-context'
 import AdminSideNav from '@/components/admin/AdminSideNav'
 import AdminAskAssistant from '@/components/admin/AdminAskAssistant'
+import AdminNotificationBell from '@/components/admin/AdminNotificationBell'
 import { Loader2 } from 'lucide-react'
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -35,6 +36,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         <main className="flex-1 min-w-0 overflow-auto relative z-10">
           {children}
         </main>
+      </div>
+      <div className="fixed top-4 right-4 z-40">
+        <AdminNotificationBell />
       </div>
       <AdminAskAssistant />
     </AdminProvider>

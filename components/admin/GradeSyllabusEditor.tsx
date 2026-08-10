@@ -38,8 +38,20 @@ export default function GradeSyllabusEditor({ schoolId, grade }: Props) {
   const [saving, setSaving] = useState(false)
   const [deletingId, setDeletingId] = useState<string | null>(null)
 
+  // Generation mode for the CURRENTLY selected subject — 'opt_in' (cheap
+  // shared batch, a teacher can still personalize on demand) or
+  // 'full_personalization' (every teacher always gets their own). Suggested
+  // automatically from how similar the assigned teachers' teaching profiles
+  // are, unless this admin has explicitly overridden it (setBy === 'admin'),
+  // in which case that choice is authoritative going forward.
+  const [genMode, setGenMode] = useState<'opt_in' | 'full_personalization'>('opt_in')
+  const [genModeSetBy, setGenModeSetBy] = useState<'auto' | 'admin'>('auto')
+  const [genModeLoading, setGenModeLoading] = useState(false)
+  const [genModeSaving, setGenModeSaving] = useState(false)
+
   const subjectsApiBase = `/api/admin/schools/${schoolId}/grade-subjects`
   const topicsApiBase = `/api/admin/schools/${schoolId}/grade-syllabus`
+  const genModeApiBase = `/api/admin/schools/${schoolId}/grade-syllabus/generation-mode`
 
   // Subjects must exist first — syllabus is authored per subject
   useEffect(() => {
@@ -64,6 +76,37 @@ export default function GradeSyllabusEditor({ schoolId, grade }: Props) {
       .catch(() => setError('Failed to load syllabus'))
       .finally(() => setLoading(false))
   }, [topicsApiBase, grade, selectedSubject])
+
+  // Re-fetches (and re-derives, server-side) the suggested mode every time
+  // the selected subject changes — never stale, since the similarity check
+  // is cheap and runs fresh on every GET.
+  useEffect(() => {
+    if (!grade || !selectedSubject) return
+    setGenModeLoading(true)
+    backendFetch(`${genModeApiBase}?grade=${encodeURIComponent(grade)}&subject=${encodeURIComponent(selectedSubject)}`)
+      .then(r => r.json())
+      .then(d => {
+        setGenMode(d.mode === 'full_personalization' ? 'full_personalization' : 'opt_in')
+        setGenModeSetBy(d.setBy === 'admin' ? 'admin' : 'auto')
+      })
+      .catch(() => {})
+      .finally(() => setGenModeLoading(false))
+  }, [genModeApiBase, grade, selectedSubject])
+
+  async function setGenerationMode(mode: 'opt_in' | 'full_personalization') {
+    if (!grade || !selectedSubject || genModeSaving) return
+    setGenModeSaving(true)
+    try {
+      const res = await backendFetch(genModeApiBase, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ grade, subject: selectedSubject, mode }),
+      })
+      if (res.ok) { setGenMode(mode); setGenModeSetBy('admin') }
+    } finally {
+      setGenModeSaving(false)
+    }
+  }
 
   useEffect(() => { load() }, [load])
 
@@ -141,6 +184,49 @@ export default function GradeSyllabusEditor({ schoolId, grade }: Props) {
           </button>
         ))}
       </div>
+
+      {selectedSubject && (
+        <div className="flex items-center justify-between gap-3 rounded-2xl px-4 py-3 flex-wrap"
+          style={{ background: 'rgba(58,44,30,0.04)', border: '1.5px solid rgba(58,44,30,0.12)' }}>
+          <div className="min-w-0">
+            <p className="text-xs font-bold text-ink">Prep Material generation</p>
+            <p className="text-[11px] text-ink-faint mt-0.5">
+              {genModeLoading ? 'Checking teacher profiles…' : genMode === 'opt_in'
+                ? 'Shared by default — a teacher can still personalize one topic on demand.'
+                : 'Every teacher always gets their own, built from their own Teaching Profile.'}
+              {!genModeLoading && (
+                <span className="ml-1" style={{ opacity: 0.75 }}>
+                  ({genModeSetBy === 'admin' ? 'set by you' : 'suggested automatically'})
+                </span>
+              )}
+            </p>
+          </div>
+          <div className="flex rounded-xl overflow-hidden shrink-0" style={{ border: '1.5px solid rgba(58,44,30,0.18)' }}>
+            <button
+              type="button"
+              onClick={() => setGenerationMode('opt_in')}
+              disabled={genModeSaving}
+              className="px-3 py-2 text-xs font-bold transition-colors disabled:opacity-50"
+              style={genMode === 'opt_in'
+                ? { background: 'var(--ink)', color: 'var(--paper-soft)' }
+                : { background: 'white', color: 'var(--ink-soft)' }}
+            >
+              Opt-in
+            </button>
+            <button
+              type="button"
+              onClick={() => setGenerationMode('full_personalization')}
+              disabled={genModeSaving}
+              className="px-3 py-2 text-xs font-bold transition-colors disabled:opacity-50"
+              style={genMode === 'full_personalization'
+                ? { background: 'var(--ink)', color: 'var(--paper-soft)' }
+                : { background: 'white', color: 'var(--ink-soft)' }}
+            >
+              Full Personalization
+            </button>
+          </div>
+        </div>
+      )}
 
       {error && (
         <p className="text-xs text-red-600 bg-red-50 rounded-xl px-3 py-2 flex items-center gap-2">

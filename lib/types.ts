@@ -711,6 +711,10 @@ export interface PrepMaterial {
   subtopic?: string
   lesson: SmartLesson
   createdAt: string
+  // 'shared' (a cached copy of the shared lesson), 'personal' (an explicit
+  // "make this mine" generation), or 'live_fallback' (nothing shared existed
+  // yet). Only 'personal' rows are ever preferred over the shared pool.
+  source?: 'shared' | 'personal' | 'live_fallback'
 }
 
 // ── Workbook ────────────────────────────────────────────────────────────────

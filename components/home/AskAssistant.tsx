@@ -349,14 +349,14 @@ export default function AskAssistant() {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        title="Ask"
+        title="ARIA"
         className="w-10 h-10 flex items-center justify-center rounded-full active:scale-90 transition-transform"
         style={{ background: 'rgba(255,255,255,0.6)', border: '1.75px solid var(--card-border)' }}
       >
         <MessageCircleQuestion size={17} className="text-ink-soft" />
       </button>
 
-      <Modal open={open} onClose={() => setOpen(false)} title="Ask">
+      <Modal open={open} onClose={() => setOpen(false)} title="ARIA">
         <div className="space-y-4">
           {speechOutputSupported && (
             <div className="flex justify-end">

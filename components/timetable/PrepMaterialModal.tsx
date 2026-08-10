@@ -61,6 +61,20 @@ export default function PrepMaterialModal({ open, onClose, classId, subject, gra
   const [formVisible, setFormVisible] = useState(!autoGenerate)
   const autoFiredRef = useRef<string | null>(null)
 
+  // Whether this class's grade+subject is currently in the cheap shared-batch
+  // default ("opt_in" — a teacher can still personalize one topic on demand)
+  // or always generates fresh per-teacher lessons ("full_personalization").
+  // Read-only here — only the admin's own similarity check or explicit choice
+  // ever changes this; a teacher's fetch must never trigger a recompute.
+  const [generationMode, setGenerationMode] = useState<'opt_in' | 'full_personalization'>('opt_in')
+  useEffect(() => {
+    if (!open || !classId || !subject) return
+    backendFetch(`/api/teacher/prep-materials/generation-mode?classId=${encodeURIComponent(classId)}&subject=${encodeURIComponent(subject)}`)
+      .then(r => r.json())
+      .then(d => setGenerationMode(d.mode === 'full_personalization' ? 'full_personalization' : 'opt_in'))
+      .catch(() => setGenerationMode('opt_in'))
+  }, [open, classId, subject])
+
   // The admin's published "Academic Year" calendar entry — same source the
   // syllabus tab uses — so "this week's topics" means the same thing everywhere.
   const [academicEvents, setAcademicEvents] = useState<AcademicEvent[]>([])
@@ -246,6 +260,9 @@ export default function PrepMaterialModal({ open, onClose, classId, subject, gra
   const subs = topicEntry ? getTopicSubTopics(topicEntry.id) : []
   const isCustomSub = subMode === 'custom'
   const hasProfile = isTeachingProfileComplete(teacher?.teachingProfile)
+  // Whichever lesson is currently on screen — drives whether "Make this
+  // mine" makes sense to offer (never for a lesson that's already personal).
+  const currentSource = getPrepMaterial(classId, topic, subtopic)?.source
 
   function pickTopic(val: string) {
     if (val === '__custom__') {
@@ -271,7 +288,11 @@ export default function PrepMaterialModal({ open, onClose, classId, subject, gra
     }).catch(() => {})
   }
 
-  async function generate(force = false) {
+  // asPersonal: an explicit "make this mine" request — always skips the
+  // shared pool and saves the result marked as this teacher's own override,
+  // which future fetches for this exact topic will prefer over the shared
+  // lesson (see savePrepMaterial's dedup-by-key overwrite in context.tsx).
+  async function generate(force = false, asPersonal = false) {
     if (!topic.trim() || !classId) return
     if (!force) {
       const cached = getPrepMaterial(classId, topic, subtopic)
@@ -286,10 +307,15 @@ export default function PrepMaterialModal({ open, onClose, classId, subject, gra
     setState('loading')
     setErrorMsg('')
 
+    // Full-personalization grade+subjects have no shared pool to check at
+    // all — every generation goes straight to the live path below, built
+    // from this specific teacher's own profile.
+    const skipShared = asPersonal || generationMode === 'full_personalization'
+
     // The syllabus (and now the lesson content) is shared across every
     // section teaching this grade+subject — check the batch-generated stock
     // before ever falling back to a live, wait-for-it generation.
-    if (!force) {
+    if (!force && !skipShared) {
       try {
         const params = new URLSearchParams({ classId, subject, grade, topic: topic.trim() })
         if (subtopic.trim()) params.set('subtopic', subtopic.trim())
@@ -303,6 +329,7 @@ export default function PrepMaterialModal({ open, onClose, classId, subject, gra
               topic: topic.trim(),
               subtopic: subtopic.trim() || undefined,
               lesson: sharedData.lesson,
+              source: 'shared',
             })
             setLesson(saved.lesson)
             setFromCache(true)
@@ -344,6 +371,7 @@ export default function PrepMaterialModal({ open, onClose, classId, subject, gra
         topic: topic.trim(),
         subtopic: subtopic.trim() || undefined,
         lesson: data.lesson,
+        source: skipShared ? 'personal' : 'live_fallback',
       })
       setLesson(saved.lesson)
       setFromCache(false)
@@ -628,6 +656,22 @@ export default function PrepMaterialModal({ open, onClose, classId, subject, gra
             <><Sparkles size={14} /> Generate Prep Material</>
           )}
         </button>
+
+        {/* Only meaningful in opt_in mode, on a lesson that's still the
+            shared/generic version — in full_personalization mode every
+            lesson is already this teacher's own, and once a lesson is
+            already marked 'personal' there's nothing further to opt into. */}
+        {isDone && generationMode === 'opt_in' && currentSource !== 'personal' && (
+          <button
+            onClick={() => generate(true, true)}
+            disabled={isLoading}
+            className="w-full py-2.5 rounded-2xl text-sm font-bold flex items-center justify-center gap-2 disabled:opacity-50 active:scale-[0.98] transition-all"
+            style={{ background: 'rgba(122,95,184,0.1)', color: '#7A5FB8' }}
+            title="Generate a version built from your own Teaching Profile instead of the shared lesson"
+          >
+            <Wand2 size={14} /> Make this mine
+          </button>
+        )}
 
         {state === 'error' && (
           <div className="flex items-center gap-2 text-red-500 text-xs font-medium">
