@@ -2,11 +2,12 @@
 import { useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useApp } from '@/lib/context'
-import { BookOpenCheck } from 'lucide-react'
+import { BookOpenCheck, Repeat } from 'lucide-react'
 import { CalendarDays, ClipboardList, Sparkles } from '@/components/ui/icons'
 import type { TimetableEntry } from '@/lib/types'
 import PrepMaterialModal from '@/components/timetable/PrepMaterialModal'
 import SubstituteBanner from '@/components/timetable/SubstituteBanner'
+import CoveringPeriods from '@/components/timetable/CoveringPeriods'
 import PageHeader from '@/components/theme/PageHeader'
 import { Sticker } from '@/components/theme/StickerIcon'
 
@@ -15,7 +16,11 @@ function todayDayNum() {
   return d === 0 ? 0 : d
 }
 
-function toMinutes(t: string) {
+// Tolerant of a missing time: a covering period reads its times off the absent
+// teacher's timetable row, and that row can have been deleted since the cover
+// was assigned. Such an entry sorts to the end of the day rather than throwing.
+function toMinutes(t?: string) {
+  if (!t) return Number.MAX_SAFE_INTEGER
   const [h, m] = t.split(':').map(Number)
   return h * 60 + m
 }
@@ -75,6 +80,39 @@ function layoutDayEvents(entries: TimetableEntry[]) {
 
 const PX_PER_MIN = 1.3
 
+// A period handed to a substitute stays on the grid — the teacher should be able
+// to see what happened to their class — but greyed, since they aren't teaching it.
+const COVERED_AWAY_BG = 'rgba(58,44,30,0.06)'
+// Violet marks coverage throughout the portal; SubstituteBanner uses the same pair.
+const COVERING_INK = '#31215C'
+
+function CoverageTag({ entry, compact = false }: { entry: TimetableEntry; compact?: boolean }) {
+  if (entry.coverage === 'covering') {
+    return (
+      <span
+        className={`inline-flex items-center gap-1 rounded-full font-black uppercase tracking-wide ${compact ? 'px-1.5 text-[8px]' : 'px-2 py-0.5 text-[9px]'}`}
+        style={{ background: 'rgba(255,255,255,0.65)', color: COVERING_INK }}
+      >
+        <Repeat size={compact ? 8 : 9} /> Covering
+      </span>
+    )
+  }
+  if (entry.coverage === 'covered_away') {
+    return (
+      <span
+        className={`inline-flex items-center gap-1 rounded-full font-black uppercase tracking-wide ${compact ? 'px-1.5 text-[8px]' : 'px-2 py-0.5 text-[9px]'}`}
+        style={{
+          background: entry.unresolved ? '#FEE2E2' : 'rgba(58,44,30,0.10)',
+          color: entry.unresolved ? '#991B1B' : 'var(--ink-soft)',
+        }}
+      >
+        {entry.unresolved ? 'Needs cover' : 'Covered'}
+      </span>
+    )
+  }
+  return null
+}
+
 export default function TimetablePage() {
   const { timetableEntries, classes, getTaughtTopicToday, getCurrentPeriod } = useApp()
   const router = useRouter()
@@ -94,8 +132,13 @@ export default function TimetablePage() {
 
   const [selectedDay, setSelectedDay] = useState(todayN >= 1 && todayN <= days.length ? todayN : 1)
 
+  // Periods this teacher has handed to a substitute are out of the "today"
+  // count and out of Up Next — they aren't turning up to them. They stay on the
+  // grid below, marked, so the teacher can see who has their class.
   const todayEntries = useMemo(() =>
-    timetableEntries.filter(e => e.dayOfWeek === todayN).sort((a, b) => a.periodNumber - b.periodNumber),
+    timetableEntries
+      .filter(e => e.dayOfWeek === todayN && e.coverage !== 'covered_away')
+      .sort((a, b) => a.periodNumber - b.periodNumber),
   [timetableEntries, todayN])
 
   const currentEntry = getCurrentPeriod()
@@ -106,12 +149,29 @@ export default function TimetablePage() {
   const heroEntry  = currentEntry ?? nextEntry
   const heroIsLive = !!currentEntry
 
-  function getClassName(classId: string) { return classes.find(c => c.id === classId)?.name ?? '—' }
-  function getSubject(entry: { classId: string; label?: string }) {
-    return entry.label && entry.label.trim() ? entry.label : getClassName(entry.classId)
+  // A covering period's class may not be in `classes` at all — a fallback cover
+  // deliberately gets no class access — so the name resolved by the backend wins.
+  function getClassName(entry: TimetableEntry) {
+    return entry.className ?? classes.find(c => c.id === entry.classId)?.name ?? '—'
   }
-  function getSecondary(entry: { classId: string; label?: string }) {
-    return entry.label && entry.label.trim() ? getClassName(entry.classId) : null
+  function getSubject(entry: TimetableEntry) {
+    return entry.label && entry.label.trim() ? entry.label : getClassName(entry)
+  }
+  function getSecondary(entry: TimetableEntry) {
+    if (entry.coverage === 'covering') return `for ${entry.originalTeacherName ?? 'a colleague'}`
+    if (entry.coverage === 'covered_away') {
+      return entry.unresolved ? 'No substitute assigned' : `${entry.substituteTeacherName} is covering`
+    }
+    return entry.label && entry.label.trim() ? getClassName(entry) : null
+  }
+
+  // Prep material, students and syllabus sit behind a period only when the
+  // teacher actually owns the class. A fallback cover (no subject match) is
+  // supervision: the period shows, nothing opens.
+  function canOpen(entry: TimetableEntry) {
+    if (entry.coverage === 'covered_away') return false
+    if (entry.coverage === 'covering') return entry.fullAccess === true
+    return true
   }
 
   const { dayStartMin, dayEndMin } = useMemo(() => {
@@ -134,7 +194,13 @@ export default function TimetablePage() {
     [timetableEntries, selectedDay]
   )
 
-  function fmtTime(t: string) {
+  const coveringForSelectedDay = useMemo(
+    () => selectedDayEntries.filter(e => e.coverage === 'covering'),
+    [selectedDayEntries]
+  )
+
+  function fmtTime(t?: string) {
+    if (!t) return '—'
     const [h, m] = t.split(':').map(Number)
     return `${h % 12 || 12}:${String(m).padStart(2, '0')} ${h >= 12 ? 'PM' : 'AM'}`
   }
@@ -164,6 +230,21 @@ export default function TimetablePage() {
 
         <SubstituteBanner />
 
+        {/* The covers for the day the tabs below are on. The grid also shows
+            them in their time slot, but a slot in a grid is a poor place to
+            start from when the class isn't one you normally teach — this is
+            the way in to its prep material. */}
+        <CoveringPeriods
+          entries={coveringForSelectedDay}
+          title={selectedDay === todayN ? 'Covering Today' : `Covering on ${days[selectedDay - 1] ?? 'that day'}`}
+          onOpenPrep={entry => setPrepModal({
+            classId: entry.classId,
+            subject: entry.label ?? '',
+            grade: classes.find(c => c.id === entry.classId)?.grade ?? '',
+            periodNumber: entry.periodNumber,
+          })}
+        />
+
         {/* Current / next class banner */}
         <div className="rounded-3xl p-5" style={{ background: heroIsLive ? '#AACDEA' : 'rgba(58,44,30,0.06)', border: '2px solid var(--card-border)' }}>
           <p className="text-xs font-bold uppercase tracking-wide mb-1" style={{ color: heroIsLive ? '#1E3A55' : 'var(--ink-soft)' }}>
@@ -171,35 +252,44 @@ export default function TimetablePage() {
           </p>
           {heroEntry ? (
             <>
+              {heroEntry.coverage === 'covering' && (
+                <div className="mb-1.5"><CoverageTag entry={heroEntry} /></div>
+              )}
               <p className="font-display font-bold text-xl leading-tight" style={{ color: heroIsLive ? '#1E3A55' : 'var(--ink)' }}>
                 {getSubject(heroEntry)}{getSecondary(heroEntry) ? ` - ${getSecondary(heroEntry)}` : ''}
               </p>
               <p className="text-sm font-medium mt-1" style={{ color: heroIsLive ? '#1E3A55' : 'var(--ink-soft)', opacity: 0.75 }}>
                 Period {heroEntry.periodNumber} · {fmtTime(heroEntry.startTime)}–{fmtTime(heroEntry.endTime)}
               </p>
-              <div className="flex gap-2 mt-3">
-                <button
-                  type="button"
-                  onClick={() => setPrepModal({
-                    classId: heroEntry.classId,
-                    subject: getSubject(heroEntry),
-                    grade: classes.find(c => c.id === heroEntry.classId)?.grade ?? '',
-                    periodNumber: heroEntry.periodNumber,
-                  })}
-                  className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-2xl text-sm font-bold active:scale-95 transition-all"
-                  style={{ background: 'rgba(255,255,255,0.6)', color: heroIsLive ? '#1E3A55' : 'var(--ink)' }}
-                >
-                  <Sparkles size={13} /> Prep Material
-                </button>
-                <button
-                  type="button"
-                  onClick={() => router.push(`/classes/${heroEntry.classId}/attendance`)}
-                  className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-2xl text-sm font-bold text-white active:scale-95 transition-all"
-                  style={{ background: 'var(--ink)' }}
-                >
-                  <ClipboardList size={13} /> Take Attendance
-                </button>
-              </div>
+              {canOpen(heroEntry) ? (
+                <div className="flex gap-2 mt-3">
+                  <button
+                    type="button"
+                    onClick={() => setPrepModal({
+                      classId: heroEntry.classId,
+                      subject: getSubject(heroEntry),
+                      grade: classes.find(c => c.id === heroEntry.classId)?.grade ?? '',
+                      periodNumber: heroEntry.periodNumber,
+                    })}
+                    className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-2xl text-sm font-bold active:scale-95 transition-all"
+                    style={{ background: 'rgba(255,255,255,0.6)', color: heroIsLive ? '#1E3A55' : 'var(--ink)' }}
+                  >
+                    <Sparkles size={13} /> Prep Material
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => router.push(`/classes/${heroEntry.classId}/attendance`)}
+                    className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-2xl text-sm font-bold text-white active:scale-95 transition-all"
+                    style={{ background: 'var(--ink)' }}
+                  >
+                    <ClipboardList size={13} /> Take Attendance
+                  </button>
+                </div>
+              ) : (
+                <p className="text-xs font-medium mt-3 rounded-2xl px-3 py-2" style={{ background: 'rgba(255,255,255,0.5)', color: heroIsLive ? '#1E3A55' : 'var(--ink-soft)' }}>
+                  Supervision cover — {getSubject(heroEntry)} isn&apos;t one of your subjects, so class materials stay with the regular teacher.
+                </p>
+              )}
             </>
           ) : (
             <p className="text-sm font-medium text-ink-soft">No more classes scheduled today.</p>
@@ -239,35 +329,47 @@ export default function TimetablePage() {
               <p className="text-sm text-ink-faint text-center py-8">No classes scheduled.</p>
             ) : selectedDayEntries.map(entry => {
               const isToday    = selectedDay === todayN
+              const handedOver = entry.coverage === 'covered_away'
               const color      = colorForKey(getSubject(entry))
               const subject    = getSubject(entry)
               const secondary  = getSecondary(entry)
-              const taught     = isToday ? getTaughtTopicToday(entry.classId) : null
+              const taught     = isToday && !handedOver ? getTaughtTopicToday(entry.classId) : null
+              const tappable   = isToday && canOpen(entry)
+              const ink        = handedOver ? 'var(--ink-soft)' : (isToday ? color.ink : 'var(--ink-soft)')
 
               return (
                 <button
                   key={entry.id}
-                  disabled={!isToday}
-                  onClick={() => isToday && setPrepModal({
+                  disabled={!tappable}
+                  onClick={() => tappable && setPrepModal({
                     classId: entry.classId,
                     subject,
                     grade: classes.find(c => c.id === entry.classId)?.grade ?? '',
                     periodNumber: entry.periodNumber,
                   })}
-                  className={`w-full flex items-center gap-3 text-left rounded-2xl px-3 py-2.5 transition-transform ${isToday ? 'active:scale-[0.98] cursor-pointer' : 'cursor-default'}`}
+                  className={`w-full flex items-center gap-3 text-left rounded-2xl px-3 py-2.5 transition-transform ${tappable ? 'active:scale-[0.98] cursor-pointer' : 'cursor-default'}`}
                   style={{
-                    background: isToday ? color.bg : 'rgba(58,44,30,0.06)',
+                    background: handedOver ? COVERED_AWAY_BG : (isToday ? color.bg : 'rgba(58,44,30,0.06)'),
                     border: '2px solid var(--card-border)',
+                    borderStyle: handedOver ? 'dashed' : 'solid',
                     opacity: isToday ? 1 : 0.85,
                   }}
                 >
-                  <p className="shrink-0 text-[11px] font-bold leading-tight text-right" style={{ width: 54, color: isToday ? color.ink : 'var(--ink-soft)' }}>
+                  <p className="shrink-0 text-[11px] font-bold leading-tight text-right" style={{ width: 54, color: ink }}>
                     {fmtTime(entry.startTime)}
                   </p>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-bold truncate" style={{ color: isToday ? color.ink : 'var(--ink-soft)' }}>{subject}</p>
+                    <div className="flex items-center gap-1.5 min-w-0">
+                      <p
+                        className="text-sm font-bold truncate"
+                        style={{ color: ink, textDecoration: handedOver ? 'line-through' : undefined }}
+                      >
+                        {subject}
+                      </p>
+                      <CoverageTag entry={entry} />
+                    </div>
                     {secondary && (
-                      <p className="text-xs font-medium truncate" style={{ color: isToday ? color.ink : 'var(--ink-soft)', opacity: 0.75 }}>{secondary}</p>
+                      <p className="text-xs font-medium truncate" style={{ color: ink, opacity: 0.75 }}>{secondary}</p>
                     )}
                   </div>
                   {taught && (
@@ -304,28 +406,32 @@ export default function TimetablePage() {
                       const top       = Math.max(rawTop, 0) + 3
                       const height    = rawHeight - 6
                       const colPct    = 100 / cols
+                      const handedOver = entry.coverage === 'covered_away'
                       const color     = colorForKey(getSubject(entry))
                       const subject   = getSubject(entry)
                       const secondary = getSecondary(entry)
-                      const taught    = isToday ? getTaughtTopicToday(entry.classId) : null
+                      const taught    = isToday && !handedOver ? getTaughtTopicToday(entry.classId) : null
+                      const tappable  = isToday && canOpen(entry)
+                      const ink       = handedOver ? 'var(--ink-soft)' : (isToday ? color.ink : 'var(--ink-soft)')
 
                       return (
                         <button
                           key={entry.id}
-                          disabled={!isToday}
-                          onClick={() => isToday && setPrepModal({
+                          disabled={!tappable}
+                          onClick={() => tappable && setPrepModal({
                             classId: entry.classId,
                             subject,
                             grade: classes.find(c => c.id === entry.classId)?.grade ?? '',
                             periodNumber: entry.periodNumber,
                           })}
-                          className={`absolute text-left rounded-xl px-2 py-1.5 overflow-hidden transition-transform ${isToday ? 'active:scale-[0.97] cursor-pointer' : 'cursor-default'}`}
+                          className={`absolute text-left rounded-xl px-2 py-1.5 overflow-hidden transition-transform ${tappable ? 'active:scale-[0.97] cursor-pointer' : 'cursor-default'}`}
                           style={{
                             top, height,
                             left:  `calc(${col * colPct}% + 2px)`,
                             width: `calc(${colPct}% - 4px)`,
-                            background: isToday ? color.bg : 'rgba(58,44,30,0.08)',
+                            background: handedOver ? COVERED_AWAY_BG : (isToday ? color.bg : 'rgba(58,44,30,0.08)'),
                             border: '2px solid var(--card-border)',
+                            borderStyle: handedOver ? 'dashed' : 'solid',
                             opacity: isToday ? 1 : 0.8,
                           }}
                         >
@@ -335,12 +441,20 @@ export default function TimetablePage() {
                               <BookOpenCheck size={9} className="text-white" />
                             </span>
                           )}
-                          <p className="text-xs font-bold truncate leading-tight" style={{ color: isToday ? color.ink : 'var(--ink-soft)' }}>{subject}</p>
-                          {secondary && height > 40 && (
-                            <p className="text-[10px] font-medium truncate" style={{ color: isToday ? color.ink : 'var(--ink-soft)', opacity: 0.75 }}>{secondary}</p>
+                          <p
+                            className="text-xs font-bold truncate leading-tight"
+                            style={{ color: ink, textDecoration: handedOver ? 'line-through' : undefined }}
+                          >
+                            {subject}
+                          </p>
+                          {entry.coverage && entry.coverage !== 'regular' && (
+                            <div className="mt-0.5"><CoverageTag entry={entry} compact /></div>
                           )}
-                          {height > 56 && (
-                            <p className="text-[10px] font-medium truncate" style={{ color: isToday ? color.ink : 'var(--ink-soft)', opacity: 0.6 }}>{fmtTime(entry.startTime)}</p>
+                          {secondary && height > 56 && (
+                            <p className="text-[10px] font-medium truncate" style={{ color: ink, opacity: 0.75 }}>{secondary}</p>
+                          )}
+                          {height > 72 && (
+                            <p className="text-[10px] font-medium truncate" style={{ color: ink, opacity: 0.6 }}>{fmtTime(entry.startTime)}</p>
                           )}
                         </button>
                       )

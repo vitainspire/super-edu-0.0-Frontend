@@ -4,6 +4,7 @@ import { usePathname } from 'next/navigation'
 import { LayoutDashboard, Users, BookOpen, Library, CalendarDays, CalendarRange, LogOut, GraduationCap, ScanLine, Megaphone, Repeat, ClipboardList, BookMarked } from 'lucide-react'
 import clsx from 'clsx'
 import { useAdmin } from '@/lib/admin-context'
+import AdminNotificationBell from '@/components/admin/AdminNotificationBell'
 
 // Ordered by what blocks what, not alphabetically or by how often a page is
 // used. Every one of these works in isolation, which is exactly the problem:
@@ -50,10 +51,11 @@ export default function AdminSideNav() {
         <div className="w-10 h-10 rounded-2xl flex items-center justify-center shrink-0" style={{ background: 'rgba(255,255,255,0.12)' }}>
           <GraduationCap size={20} className="text-white" />
         </div>
-        <div className="min-w-0">
+        <div className="min-w-0 flex-1">
           <p className="font-display font-bold text-white text-base leading-none">EduTeach</p>
           <p className="text-[11px] text-white/55 font-medium mt-1 truncate">Admin Portal</p>
         </div>
+        <AdminNotificationBell />
       </div>
 
       {school && (

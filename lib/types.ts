@@ -471,6 +471,15 @@ export interface EnrichedMark extends Mark {
   term?: string
 }
 
+// How a period relates to the teacher looking at it on a given date. The
+// backend resolves this per-date (app/lib/timetable_resolution.py) and folds
+// today's substitutions into the weekly payload, so the timetable a teacher
+// sees is already adjusted for who is actually away.
+//   regular      — normal, nothing has changed
+//   covered_away — their own period, but they're absent and someone else has it
+//   covering     — someone else's period assigned to them for this date only
+export type PeriodCoverage = 'regular' | 'covered_away' | 'covering'
+
 export interface TimetableEntry {
   id: string
   teacherId: string
@@ -480,6 +489,23 @@ export interface TimetableEntry {
   startTime: string   // "09:00"
   endTime: string     // "09:45"
   label?: string      // subject label from admin timetable
+
+  // Absent on entries that predate the overlay (a cached IndexedDB row, a
+  // locally-added entry) — treat a missing value as 'regular'.
+  coverage?: PeriodCoverage
+
+  // covering only. A covering period has no row in `timetable`, so it carries
+  // its own class name rather than being resolvable via the classes list —
+  // and for a fallback cover the class isn't in that list at all.
+  className?: string
+  originalTeacherName?: string
+  // Only a subject-matched cover unlocks students/syllabus/prep material.
+  // False means "turn up and supervise", not "teach this".
+  fullAccess?: boolean
+
+  // covered_away only.
+  substituteTeacherName?: string | null
+  unresolved?: boolean
 }
 
 export interface LessonPrep {
@@ -886,7 +912,12 @@ export interface TimetableSubstitution {
   subject?: string
   originalTeacherId: string
   substituteTeacherId?: string
-  status: 'assigned' | 'unresolved' | 'manual' | 'assigned_fallback'   // assigned_fallback = auto-picked, but not a subject match — last resort
+  // assigned   = auto-picked and subject-matched; the only status the automation produces
+  // unresolved = no qualified teacher was free — escalated to an admin, never auto-filled
+  // manual     = an admin hand-picked someone, who may be outside their subjects
+  // assigned_fallback = legacy. Auto-picked without a subject match, from before
+  //              substitutions were constrained to a teacher's own subjects.
+  status: 'assigned' | 'unresolved' | 'manual' | 'assigned_fallback'
 }
 
 export interface Announcement {
