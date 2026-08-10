@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react'
 import { useAdmin } from '@/lib/admin-context'
 import { backendFetch } from '@/lib/backend'
-import { UserCheck, Loader2, Check, X } from 'lucide-react'
+import { UserCheck, Loader as Loader2, Check, X } from 'lucide-react'
 import { useParams } from 'next/navigation'
 import type { Teacher } from '@/lib/types'
 import PageHeader from '@/components/theme/PageHeader'
@@ -163,7 +163,7 @@ export default function AssignTeacherPage() {
 
       {/* Subject modal */}
       {pendingTeacher && (
-        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4" style={{ background: 'rgba(58,44,30,0.45)' }}>
+        <div className="fixed inset-0 z-50 flex items-end justify-center p-4" style={{ background: 'rgba(58,44,30,0.45)' }}>
           <div className="relative w-full max-w-sm rounded-3xl p-6" style={{ background: 'var(--paper-soft)', border: '1.5px solid rgba(58,44,30,0.18)' }}>
             <div className="flex items-center justify-between mb-4">
               <h2 className="font-display text-base font-bold text-ink">Assign {pendingTeacher.name}</h2>

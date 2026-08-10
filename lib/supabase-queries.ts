@@ -173,6 +173,27 @@ export async function upsertRecoveryAttempt(r: RecoveryAttempt) {
   if (!res.ok) throw new Error(`Failed to save recovery attempt (${res.status})`)
 }
 
+/**
+ * Every approach already tried with this student, oldest first.
+ *
+ * The recovery generator is built to avoid repeating itself, which it can only
+ * do if it is told what was tried before. Without this the page started from an
+ * empty list on every visit and the model was told nothing had been attempted.
+ *
+ * Returns [] on failure rather than throwing — a missing history should weaken
+ * the next suggestion, not break the student page.
+ */
+export async function fetchRecoveryAttempts(studentId: string): Promise<RecoveryAttempt[]> {
+  try {
+    const res = await backendFetch(`/api/teacher/recovery-attempts?studentId=${encodeURIComponent(studentId)}`)
+    if (!res.ok) return []
+    const data = await res.json()
+    return (data.recoveryAttempts ?? []) as RecoveryAttempt[]
+  } catch {
+    return []
+  }
+}
+
 // ─── Timetable ────────────────────────────────────────────────────────────────
 
 export async function upsertTimetableEntry(e: TimetableEntry) {

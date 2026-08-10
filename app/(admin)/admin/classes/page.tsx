@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react'
 import { useAdmin } from '@/lib/admin-context'
 import { backendFetch } from '@/lib/backend'
-import { BookOpen, Plus, Loader2, X, ChevronRight } from 'lucide-react'
+import { BookOpen, Plus, Loader as Loader2, X, ChevronRight } from 'lucide-react'
 import type { Class } from '@/lib/types'
 import Link from 'next/link'
 import { buildClassCombos } from '@/lib/classCombos'
@@ -151,7 +151,7 @@ export default function ClassesPage() {
             <p className="text-sm text-ink-soft mt-1">Create your first class to get started</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 gap-4">
             {gradeGroups.map(([grade, secs], i) => {
               const palette = PALETTE[i % PALETTE.length]
               return (

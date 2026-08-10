@@ -1,6 +1,6 @@
 'use client'
 import { useRouter } from 'next/navigation'
-import { ArrowRight, Check, AlertTriangle } from 'lucide-react'
+import { ArrowRight, Check, TriangleAlert as AlertTriangle } from 'lucide-react'
 
 export interface Readiness {
   classesWithoutTeacher: number
@@ -103,7 +103,7 @@ export default function SchoolReadiness({
       )}
 
       {gaps.length > 0 && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3">
+        <div className="grid grid-cols-1 gap-3">
           {gaps.map(gap => (
             <button
               key={gap.key}

@@ -170,7 +170,7 @@ export default function FeatureTour({ teacherId, open, onClose }: Props) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end md:items-center justify-center"
+      className="fixed inset-0 z-50 flex items-end justify-center"
       style={{
         background: `rgba(58,44,30,${animateIn ? '0.6' : '0'})`,
         transition: 'background 0.28s ease',
@@ -178,7 +178,7 @@ export default function FeatureTour({ teacherId, open, onClose }: Props) {
       onClick={e => { if (e.target === e.currentTarget) handleClose() }}
     >
       <div
-        className="w-full md:max-w-md overflow-hidden"
+        className="w-full max-w-md overflow-hidden"
         style={{
           background: 'var(--paper-soft)',
           borderRadius: '24px 24px 0 0',

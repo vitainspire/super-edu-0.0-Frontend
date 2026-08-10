@@ -816,14 +816,12 @@ export async function markTeacherUnavailable(
     const slotKey = `${need.dayOfWeek}|${need.periodNumber}`
     const usedThisSlot = usedBySlot.get(slotKey) ?? new Set<string>()
 
-    // Prefer a subject-qualified substitute; if none is free, fall back to
-    // any available teacher (still respecting busy slots and workload caps)
-    // rather than leaving the period unresolved.
-    let substituteId = findSubstitute(need, candidates, excludeTeacherIds, usedThisSlot)
-    let subjectMatched = substituteId !== null
-    if (!substituteId) {
-      substituteId = findSubstitute(need, candidates, excludeTeacherIds, usedThisSlot, false)
-    }
+    // Subject-qualified teachers only. There used to be a fallback to any free
+    // teacher, so a period was always "covered" — but by someone who couldn't
+    // teach it and who got no class access either, producing a booking that
+    // read as solved while the class was really just being supervised. An
+    // unfillable period is left unresolved for an admin to deal with.
+    const substituteId = findSubstitute(need, candidates, excludeTeacherIds, usedThisSlot)
     if (substituteId) {
       if (!usedBySlot.has(slotKey)) usedBySlot.set(slotKey, new Set())
       usedBySlot.get(slotKey)!.add(substituteId)
@@ -839,7 +837,7 @@ export async function markTeacherUnavailable(
       subject: (row.label as string) ?? undefined,
       originalTeacherId: teacherId,
       substituteTeacherId: substituteId ?? undefined,
-      status: substituteId ? (subjectMatched ? 'assigned' : 'assigned_fallback') : 'unresolved',
+      status: substituteId ? 'assigned' : 'unresolved',
     })
   }
 

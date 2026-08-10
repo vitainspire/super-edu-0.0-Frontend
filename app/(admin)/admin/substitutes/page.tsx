@@ -62,6 +62,17 @@ function todayStr() {
   return new Date().toISOString().slice(0, 10)
 }
 
+// Seeds the date from ?date=YYYY-MM-DD so an admin alert ("no substitute for
+// Period 4 on the 10th") can link straight to the day that needs fixing.
+// Read off window rather than via useSearchParams: this is only needed for the
+// initial value, and useSearchParams would pull the whole page under a Suspense
+// boundary to stay prerenderable.
+function initialDate() {
+  if (typeof window === 'undefined') return todayStr()
+  const requested = new URLSearchParams(window.location.search).get('date')
+  return requested && /^\d{4}-\d{2}-\d{2}$/.test(requested) ? requested : todayStr()
+}
+
 function formatDate(d: string) {
   return new Date(d + 'T00:00:00').toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long' })
 }
@@ -74,7 +85,7 @@ function addDays(d: string, delta: number) {
 
 export default function SubstitutesPage() {
   const { school } = useAdmin()
-  const [date, setDate] = useState(todayStr)
+  const [date, setDate] = useState(initialDate)
   const [teachers, setTeachers] = useState<Teacher[]>([])
   const [availability, setAvailability] = useState<AvailabilityRow[]>([])
   const [substitutions, setSubstitutions] = useState<SubstitutionRow[]>([])
@@ -378,11 +389,15 @@ export default function SubstitutesPage() {
                                 <AlertTriangle size={10} /> Needs pick
                               </span>
                             )}
+                            {/* Legacy rows only. Substitutions are now kept
+                                within a teacher's own subjects, so nothing new
+                                is auto-filled without a match — an unfillable
+                                period comes through as "unresolved" instead. */}
                             {s.status === 'assigned_fallback' && (
                               <span
                                 className="flex items-center gap-1 text-[10px] font-black uppercase tracking-wide px-2 py-1 rounded-full"
                                 style={{ background: '#FFFBEB', color: '#92400E' }}
-                                title="No teacher who teaches this subject was free — filled with the best available teacher instead."
+                                title="Assigned before substitutions were restricted to a teacher's own subjects — this teacher doesn't teach it, and has no class materials for it. Worth re-picking."
                               >
                                 <AlertTriangle size={10} /> No subject match
                               </span>

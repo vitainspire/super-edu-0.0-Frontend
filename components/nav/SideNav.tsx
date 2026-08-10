@@ -85,7 +85,7 @@ export default function SideNav() {
 
   return (
     <aside
-      className="hidden md:flex flex-col w-64 shrink-0 h-screen sticky top-0 overflow-y-auto text-white"
+      className="hidden flex-col w-64 shrink-0 h-screen sticky top-0 overflow-y-auto text-white"
       style={{ background: 'var(--forest)', borderRight: '3px solid var(--card-border)' }}
     >
       <div className="flex items-center gap-3 px-6 py-6" style={{ borderBottom: '1px solid rgba(255,255,255,0.1)' }}>

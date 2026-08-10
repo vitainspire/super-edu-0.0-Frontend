@@ -1,6 +1,6 @@
 'use client'
 import { useState, useEffect } from 'react'
-import { Trash2, RefreshCw, Handshake, Loader2, TrendingUp } from 'lucide-react'
+import { Trash2, RefreshCw, Handshake, Loader as Loader2, TrendingUp } from 'lucide-react'
 import { Clock, HelpCircle } from '@/components/ui/icons'
 import { useApp } from '@/lib/context'
 import FeatureTour from '@/components/onboarding/FeatureTour'
@@ -74,7 +74,7 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="paper-page pb-28 md:pb-8">
+    <div className="paper-page pb-28">
       <PageHeader title="Settings" />
 
       <div className="px-5 pt-2 space-y-4 relative z-10">

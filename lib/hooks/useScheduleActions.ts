@@ -23,10 +23,17 @@ export function useScheduleActions(
     sbq.deleteTimetableEntry(id).catch(console.error)
   }, [setTimetableEntries])
 
+  // A period handed to a substitute isn't one this teacher turns up to, so it's
+  // out of both "what am I doing today" answers below. It stays in
+  // timetableEntries — the timetable grid still shows it, marked as covered —
+  // just not as a period they're teaching. Periods they've picked up FOR someone
+  // else are already in the list and count normally.
+  const isOnDuty = (e: TimetableEntry) => e.coverage !== 'covered_away'
+
   const getTodaySchedule = useCallback((): TimetableEntry[] => {
     const day = new Date().getDay()
     return timetableEntries
-      .filter(e => e.dayOfWeek === day)
+      .filter(e => e.dayOfWeek === day && isOnDuty(e))
       .sort((a, b) => a.startTime.localeCompare(b.startTime))
   }, [timetableEntries])
 
@@ -35,7 +42,7 @@ export function useScheduleActions(
     const day = now.getDay()
     const hhmm = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`
     return timetableEntries.find(e =>
-      e.dayOfWeek === day && e.startTime <= hhmm && e.endTime > hhmm
+      e.dayOfWeek === day && isOnDuty(e) && e.startTime <= hhmm && e.endTime > hhmm
     ) ?? null
   }, [timetableEntries])
 

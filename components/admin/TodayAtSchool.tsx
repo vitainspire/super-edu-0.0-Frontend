@@ -1,6 +1,6 @@
 'use client'
 import { useRouter } from 'next/navigation'
-import { CalendarCheck, MessageCircleQuestion, UserMinus, AlertTriangle } from 'lucide-react'
+import { CalendarCheck, MessageCircleQuestion, UserMinus, TriangleAlert as AlertTriangle } from 'lucide-react'
 
 export interface Operations {
   attendanceRate: number | null
@@ -70,7 +70,7 @@ export default function TodayAtSchool({ operations }: { operations: Operations }
   return (
     <div className="paper-card p-5 mb-6">
       <p className="text-[11px] font-bold text-ink-soft uppercase tracking-widest mb-4">Today</p>
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 gap-3">
         {cells.map(cell => {
           const clickable = !!cell.href
           const Tag = clickable ? 'button' : 'div'

@@ -15,6 +15,7 @@ import Modal from '@/components/ui/Modal'
 import OnboardingChecklist from '@/components/onboarding/OnboardingChecklist'
 import FeatureTour from '@/components/onboarding/FeatureTour'
 import SubstituteBanner from '@/components/timetable/SubstituteBanner'
+import CoveringPeriods from '@/components/timetable/CoveringPeriods'
 import NotificationBell from '@/components/home/NotificationBell'
 import AttendanceCircle from '@/components/home/AttendanceCircle'
 import WeekStrip from '@/components/home/WeekStrip'
@@ -37,16 +38,6 @@ import clsx from 'clsx'
 const DAYS   = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday']
 const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December']
 
-interface CoveringEntry {
-  classId: string
-  className: string
-  subject?: string
-  periodNumber: number
-  startTime?: string
-  endTime?: string
-  originalTeacherName?: string
-  status: 'assigned' | 'assigned_fallback' | 'manual'
-}
 const COVERING_ACCENT = '#31215C'   // same violet SubstituteBanner uses for "you're covering"
 
 export default function HomePage() {
@@ -67,7 +58,7 @@ export default function HomePage() {
   // a day off without a second fetch.
   const [academicEvents, setAcademicEvents] = useState<AcademicEvent[]>([])
   useEffect(() => {
-    fetch('/api/teacher/academic-calendar')
+    backendFetch('/api/teacher/academic-calendar')
       .then(r => r.json())
       .then(d => setAcademicEvents(d.events ?? []))
       .catch(() => {})
@@ -86,21 +77,6 @@ export default function HomePage() {
     return () => clearInterval(id)
   }, [])
 
-  // Periods this teacher is covering for someone else today — a fixed extra
-  // color on the schedule, not one of the per-subject accent colors, since
-  // this isn't the teacher's own regular subject slot. Subject-matched
-  // coverage ("assigned") is clickable into Prep Material — school_data()
-  // has already unioned that class in, so it behaves like any real class of
-  // theirs. Fallback coverage ("assigned_fallback"/"manual") is informational
-  // only: the class was never added to their class-access union, so there's
-  // nothing behind it to open.
-  const [covering, setCovering] = useState<CoveringEntry[]>([])
-  useEffect(() => {
-    backendFetch('/api/teacher/substitutes-today')
-      .then(r => r.json())
-      .then(data => setCovering(data.covering ?? []))
-      .catch(() => setCovering([]))
-  }, [])
 
   // The school's fixed daily period grid — same slots every working weekday —
   // fetched once so genuinely empty periods can be found (see freeSlotsForShownDay
@@ -152,7 +128,18 @@ export default function HomePage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [schedule?.dayOfWeek, schedule?.daysAhead, now.toDateString()])
   const shownDay = selectedDay ?? defaultDay
-  const shownEntries = entriesOn(timetableEntries, shownDay)
+
+  // Periods picked up covering for an absent colleague are kept OUT of the
+  // schedule list and given their own section below. They aren't this
+  // teacher's own slots, and interleaving them made a covered period
+  // indistinguishable from a class they actually own.
+  //
+  // They arrive on timetableEntries tagged coverage: 'covering', resolved
+  // server-side across the coming week — so a cover picked up tomorrow appears
+  // on tomorrow. Matched by weekday, exactly like every other entry here.
+  const shownEntriesAll = entriesOn(timetableEntries, shownDay)
+  const shownEntries = shownEntriesAll.filter(e => e.coverage !== 'covering')
+  const coveringForShownDay = shownEntriesAll.filter(e => e.coverage === 'covering')
   /** Academic week of a date, for the overdue comparison. */
   const weekOf = (d: Date) => weekProgress([], d, yearStart).week
   const isShowingToday = sameDay(shownDay, now)
@@ -162,22 +149,19 @@ export default function HomePage() {
   // are free" and "where does this free period sit in the day" (see
   // buildFreePeriodSuggestions: a free period boxed in on both sides by real
   // periods is a five-minute breather, not a chunk of time to spend on
-  // school work). Covering periods only ever apply to today (fetched from a
-  // today-scoped endpoint), so they only join the occupied set while
-  // isShowingToday.
+  // school work). Covering periods count as occupied even though they render
+  // in their own section — the teacher is in a classroom, and offering them
+  // marking to do would be wrong.
   const allPeriodsForShownDay = useMemo(
     () => scheduleSlots
       .filter((s): s is ScheduleSlot & { periodNumber: number } => s.type === 'period' && s.periodNumber != null)
       .sort((a, b) => a.periodNumber - b.periodNumber),
     [scheduleSlots],
   )
-  const occupiedPeriodsForShownDay = useMemo(() => {
-    const todaysCovering = isShowingToday ? covering : []
-    return new Set([
-      ...shownEntries.map(e => e.periodNumber),
-      ...todaysCovering.map(c => c.periodNumber),
-    ])
-  }, [isShowingToday, shownEntries, covering])
+  const occupiedPeriodsForShownDay = useMemo(
+    () => new Set(shownEntriesAll.map(e => e.periodNumber)),
+    [shownEntriesAll],
+  )
 
   // A day with nothing scheduled at all (and no covering) has no reliable
   // "is this a working day" signal without the school's working-weekday
@@ -231,11 +215,15 @@ export default function HomePage() {
   // topic that will actually be due by then rather than today's.
   const plannedBySlot = useMemo(() => {
     const byClassSubject = new Map<string, ReturnType<typeof projectPlan>>()
-    for (const entry of timetableEntries) {
+    // Own periods only. A covering period is a one-off, not a weekly slot —
+    // feeding it to projectPlan would invent a recurring occurrence of someone
+    // else's class and shift every projected topic for it.
+    const ownEntries = timetableEntries.filter(e => e.coverage !== 'covering')
+    for (const entry of ownEntries) {
       const subject = entry.label ?? ''
       const key = `${entry.classId}|${subject}`
       if (byClassSubject.has(key)) continue
-      const sameSubject = timetableEntries.filter(
+      const sameSubject = ownEntries.filter(
         e => e.classId === entry.classId && (e.label ?? '') === subject)
       byClassSubject.set(key, projectPlan(
         getClassSyllabus(entry.classId, subject),
@@ -272,7 +260,6 @@ export default function HomePage() {
   const [previewModal, setPreviewModal] = useState<{ classId: string; subject: string; grade: string; endTime: string } | null>(null)
   const [classroomModal, setClassroomModal] = useState<{ classId: string; subject: string; grade: string; endTime: string } | null>(null)
 
-  const attentionCount = countStudentsNeedingAttention(classes, students, getStudentWarnings)
   const [createOpen, setCreateOpen] = useState(false)
   const [greeting, setGreeting]     = useState('Good morning')
   const [dateStr, setDateStr]       = useState('')
@@ -321,7 +308,6 @@ export default function HomePage() {
 
   // Real syllabus completion across my classes → Class Progress donut.
   const myTopics = syllabusTopics.filter(t => assignedIds.has(t.classId))
-  const progressPct = myTopics.length ? Math.round(myTopics.filter(t => t.isCompleted).length / myTopics.length * 100) : 0
   const firstName = teacher?.name?.split(' ')[0] ?? 'Teacher'
   const periodsDone = todaysEntries.filter(e => nowMins >= timeToMins(e.endTime)).length
 
@@ -329,19 +315,19 @@ export default function HomePage() {
     <div className="paper-page pb-28">
 
       {/* ── HEADER ──────────────────────────────────────────── */}
-      <header className="px-5 md:px-8 pt-6 md:pt-9 pb-1 w-full max-w-[1280px] mx-auto">
+      <header className="px-5 pt-6 pb-1 w-full max-w-[480px] mx-auto">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
             <h1 className="font-display font-extrabold text-ink leading-[1.05]" style={{ fontSize: 'clamp(26px, 4.5vw, 38px)', letterSpacing: '-0.02em' }}>
               {greeting}, {firstName}!
             </h1>
-            <p className="text-[13px] md:text-sm text-ink-soft font-medium mt-1.5 truncate">
+            <p className="text-[13px] text-ink-soft font-medium mt-1.5 truncate">
               {teacher?.schoolName ?? 'Your School'}{teacher?.subject ? ` · ${teacher.subject}` : ''} · {dateStr}
             </p>
           </div>
           <div className="flex items-center gap-2 shrink-0">
             <span className={clsx(
-              'hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold',
+              'flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold',
               syncStatus === 'online' ? 'text-emerald-800' : syncStatus === 'offline' ? 'text-red-700' : 'text-ink-soft',
             )} style={{ background: 'rgba(255,255,255,0.6)', border: '1.75px solid var(--card-border)' }}>
               {syncStatus === 'online' ? <Wifi size={11} /> : syncStatus === 'offline' ? <WifiOff size={11} /> :
@@ -360,7 +346,7 @@ export default function HomePage() {
       </header>
 
       {/* ── BODY: main column + desktop aside ───────────────── */}
-      <div className="px-5 md:px-8 mt-4 w-full max-w-[1280px] mx-auto lg:grid lg:grid-cols-[1fr_320px] lg:gap-6 lg:items-start">
+      <div className="px-5 mt-4 w-full max-w-[480px] mx-auto">
 
         {/* MAIN */}
         <main className="min-w-0 space-y-5">
@@ -419,7 +405,7 @@ export default function HomePage() {
                 </div>
                 {isShowingToday && completedTodayEntries.length > 0 ? (
                   <>
-                    <p className="font-display font-bold text-ink">That's it for today</p>
+                    <p className="font-display font-bold text-ink">That&apos;s it for today</p>
                     <p className="text-sm text-ink-soft mt-1">See what you covered below</p>
                   </>
                 ) : (
@@ -482,7 +468,11 @@ export default function HomePage() {
 
                   const entry = row.entry
                   const label   = entry.label ?? classNameFor(entry.classId)
-                  const accent  = accentForSubject(label)
+                  // A period this teacher has handed to a substitute stays on
+                  // the list — they should see what became of their class —
+                  // but muted and with no actions. They aren't teaching it.
+                  const handedOver = entry.coverage === 'covered_away'
+                  const accent  = handedOver ? 'var(--ink-faint)' : accentForSubject(label)
                   const startM  = timeToMins(entry.startTime)
                   const endM    = timeToMins(entry.endTime)
                   // Only meaningful against today's clock. A day other than
@@ -491,7 +481,7 @@ export default function HomePage() {
                   // time has already passed today doesn't reach this branch at
                   // all — visibleScheduleRows has already moved it down into
                   // "What We Covered Today".
-                  const isNow   = isShowingToday && nowMins >= startM && nowMins < endM
+                  const isNow   = isShowingToday && !handedOver && nowMins >= startM && nowMins < endM
 
                   return (
                     <div
@@ -499,7 +489,7 @@ export default function HomePage() {
                       className="paper-card overflow-hidden flex animate-fade-up"
                       style={{ animationDelay: `${idx * 50}ms`, borderLeft: `5px solid ${accent}` }}
                     >
-                      <div className="flex-1 min-w-0 p-4 flex flex-col sm:flex-row sm:items-center gap-3">
+                      <div className="flex-1 min-w-0 p-4 flex flex-col gap-3">
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2">
                             <p className="font-display font-bold text-ink text-[15px] truncate">Period {entry.periodNumber}: {label}</p>
@@ -510,12 +500,19 @@ export default function HomePage() {
                           <p className="text-[12.5px] font-medium text-ink-soft mt-0.5">
                             {entry.startTime}–{entry.endTime} · {classNameFor(entry.classId)}
                           </p>
+                          {handedOver && (
+                            <p className="text-[12px] mt-1 font-bold" style={{ color: entry.unresolved ? '#991B1B' : 'var(--ink-soft)' }}>
+                              {entry.unresolved
+                                ? 'You’re away — no substitute assigned yet'
+                                : `${entry.substituteTeacherName} is covering this`}
+                            </p>
+                          )}
                           {/* The topic due in THIS period, from the plan
                               projected across every period from today on. Using
                               "the next topic" here made every future day show
                               today's topic, since nothing has been taught in
                               between yet. */}
-                          {(() => {
+                          {!handedOver && (() => {
                             const planned = plannedFor(entry, shownDay)
                             if (!planned) {
                               // Past the end of the plan: say so rather than
@@ -561,7 +558,7 @@ export default function HomePage() {
                         </div>
 
                         <div className="flex items-center gap-2 shrink-0">
-                          {isNow ? (
+                          {handedOver ? null : isNow ? (
                             <>
                               <button
                                 type="button"
@@ -619,61 +616,15 @@ export default function HomePage() {
             )}
           </section>
 
-          {/* Extra periods picked up today, covering for an absent colleague —
-              kept as its own section rather than interleaved into the regular
-              schedule above, since these aren't this teacher's normal periods
-              and only ever apply to today. */}
-          {isShowingToday && covering.length > 0 && (
-            <section>
-              <h2 className="font-display font-bold text-ink text-lg mb-3">Covering Today</h2>
-              <div className="space-y-3">
-                {covering.map((c, idx) => {
-                  const fullAccess = c.status === 'assigned'
-                  const card = (
-                    <div
-                      className="paper-card p-4 flex items-center justify-between gap-3"
-                      style={{ borderLeft: `5px solid ${COVERING_ACCENT}` }}
-                    >
-                      <div className="min-w-0">
-                        <p className="font-display font-bold text-ink text-[15px] truncate">
-                          Period {c.periodNumber} · {c.className}{c.subject ? ` — ${c.subject}` : ''}
-                        </p>
-                        <p className="text-[12.5px] font-medium text-ink-soft mt-0.5">
-                          {c.startTime && c.endTime ? `${c.startTime}–${c.endTime} · ` : ''}
-                          Covering for {c.originalTeacherName ?? 'a colleague'}
-                        </p>
-                        {!fullAccess && (
-                          <p className="text-[11.5px] text-ink-faint mt-1 italic">
-                            Not your subject — no prep material for this one, just be in the room.
-                          </p>
-                        )}
-                      </div>
-                      {fullAccess && (
-                        <span
-                          className="shrink-0 text-[10px] font-black uppercase tracking-wide px-2.5 py-1 rounded-full text-white"
-                          style={{ background: COVERING_ACCENT }}
-                        >
-                          Open
-                        </span>
-                      )}
-                    </div>
-                  )
-                  return fullAccess ? (
-                    <button
-                      key={`${c.classId}-${c.periodNumber}`}
-                      type="button"
-                      className="w-full text-left active:scale-[0.99] transition-transform"
-                      onClick={() => setPrepModal({ classId: c.classId, subject: c.subject ?? '', grade: gradeFor(c.classId), mode: 'auto' })}
-                    >
-                      {card}
-                    </button>
-                  ) : (
-                    <div key={`${c.classId}-${c.periodNumber}-${idx}`}>{card}</div>
-                  )
-                })}
-              </div>
-            </section>
-          )}
+          {/* Follows whichever day the strip is showing, so a cover assigned
+              for tomorrow is visible tonight. */}
+          <CoveringPeriods
+            entries={coveringForShownDay}
+            title={isShowingToday ? 'Covering Today' : `Covering on ${DAYS[shownDay.getDay()]}`}
+            onOpenPrep={entry => setPrepModal({
+              classId: entry.classId, subject: entry.label ?? '', grade: gradeFor(entry.classId), mode: 'auto',
+            })}
+          />
 
           {/* Periods that already happened today, moved down here once their
               time passes rather than lingering (dimmed) in the schedule
@@ -736,37 +687,6 @@ export default function HomePage() {
           )}
 
         </main>
-
-        {/* DESKTOP ASIDE — reminders. The calendar used to sit here too; the
-            week strip now leads the main column instead, where the day it
-            selects is next to the schedule it changes. */}
-        <aside className="hidden lg:block space-y-4 sticky top-6">
-          <div className="paper-card p-5">
-            <p className="font-display font-bold text-ink text-sm mb-3">Reminders</p>
-            <div className="space-y-2.5">
-              <div className="flex items-start gap-2.5" style={{ borderLeft: '3px solid #3E7A57', paddingLeft: 10 }}>
-                <div>
-                  <p className="text-[13px] font-semibold text-ink leading-snug">{todaysEntries.length} period{todaysEntries.length === 1 ? '' : 's'} scheduled today</p>
-                  <p className="text-[11px] text-ink-faint mt-0.5">{periodsDone} done so far</p>
-                </div>
-              </div>
-              {attentionCount > 0 && (
-                <div className="flex items-start gap-2.5" style={{ borderLeft: '3px solid #C46B54', paddingLeft: 10 }}>
-                  <div>
-                    <p className="text-[13px] font-semibold text-ink leading-snug">{attentionCount} student{attentionCount === 1 ? '' : 's'} need attention</p>
-                    <p className="text-[11px] text-ink-faint mt-0.5">Absent or low recent scores</p>
-                  </div>
-                </div>
-              )}
-              <div className="flex items-start gap-2.5" style={{ borderLeft: '3px solid #5B87AD', paddingLeft: 10 }}>
-                <div>
-                  <p className="text-[13px] font-semibold text-ink leading-snug">Syllabus {progressPct}% complete</p>
-                  <p className="text-[11px] text-ink-faint mt-0.5">Across {myClasses.length} class{myClasses.length === 1 ? '' : 'es'}</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </aside>
       </div>
 
       <CreateClassModal open={createOpen} onClose={() => setCreateOpen(false)} />
@@ -806,7 +726,7 @@ export default function HomePage() {
       {teacher && (
         <button
           onClick={() => setBriefingOpen(true)}
-          className="fixed bottom-40 md:bottom-24 right-4 z-40 w-11 h-11 flex items-center justify-center rounded-full text-white active:scale-90 transition-transform"
+          className="fixed bottom-40 right-4 z-40 w-11 h-11 flex items-center justify-center rounded-full text-white active:scale-90 transition-transform"
           style={{ background: 'var(--forest-soft)', border: '1.5px solid rgba(23,20,15,0.18)' }}
           title="Morning Briefing"
         >
@@ -817,7 +737,7 @@ export default function HomePage() {
       {showGuideBtn && teacher && (
         <button
           onClick={() => setShowTour(true)}
-          className="fixed bottom-24 md:bottom-8 right-4 z-40 w-11 h-11 flex items-center justify-center rounded-full font-black text-white text-base active:scale-90 transition-transform"
+          className="fixed bottom-24 right-4 z-40 w-11 h-11 flex items-center justify-center rounded-full font-black text-white text-base active:scale-90 transition-transform"
           style={{ background: 'var(--forest)' }}
           title="Open App Guide"
         >

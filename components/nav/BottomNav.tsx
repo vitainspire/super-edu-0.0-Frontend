@@ -27,7 +27,7 @@ export default function BottomNav() {
   )
 
   return (
-    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 safe-bottom text-white"
+    <nav className="fixed bottom-0 left-0 right-0 z-50 safe-bottom text-white"
       style={{ background: 'var(--forest)' }}>
       <div className="max-w-[480px] mx-auto flex items-center px-2 py-2">
         {NAV_ITEMS.map(({ href, label, Icon, match }) => {
