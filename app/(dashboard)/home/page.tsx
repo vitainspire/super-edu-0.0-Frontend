@@ -260,6 +260,7 @@ export default function HomePage() {
   const [previewModal, setPreviewModal] = useState<{ classId: string; subject: string; grade: string; endTime: string } | null>(null)
   const [classroomModal, setClassroomModal] = useState<{ classId: string; subject: string; grade: string; endTime: string } | null>(null)
 
+  const attentionCount = countStudentsNeedingAttention(classes, students, getStudentWarnings)
   const [createOpen, setCreateOpen] = useState(false)
   const [greeting, setGreeting]     = useState('Good morning')
   const [dateStr, setDateStr]       = useState('')
@@ -308,6 +309,7 @@ export default function HomePage() {
 
   // Real syllabus completion across my classes → Class Progress donut.
   const myTopics = syllabusTopics.filter(t => assignedIds.has(t.classId))
+  const progressPct = myTopics.length ? Math.round(myTopics.filter(t => t.isCompleted).length / myTopics.length * 100) : 0
   const firstName = teacher?.name?.split(' ')[0] ?? 'Teacher'
   const periodsDone = todaysEntries.filter(e => nowMins >= timeToMins(e.endTime)).length
 
@@ -315,19 +317,19 @@ export default function HomePage() {
     <div className="paper-page pb-28">
 
       {/* ── HEADER ──────────────────────────────────────────── */}
-      <header className="px-5 pt-6 pb-1 w-full max-w-[480px] mx-auto">
+      <header className="px-5 md:px-8 pt-6 md:pt-9 pb-1 w-full max-w-[1280px] mx-auto">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
             <h1 className="font-display font-extrabold text-ink leading-[1.05]" style={{ fontSize: 'clamp(26px, 4.5vw, 38px)', letterSpacing: '-0.02em' }}>
               {greeting}, {firstName}!
             </h1>
-            <p className="text-[13px] text-ink-soft font-medium mt-1.5 truncate">
+            <p className="text-[13px] md:text-sm text-ink-soft font-medium mt-1.5 truncate">
               {teacher?.schoolName ?? 'Your School'}{teacher?.subject ? ` · ${teacher.subject}` : ''} · {dateStr}
             </p>
           </div>
           <div className="flex items-center gap-2 shrink-0">
             <span className={clsx(
-              'flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold',
+              'hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold',
               syncStatus === 'online' ? 'text-emerald-800' : syncStatus === 'offline' ? 'text-red-700' : 'text-ink-soft',
             )} style={{ background: 'rgba(255,255,255,0.6)', border: '1.75px solid var(--card-border)' }}>
               {syncStatus === 'online' ? <Wifi size={11} /> : syncStatus === 'offline' ? <WifiOff size={11} /> :
@@ -346,7 +348,7 @@ export default function HomePage() {
       </header>
 
       {/* ── BODY: main column + desktop aside ───────────────── */}
-      <div className="px-5 mt-4 w-full max-w-[480px] mx-auto">
+      <div className="px-5 md:px-8 mt-4 w-full max-w-[1280px] mx-auto lg:grid lg:grid-cols-[1fr_320px] lg:gap-6 lg:items-start">
 
         {/* MAIN */}
         <main className="min-w-0 space-y-5">
@@ -489,7 +491,7 @@ export default function HomePage() {
                       className="paper-card overflow-hidden flex animate-fade-up"
                       style={{ animationDelay: `${idx * 50}ms`, borderLeft: `5px solid ${accent}` }}
                     >
-                      <div className="flex-1 min-w-0 p-4 flex flex-col gap-3">
+                      <div className="flex-1 min-w-0 p-4 flex flex-col sm:flex-row sm:items-center gap-3">
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2">
                             <p className="font-display font-bold text-ink text-[15px] truncate">Period {entry.periodNumber}: {label}</p>
@@ -687,6 +689,37 @@ export default function HomePage() {
           )}
 
         </main>
+
+        {/* DESKTOP ASIDE — reminders. The calendar used to sit here too; the
+            week strip now leads the main column instead, where the day it
+            selects is next to the schedule it changes. */}
+        <aside className="hidden lg:block space-y-4 sticky top-6">
+          <div className="paper-card p-5">
+            <p className="font-display font-bold text-ink text-sm mb-3">Reminders</p>
+            <div className="space-y-2.5">
+              <div className="flex items-start gap-2.5" style={{ borderLeft: '3px solid #3E7A57', paddingLeft: 10 }}>
+                <div>
+                  <p className="text-[13px] font-semibold text-ink leading-snug">{todaysEntries.length} period{todaysEntries.length === 1 ? '' : 's'} scheduled today</p>
+                  <p className="text-[11px] text-ink-faint mt-0.5">{periodsDone} done so far</p>
+                </div>
+              </div>
+              {attentionCount > 0 && (
+                <div className="flex items-start gap-2.5" style={{ borderLeft: '3px solid #C46B54', paddingLeft: 10 }}>
+                  <div>
+                    <p className="text-[13px] font-semibold text-ink leading-snug">{attentionCount} student{attentionCount === 1 ? '' : 's'} need attention</p>
+                    <p className="text-[11px] text-ink-faint mt-0.5">Absent or low recent scores</p>
+                  </div>
+                </div>
+              )}
+              <div className="flex items-start gap-2.5" style={{ borderLeft: '3px solid #5B87AD', paddingLeft: 10 }}>
+                <div>
+                  <p className="text-[13px] font-semibold text-ink leading-snug">Syllabus {progressPct}% complete</p>
+                  <p className="text-[11px] text-ink-faint mt-0.5">Across {myClasses.length} class{myClasses.length === 1 ? '' : 'es'}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </aside>
       </div>
 
       <CreateClassModal open={createOpen} onClose={() => setCreateOpen(false)} />
@@ -726,7 +759,7 @@ export default function HomePage() {
       {teacher && (
         <button
           onClick={() => setBriefingOpen(true)}
-          className="fixed bottom-40 right-4 z-40 w-11 h-11 flex items-center justify-center rounded-full text-white active:scale-90 transition-transform"
+          className="fixed bottom-40 md:bottom-24 right-4 z-40 w-11 h-11 flex items-center justify-center rounded-full text-white active:scale-90 transition-transform"
           style={{ background: 'var(--forest-soft)', border: '1.5px solid rgba(23,20,15,0.18)' }}
           title="Morning Briefing"
         >
@@ -737,7 +770,7 @@ export default function HomePage() {
       {showGuideBtn && teacher && (
         <button
           onClick={() => setShowTour(true)}
-          className="fixed bottom-24 right-4 z-40 w-11 h-11 flex items-center justify-center rounded-full font-black text-white text-base active:scale-90 transition-transform"
+          className="fixed bottom-24 md:bottom-8 right-4 z-40 w-11 h-11 flex items-center justify-center rounded-full font-black text-white text-base active:scale-90 transition-transform"
           style={{ background: 'var(--forest)' }}
           title="Open App Guide"
         >

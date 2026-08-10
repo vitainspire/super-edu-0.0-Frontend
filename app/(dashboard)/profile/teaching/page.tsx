@@ -302,7 +302,7 @@ export default function TeachingProfilePage() {
           {stepId === 'roles' && (
             <div>
               <p className="label mb-2">I see myself as <span className="font-normal text-ink-faint normal-case">(choose up to 2)</span></p>
-              <div className="grid grid-cols-1 gap-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 {ROLE_OPTIONS.map(r => (
                   <Chip key={r.label} label={r.label} sub={r.sub}
                     selected={profile.teacherIdentity.roles.includes(r.label)}

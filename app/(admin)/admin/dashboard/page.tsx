@@ -174,7 +174,7 @@ export default function AdminDashboard() {
         ) : (
           <>
             {/* ── Stat tiles ── */}
-            <div className="grid grid-cols-1 gap-4 mb-6">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
               {CARDS.map(card => (
                 <StatTile key={card.label} card={card} visible={visible} />
               ))}

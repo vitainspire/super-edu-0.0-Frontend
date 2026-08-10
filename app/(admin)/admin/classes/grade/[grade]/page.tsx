@@ -3,7 +3,7 @@ import { useEffect, useState, useCallback } from 'react'
 import { useAdmin } from '@/lib/admin-context'
 import { backendFetch } from '@/lib/backend'
 import { useParams } from 'next/navigation'
-import { Users, UserCheck, Trash2, Loader as Loader2, BookMarked, BookOpen } from 'lucide-react'
+import { Users, UserCheck, Trash2, Loader2, BookMarked, BookOpen } from 'lucide-react'
 import type { Class } from '@/lib/types'
 import Link from 'next/link'
 import GradeSubjectsEditor from '@/components/admin/GradeSubjectsEditor'
@@ -87,7 +87,7 @@ export default function GradeSectionsPage() {
             <p className="font-display font-bold text-ink text-lg">No sections yet for Grade {grade}</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {classes.map((cls, i) => {
               const palette = PALETTE[i % PALETTE.length]
               return (

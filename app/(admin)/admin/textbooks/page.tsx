@@ -1,6 +1,9 @@
 'use client'
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { BookMarked, ChevronDown, ChevronUp, Loader as Loader2, TriangleAlert as AlertTriangle, Check, Image as ImageIcon, FileText, Layers, Eye, EyeOff } from 'lucide-react'
+import {
+  BookMarked, ChevronDown, ChevronUp, Loader2, AlertTriangle, Check,
+  ImageIcon, FileText, Layers, Eye, EyeOff,
+} from 'lucide-react'
 import { useAdmin } from '@/lib/admin-context'
 import { backendFetch } from '@/lib/backend'
 import PageHeader from '@/components/theme/PageHeader'
@@ -402,7 +405,7 @@ export default function AdminTextbooksPage() {
                           <p className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-ink-soft mb-1.5">
                             <ImageIcon size={11} /> Illustrations
                           </p>
-                          <div className="grid grid-cols-2 gap-2">
+                          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                             {detail.images.filter(i => !i.decorative).map(image => (
                               <div key={image.imageId} className="rounded-xl overflow-hidden" style={{ border: '1.5px solid rgba(58,44,30,0.1)' }}>
                                 {/* Signed URLs on the storage host, expiring in an hour. next/image

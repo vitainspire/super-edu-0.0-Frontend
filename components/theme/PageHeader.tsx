@@ -8,7 +8,7 @@ export default function PageHeader({
 }: { title: string; eyebrow?: string; subtitle?: string; back?: boolean; action?: ReactNode }) {
   const router = useRouter()
   return (
-    <div className="relative z-10 px-5 pt-8 pb-2">
+    <div className="relative z-10 px-5 pt-8 pb-2 md:pt-10">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           {back && (
@@ -24,7 +24,7 @@ export default function PageHeader({
           {eyebrow && (
             <p className="text-[11px] font-bold uppercase tracking-widest text-ink-soft mb-1">{eyebrow}</p>
           )}
-          <h1 className="font-display font-extrabold text-ink text-3xl leading-tight truncate" style={{ letterSpacing: '-0.02em' }}>
+          <h1 className="font-display font-extrabold text-ink text-3xl md:text-4xl leading-tight truncate" style={{ letterSpacing: '-0.02em' }}>
             {title}
           </h1>
           {subtitle && <p className="text-sm text-ink-soft font-medium mt-1.5">{subtitle}</p>}

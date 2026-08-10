@@ -2,7 +2,10 @@
 import { useEffect, useState, useCallback } from 'react'
 import { useAdmin } from '@/lib/admin-context'
 import { backendFetch } from '@/lib/backend'
-import { BookOpen, Sparkles, Loader as Loader2, Plus, X, Trash2, ChevronDown, ChevronUp, ChevronRight, ChevronLeft, FileText, Upload, CircleAlert as AlertCircle, Check, TriangleAlert as AlertTriangle, Clock, List } from 'lucide-react'
+import {
+  BookOpen, Sparkles, Loader2, Plus, X, Trash2, ChevronDown, ChevronUp,
+  ChevronRight, ChevronLeft, FileText, Upload, AlertCircle, Check, AlertTriangle, Clock, List,
+} from 'lucide-react'
 import type { Class } from '@/lib/types'
 import PageHeader from '@/components/theme/PageHeader'
 import { ADMIN_PALETTE as PALETTE } from '@/lib/admin-theme'
@@ -734,7 +737,7 @@ export default function AdminSyllabusPage() {
         })() : (
           <>
             {/* ── Dropdown picker — choose grade + subject to add / import into ── */}
-            <div className="paper-card p-5 grid grid-cols-1 gap-4">
+            <div className="paper-card p-5 grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="label">Grade</label>
                 <select value={grade} onChange={e => { setGrade(e.target.value); setSubject(''); setCustomSubject('') }} className="input-field">
@@ -1183,7 +1186,7 @@ export default function AdminSyllabusPage() {
                   <BookOpen className="w-4 h-4 text-ink-soft" />
                   <h2 className="font-display font-bold text-ink">Saved Syllabi</h2>
                 </div>
-                <div className="grid grid-cols-1 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                   {overview.map((g, i) => {
                     const palette = PALETTE[i % PALETTE.length]
                     const subjectsWithTopics = g.subjects.filter(s => s.topicCount > 0)

@@ -3,7 +3,10 @@ import { useEffect, useState, useCallback } from 'react'
 import { useParams } from 'next/navigation'
 import { useAdmin } from '@/lib/admin-context'
 import { backendFetch } from '@/lib/backend'
-import { Loader as Loader2, Send, X, Check, CreditCard as Edit2, Trash2, Plus, Coffee, UtensilsCrossed, CircleAlert as AlertCircle, Copy, CalendarCheck, UserPlus } from 'lucide-react'
+import {
+  Loader2, Send, X, Check, Edit2, Trash2,
+  Plus, Coffee, UtensilsCrossed, AlertCircle, Copy, CalendarCheck, UserPlus
+} from 'lucide-react'
 import Link from 'next/link'
 import PageHeader from '@/components/theme/PageHeader'
 import type { Class, SchoolTimetablePeriod, ScheduleSlot, SchoolSchedule } from '@/lib/types'
@@ -344,7 +347,7 @@ export default function ClassTimetablePage() {
         }
       />
 
-      <div className="px-5 space-y-4 relative z-10">
+      <div className="px-5 md:px-8 space-y-4 relative z-10">
 
         {/* ── Subjects legend ── */}
         {assignments.length > 0 && (

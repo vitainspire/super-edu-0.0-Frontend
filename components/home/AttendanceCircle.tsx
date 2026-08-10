@@ -1,7 +1,7 @@
 'use client'
 import { useEffect, useState } from 'react'
 import { CalendarCheck } from '@/components/ui/icons'
-import { CalendarOff, Loader as Loader2 } from 'lucide-react'
+import { CalendarOff, Loader2 } from 'lucide-react'
 import Modal from '@/components/ui/Modal'
 import { backendFetch } from '@/lib/backend'
 
@@ -60,7 +60,7 @@ export default function AttendanceCircle() {
     <>
       <button
         onClick={() => setOpen(true)}
-        className="fixed bottom-56 right-4 z-40 w-11 h-11 flex items-center justify-center rounded-full text-white active:scale-90 transition-transform"
+        className="fixed bottom-56 md:bottom-40 right-4 z-40 w-11 h-11 flex items-center justify-center rounded-full text-white active:scale-90 transition-transform"
         style={{ background: reason ? '#D97706' : '#5C8F52', border: '2px solid var(--card-border)' }}
         title="Mark today's status"
       >
