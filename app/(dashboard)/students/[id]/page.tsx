@@ -96,6 +96,15 @@ export default function StudentDetailPage() {
       .catch(console.error)
   }, [id])
 
+  // Load what has already been tried with this student. Without it the list
+  // started empty on every visit, so the recovery generator was told nothing
+  // had been attempted and could repeat an explanation that had already
+  // failed — the one thing it exists to avoid.
+  useEffect(() => {
+    if (!id) return
+    sbq.fetchRecoveryAttempts(id).then(setRecoveryAttempts)
+  }, [id])
+
   const saveNote = async () => {
     if (!noteText.trim() || !teacher) return
     setSavingNote(true)
@@ -266,7 +275,10 @@ export default function StudentDetailPage() {
       }))
   })()
   const saveFeedback = async (attempt: RecoveryAttempt) => {
-    setRecoveryAttempts(prev => [...prev, attempt])
+    // Replace by id rather than append. The server call is an upsert, and now
+    // that the list is seeded from history a plain append would show the same
+    // attempt twice the moment a teacher marks whether it helped.
+    setRecoveryAttempts(prev => [...prev.filter(r => r.id !== attempt.id), attempt])
     sbq.upsertRecoveryAttempt(attempt).catch(console.error)
   }
 
