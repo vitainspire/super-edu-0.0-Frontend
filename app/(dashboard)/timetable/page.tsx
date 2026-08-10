@@ -226,7 +226,7 @@ export default function TimetablePage() {
         subtitle={todayEntries.length > 0 ? `${todayEntries.length} class${todayEntries.length !== 1 ? 'es' : ''} today` : 'No classes scheduled today'}
       />
 
-      <div className="px-4 md:px-6 relative z-10 space-y-4">
+      <div className="px-4 relative z-10 space-y-4">
 
         <SubstituteBanner />
 
@@ -297,10 +297,10 @@ export default function TimetablePage() {
         </div>
 
         {/* Weekly grid — mobile: single-day agenda (no horizontal scroll); desktop: Mon–Fri columns */}
-        <div className="paper-card p-3 md:p-4">
+        <div className="paper-card p-3">
 
           {/* Mobile day tabs */}
-          <div className="flex md:hidden gap-1.5 mb-3">
+          <div className="flex gap-1.5 mb-3">
             {days.map((day, i) => {
               const dayNum     = i + 1
               const isToday    = dayNum === todayN
@@ -324,7 +324,7 @@ export default function TimetablePage() {
           </div>
 
           {/* Mobile agenda for the selected day */}
-          <div className="md:hidden space-y-2">
+          <div className="space-y-2">
             {selectedDayEntries.length === 0 ? (
               <p className="text-sm text-ink-faint text-center py-8">No classes scheduled.</p>
             ) : selectedDayEntries.map(entry => {
@@ -382,88 +382,7 @@ export default function TimetablePage() {
             })}
           </div>
 
-          {/* Desktop: weekly columns (5 or 6 depending on the school), stacked period cards */}
-          <div className="hidden md:flex">
-            {days.map((day, i) => {
-              const dayNum   = i + 1
-              const isToday  = dayNum === todayN
-              const dayEntries = layoutDayEvents(timetableEntries.filter(e => e.dayOfWeek === dayNum))
 
-              return (
-                <div key={day} className="flex-1 px-1">
-                  <div className="text-center mb-2">
-                    <p className="text-sm font-display font-bold" style={{ color: isToday ? 'var(--ink)' : 'var(--ink-soft)' }}>{day}</p>
-                    {isToday && (
-                      <span className="inline-block mt-1 px-2 py-0.5 rounded-full text-[10px] font-black text-white" style={{ background: 'var(--ink)' }}>
-                        TODAY
-                      </span>
-                    )}
-                  </div>
-                  <div className="relative rounded-2xl" style={{ height: gridHeight, background: 'rgba(58,44,30,0.03)' }}>
-                    {dayEntries.map(({ entry, col, cols }) => {
-                      const rawTop    = (toMinutes(entry.startTime) - dayStartMin) * PX_PER_MIN
-                      const rawHeight = Math.max((toMinutes(entry.endTime) - toMinutes(entry.startTime)) * PX_PER_MIN, 46)
-                      const top       = Math.max(rawTop, 0) + 3
-                      const height    = rawHeight - 6
-                      const colPct    = 100 / cols
-                      const handedOver = entry.coverage === 'covered_away'
-                      const color     = colorForKey(getSubject(entry))
-                      const subject   = getSubject(entry)
-                      const secondary = getSecondary(entry)
-                      const taught    = isToday && !handedOver ? getTaughtTopicToday(entry.classId) : null
-                      const tappable  = isToday && canOpen(entry)
-                      const ink       = handedOver ? 'var(--ink-soft)' : (isToday ? color.ink : 'var(--ink-soft)')
-
-                      return (
-                        <button
-                          key={entry.id}
-                          disabled={!tappable}
-                          onClick={() => tappable && setPrepModal({
-                            classId: entry.classId,
-                            subject,
-                            grade: classes.find(c => c.id === entry.classId)?.grade ?? '',
-                            periodNumber: entry.periodNumber,
-                          })}
-                          className={`absolute text-left rounded-xl px-2 py-1.5 overflow-hidden transition-transform ${tappable ? 'active:scale-[0.97] cursor-pointer' : 'cursor-default'}`}
-                          style={{
-                            top, height,
-                            left:  `calc(${col * colPct}% + 2px)`,
-                            width: `calc(${colPct}% - 4px)`,
-                            background: handedOver ? COVERED_AWAY_BG : (isToday ? color.bg : 'rgba(58,44,30,0.08)'),
-                            border: '2px solid var(--card-border)',
-                            borderStyle: handedOver ? 'dashed' : 'solid',
-                            opacity: isToday ? 1 : 0.8,
-                          }}
-                        >
-                          {taught && (
-                            <span className="absolute top-1 right-1 flex items-center justify-center rounded-full"
-                              style={{ width: 14, height: 14, background: isToday ? color.ink : 'var(--ink-faint)' }}>
-                              <BookOpenCheck size={9} className="text-white" />
-                            </span>
-                          )}
-                          <p
-                            className="text-xs font-bold truncate leading-tight"
-                            style={{ color: ink, textDecoration: handedOver ? 'line-through' : undefined }}
-                          >
-                            {subject}
-                          </p>
-                          {entry.coverage && entry.coverage !== 'regular' && (
-                            <div className="mt-0.5"><CoverageTag entry={entry} compact /></div>
-                          )}
-                          {secondary && height > 56 && (
-                            <p className="text-[10px] font-medium truncate" style={{ color: ink, opacity: 0.75 }}>{secondary}</p>
-                          )}
-                          {height > 72 && (
-                            <p className="text-[10px] font-medium truncate" style={{ color: ink, opacity: 0.6 }}>{fmtTime(entry.startTime)}</p>
-                          )}
-                        </button>
-                      )
-                    })}
-                  </div>
-                </div>
-              )
-            })}
-          </div>
         </div>
 
         <p className="text-xs text-ink-faint text-center pb-2">Tap today&apos;s classes to open prep material — other days are view-only</p>

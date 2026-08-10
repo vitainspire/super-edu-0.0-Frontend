@@ -5,7 +5,7 @@ import { supabase } from '@/lib/supabase'
 import { AdminProvider } from '@/lib/admin-context'
 import AdminSideNav from '@/components/admin/AdminSideNav'
 import AdminAskAssistant from '@/components/admin/AdminAskAssistant'
-import { Loader2 } from 'lucide-react'
+import { Loader as Loader2 } from 'lucide-react'
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter()
@@ -30,7 +30,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   return (
     <AdminProvider>
-      <div className="min-h-screen md:flex relative" style={{ background: 'var(--paper-bg)' }}>
+      <div className="min-h-screen relative" style={{ background: 'var(--paper-bg)' }}>
         <AdminSideNav />
         <main className="flex-1 min-w-0 overflow-auto relative z-10">
           {children}

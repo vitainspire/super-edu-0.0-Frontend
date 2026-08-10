@@ -2,10 +2,7 @@
 import { useEffect, useRef, useState, useCallback } from 'react'
 import { useAdmin } from '@/lib/admin-context'
 import { backendFetch } from '@/lib/backend'
-import {
-  GraduationCap, Upload, Loader2, Plus, X, Trash2, Users, Copy, Check,
-  FileText, Image as ImageIcon, FileSpreadsheet, Sparkles, AlertCircle,
-} from 'lucide-react'
+import { GraduationCap, Upload, Loader as Loader2, Plus, X, Trash2, Users, Copy, Check, FileText, Image as ImageIcon, FileSpreadsheet, Sparkles, CircleAlert as AlertCircle } from 'lucide-react'
 import { useParams, useRouter } from 'next/navigation'
 import type { Student } from '@/lib/types'
 import PageHeader from '@/components/theme/PageHeader'
@@ -313,7 +310,7 @@ export default function StudentsPage() {
         </div>
 
         {/* ── Add student forms ── */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5 pb-4">
+        <div className="grid grid-cols-1 gap-5 pb-4">
 
           {/* Single student */}
           <div className="paper-card p-5">
@@ -344,7 +341,7 @@ export default function StudentsPage() {
           </div>
 
           {/* Bulk import */}
-          <div className="paper-card p-5 md:col-span-2">
+          <div className="paper-card p-5">
             <h2 className="font-display font-bold text-ink flex items-center gap-2 mb-4">
               <Upload className="w-4 h-4 text-ink-soft" /> Bulk Import
             </h2>

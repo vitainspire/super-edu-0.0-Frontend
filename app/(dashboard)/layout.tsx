@@ -33,7 +33,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   return (
     <IconContext.Provider value={{ weight: 'bold' }}>
-      <div className="min-h-screen md:flex relative" style={{ background: 'var(--paper-bg)' }}>
+      <div className="min-h-screen relative" style={{ background: 'var(--paper-bg)' }}>
         <SideNav />
         <div className="flex-1 min-w-0 page-container">
           {children}
