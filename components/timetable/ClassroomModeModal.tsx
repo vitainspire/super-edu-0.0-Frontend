@@ -9,7 +9,7 @@ import type { FeedbackAnswer } from '@/lib/types'
 import { simulationUrl, simulationExists } from '@/lib/simulation-url'
 import { blackboardImageUrl, blackboardImageExists } from '@/lib/blackboard-image-url'
 import AttendanceForm from '@/components/attendance/AttendanceForm'
-import PrepSheetView from './PrepSheetView'
+import ClassroomLessonView from './ClassroomLessonView'
 
 interface ClassroomModeModalProps {
   open: boolean
@@ -227,7 +227,7 @@ export default function ClassroomModeModal({ open, onClose, classId, subject, gr
                   <img src={boardUrl} alt="Blackboard sketch of today's example" className="w-full h-auto block" />
                 </div>
               ) : (
-                <PrepSheetView lesson={material.lesson} topic={material.topic} subtopic={material.subtopic} fromCache />
+                <ClassroomLessonView lesson={material.lesson} topic={material.topic} subtopic={material.subtopic} />
               )}
             </>
           ) : (

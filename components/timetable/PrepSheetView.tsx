@@ -1,9 +1,9 @@
 'use client'
 import { useRef, useState, type ReactNode } from 'react'
 import {
-  Database, Clock, BookOpen, Compass, Trophy, Flag,
+  Database, Clock, BookOpen, Compass, Trophy, Flag, Users,
   ChevronRight, ChevronUp, ChevronDown, LayoutList,
-  Target, AlertTriangle,
+  Target, AlertTriangle, Footprints, Translate,
   type LucideIcon,
 } from '@/components/ui/icons'
 import type { SmartLesson, ExpandableBullet } from '@/lib/types'
@@ -18,10 +18,16 @@ interface PrepSheetViewProps {
 
 // Shared forest accent — the sheet reads as one family; sections are told apart
 // by their icon + header, not by color.
-const ACCENT = '#1F3D2C'
-const BORDER = '2px solid var(--card-border)'
+//
+// ACCENT/BORDER/Section/buildSections/WatchStrip are exported so
+// ClassroomLessonView.tsx (the one-bucket-at-a-time view used inside
+// ClassroomModeModal) can build the exact same section list and reuse the
+// exact same "Watch For" strip, rather than re-deriving the bucket
+// order/shape a second time.
+export const ACCENT = '#1F3D2C'
+export const BORDER = '2px solid var(--card-border)'
 
-interface Section {
+export interface Section {
   key: string
   title: string
   header: string
@@ -31,21 +37,32 @@ interface Section {
   watch?: ExpandableBullet | null   // the one thing to watch for during THIS section
 }
 
-function buildSections(lesson: SmartLesson): Section[] {
+export function buildSections(lesson: SmartLesson): Section[] {
   const out: Section[] = []
   const t = lesson.timings
   const w = lesson.sectionWatch
+  // Order matches the six-bucket agentic pipeline's own teaching order
+  // (prep_flow/sections.py's SECTION_ORDER): refresher, concept, realLife,
+  // challenge, levelSet, explore — Explore is the forward-looking hook into
+  // NEXT lesson's refresher, so it belongs last, not before Challenge.
   if (lesson.previousTopicRefresher) {
     out.push({
       key: 'refresher', title: 'Refresher',
-      header: `Last time: ${lesson.previousTopicRefresher.previousTopic}`,
+      header: `Refresher — last time: ${lesson.previousTopicRefresher.previousTopic}`,
       Icon: Clock, bullets: lesson.previousTopicRefresher.recap ?? [], minutes: t?.refresher, watch: w?.refresher,
     })
   }
   out.push({ key: 'concept', title: 'Concept', header: 'Concept', Icon: BookOpen, bullets: lesson.concept ?? [], minutes: t?.concept, watch: w?.concept })
-  out.push({ key: 'explore', title: 'Explore', header: "Let's Imagine…", Icon: Compass, bullets: lesson.explore?.points ?? [], minutes: t?.explore, watch: w?.explore })
-  out.push({ key: 'challenge', title: 'Challenge', header: `Activity: ${lesson.challenge?.activity ?? ''}`, Icon: Trophy, bullets: lesson.challenge?.points ?? [], minutes: t?.challenge, watch: w?.challenge })
+  if (lesson.realLife) {
+    out.push({ key: 'realLife', title: 'Real Life', header: 'Real Life', Icon: Users, bullets: lesson.realLife.points ?? [], minutes: t?.realLife, watch: w?.realLife })
+  }
+  out.push({
+    key: 'challenge', title: 'Challenge',
+    header: lesson.challenge?.activity ? `Challenge — ${lesson.challenge.activity}` : 'Challenge',
+    Icon: Trophy, bullets: lesson.challenge?.points ?? [], minutes: t?.challenge, watch: w?.challenge,
+  })
   out.push({ key: 'levelSet', title: 'Level Set', header: 'Level Set', Icon: Flag, bullets: lesson.levelSet?.points ?? [], minutes: t?.levelSet, watch: w?.levelSet })
+  out.push({ key: 'explore', title: 'Explore', header: 'Explore', Icon: Compass, bullets: lesson.explore?.points ?? [], minutes: t?.explore, watch: w?.explore })
   return out.filter(s => s.bullets.length > 0)
 }
 
@@ -62,7 +79,7 @@ function splitIntoPoints(detail: string): string[] {
 
 // Small amber "Watch for" strip — reused in each banner section card and each
 // deck section so the caution rides with the section it belongs to.
-function WatchStrip({ watch }: { watch: ExpandableBullet }) {
+export function WatchStrip({ watch }: { watch: ExpandableBullet }) {
   return (
     <div className="flex items-start gap-1.5" style={{ borderTop: '1.5px solid rgba(27,24,15,0.1)', padding: '8px 14px 10px', background: 'rgba(176,119,30,0.06)' }}>
       <AlertTriangle size={12} style={{ color: '#B0771E', flexShrink: 0, marginTop: 2 }} />
@@ -84,6 +101,10 @@ export default function PrepSheetView({ lesson, topic, subtopic, fromCache, head
   const [activeKey, setActiveKey] = useState<string | null>(null)
   const [slideIndex, setSlideIndex] = useState(0)
   const [slideDir, setSlideDir] = useState(1)
+  // Off by default — a teacher who reads English fine shouldn't have to
+  // scroll past a translation on every slide. One tap reveals it for the
+  // rest of this sheet.
+  const [showTelugu, setShowTelugu] = useState(false)
 
   const sections = buildSections(lesson)
   const activeSection = sections.find(s => s.key === activeKey) ?? null
@@ -160,6 +181,16 @@ export default function PrepSheetView({ lesson, topic, subtopic, fromCache, head
             </div>
           )}
 
+          {/* Floor — the weakest-child path: what EVERY child can do today,
+              with this period's own objects, no comparison required. */}
+          {lesson.floor && (
+            <div className="rounded-xl flex items-center gap-1.5 bg-white" style={{ border: BORDER, padding: '8px 11px' }}>
+              <Footprints size={12} style={{ color: ACCENT, flexShrink: 0 }} />
+              <span style={{ fontSize: 8.5, fontWeight: 800, color: ACCENT, textTransform: 'uppercase', letterSpacing: '.09em', flexShrink: 0 }}>Floor</span>
+              <p className="flex-1 min-w-0" style={{ fontSize: 11.5, color: 'var(--ink)', lineHeight: 1.35, fontWeight: 600 }}>{lesson.floor}</p>
+            </div>
+          )}
+
           {sections.map(sec => {
             const Icon = sec.Icon
             return (
@@ -214,8 +245,11 @@ export default function PrepSheetView({ lesson, topic, subtopic, fromCache, head
                   ) : null
                 })()}
 
-                {/* Per-section "Watch for" — the caution that belongs to THIS section */}
-                {sec.watch?.text && <WatchStrip watch={sec.watch} />}
+                {/* No per-section Watch For here anymore — it's what the arrow
+                    above opens: Deck view already shows it, pinned to this
+                    section's last slide. Keeping the banner card to bullets
+                    only is the point; the caution is one tap away, not
+                    cluttering the overview by default. */}
               </section>
             )
           })}
@@ -254,6 +288,17 @@ export default function PrepSheetView({ lesson, topic, subtopic, fromCache, head
               ))}
             </div>
           )}
+
+          {/* Flex time — freed by Explore's 5-minute cap, never silently folded
+              into another section; the teacher decides what to do with it. */}
+          {typeof lesson.flexMinutes === 'number' && lesson.flexMinutes > 0 && (
+            <div className="rounded-xl flex items-center gap-1.5" style={{ border: '1.5px dashed var(--card-border)', padding: '8px 11px', background: 'rgba(31,61,44,0.04)' }}>
+              <Clock size={12} style={{ color: ACCENT, flexShrink: 0 }} />
+              <p className="flex-1 min-w-0" style={{ fontSize: 11, color: 'var(--ink-soft)', lineHeight: 1.35 }}>
+                <span style={{ fontWeight: 800, color: 'var(--ink)' }}>+{lesson.flexMinutes} min flex time</span> — yours to spend however this class needs today.
+              </p>
+            </div>
+          )}
         </div>
       )}
 
@@ -275,9 +320,24 @@ export default function PrepSheetView({ lesson, topic, subtopic, fromCache, head
               <span className="flex items-center justify-center shrink-0 text-white" style={{ width: 20, height: 20, borderRadius: 7, background: ACCENT }}>
                 <activeSection.Icon size={11} />
               </span>
-              <p style={{ fontSize: 10, fontWeight: 800, color: ACCENT, textTransform: 'uppercase', letterSpacing: '.1em' }}>
+              <p className="flex-1 min-w-0" style={{ fontSize: 10, fontWeight: 800, color: ACCENT, textTransform: 'uppercase', letterSpacing: '.1em' }}>
                 {activeSection.title}{deckBullets.length > 1 ? ` · ${safeIndex + 1} of ${deckBullets.length}` : ''}
               </p>
+              {current.detail_te && (
+                <button
+                  type="button"
+                  onClick={() => setShowTelugu(v => !v)}
+                  className="flex items-center gap-1 shrink-0 transition-colors"
+                  style={{
+                    fontSize: 9.5, fontWeight: 800, borderRadius: 999, padding: '3px 9px',
+                    color: showTelugu ? '#fff' : ACCENT,
+                    background: showTelugu ? ACCENT : '#fff',
+                    border: `1.5px solid ${ACCENT}`,
+                  }}
+                >
+                  <Translate size={10} /> {showTelugu ? 'Hide' : 'Show'} తెలుగు
+                </button>
+              )}
             </div>
 
             <p style={{ fontSize: 18, fontWeight: 800, color: 'var(--ink)', lineHeight: 1.4 }}>{current.text}</p>
@@ -290,6 +350,21 @@ export default function PrepSheetView({ lesson, topic, subtopic, fromCache, head
                     <p className="flex-1 min-w-0" style={{ fontSize: 14, color: 'var(--ink-soft)', lineHeight: 1.6 }}>{pt}</p>
                   </div>
                 ))}
+              </div>
+            )}
+
+            {/* Telugu — ALWAYS an unreviewed draft (generation/language_layer.py
+                stamps every lesson this way; no native-speaker review pass
+                exists yet), so the label says so every time, not just once. */}
+            {current.detail_te && showTelugu && (
+              <div style={{ borderLeft: '2px dashed var(--card-border)', paddingLeft: 10 }}>
+                <div className="flex items-center gap-1" style={{ marginBottom: 3 }}>
+                  <Translate size={11} style={{ color: 'var(--ink-faint)' }} />
+                  <span style={{ fontSize: 9, fontWeight: 800, color: 'var(--ink-faint)', textTransform: 'uppercase', letterSpacing: '.08em' }}>
+                    తెలుగు · unreviewed draft
+                  </span>
+                </div>
+                <p style={{ fontSize: 13.5, color: 'var(--ink-soft)', lineHeight: 1.6 }}>{current.detail_te}</p>
               </div>
             )}
 

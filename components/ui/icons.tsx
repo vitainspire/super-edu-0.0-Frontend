@@ -49,6 +49,8 @@ export {
   X,
   GameController,
   PlayCircle,
+  Footprints,
+  Translate,
 } from '@phosphor-icons/react'
 
 // Phosphor's component type, aliased to the name the redesigned code used for
