@@ -194,12 +194,20 @@ export default function PrepSheetView({ lesson, topic, subtopic, fromCache, head
           {sections.map(sec => {
             const Icon = sec.Icon
             return (
-              <section key={sec.key} className="rounded-2xl overflow-hidden bg-white" style={{ border: BORDER }}>
-                {/* Header row — the ONE arrow that opens THIS section's deck */}
-                <button
-                  type="button"
-                  onClick={() => openDeck(sec.key)}
-                  className="w-full flex items-center gap-2 px-3 py-2.5 active:scale-[0.99] transition-transform"
+              <section
+                key={sec.key}
+                role="button"
+                tabIndex={0}
+                onClick={() => openDeck(sec.key)}
+                onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openDeck(sec.key) } }}
+                className="rounded-2xl overflow-hidden bg-white active:scale-[0.99] transition-transform cursor-pointer"
+                style={{ border: BORDER }}
+              >
+                {/* Header row — the whole CARD opens this section's deck now,
+                    not just this row or the arrow within it (a teacher tapping
+                    the bullets or the picture below used to do nothing). */}
+                <div
+                  className="w-full flex items-center gap-2 px-3 py-2.5"
                   style={{ textAlign: 'left', borderBottom: '1.5px solid rgba(15,23,42,0.1)' }}
                 >
                   <span className="flex items-center justify-center shrink-0 text-white" style={{ width: 24, height: 24, borderRadius: 8, background: ACCENT }}>
@@ -216,7 +224,7 @@ export default function PrepSheetView({ lesson, topic, subtopic, fromCache, head
                   <span className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0 text-white" style={{ background: ACCENT }}>
                     <ChevronRight size={16} strokeWidth={2.75} />
                   </span>
-                </button>
+                </div>
 
                 {/* ≤3 bullet lines — read-only glance */}
                 <div style={{ padding: '10px 14px 12px', display: 'flex', flexDirection: 'column', gap: 7 }}>
