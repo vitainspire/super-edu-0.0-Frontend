@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 import { useParams, usePathname, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { ArrowLeft, Users, CalendarCheck, BookOpen, Activity, BarChart3 } from '@/components/ui/icons'
@@ -32,7 +32,7 @@ export default function ClassLayout({ children }: { children: React.ReactNode })
       {/* Sticky header — cream, bold-outlined */}
       <div className="sticky top-0 z-20" style={{ background: 'var(--paper-bg)', borderBottom: '2px solid var(--card-border)' }}>
         {/* Back + class info */}
-        <div className="px-4 pt-5 pb-4 flex items-center gap-3">
+        <div className="px-4 md:px-6 pt-5 pb-4 flex items-center gap-3">
           <button
             onClick={() => router.push('/classes')}
             className="w-10 h-10 flex items-center justify-center rounded-full flex-shrink-0 bg-white active:scale-90 transition-transform"

@@ -2,11 +2,26 @@
 import { useEffect, useState, useCallback } from 'react'
 import { useAdmin } from '@/lib/admin-context'
 import { backendFetch } from '@/lib/backend'
-import { BookOpen, Sparkles, Loader as Loader2, Plus, X, Trash2, ChevronDown, ChevronUp, ChevronRight, ChevronLeft, FileText, Upload, CircleAlert as AlertCircle, Check, TriangleAlert as AlertTriangle, Clock, List } from 'lucide-react'
+import {
+  BookOpen, Sparkles, Loader2, Plus, X, Trash2, ChevronDown, ChevronUp,
+  ChevronRight, ChevronLeft, FileText, Upload, AlertCircle, Check, AlertTriangle, Clock, List,
+} from 'lucide-react'
 import type { Class } from '@/lib/types'
 import PageHeader from '@/components/theme/PageHeader'
 import { ADMIN_PALETTE as PALETTE } from '@/lib/admin-theme'
 import clsx from 'clsx'
+
+// "SSC (State Board)" isn't one board — every state runs its own. Telangana and
+// Andhra Pradesh listed first since that's this app's primary user base; the
+// rest cover every other state/UT with its own board, alphabetically, plus an
+// "Other (custom)…" option in the picker below for anything not listed here.
+const STATE_BOARD_OPTIONS = [
+  'Telangana', 'Andhra Pradesh',
+  'Karnataka', 'Tamil Nadu', 'Kerala', 'Maharashtra', 'Gujarat', 'Rajasthan',
+  'Madhya Pradesh', 'Uttar Pradesh', 'Bihar', 'West Bengal', 'Odisha',
+  'Punjab', 'Haryana', 'Assam', 'Chhattisgarh', 'Jharkhand', 'Uttarakhand',
+  'Himachal Pradesh', 'Goa',
+]
 
 interface Topic {
   id: string
@@ -113,6 +128,12 @@ export default function AdminSyllabusPage() {
   const [gradeSubjects, setGradeSubjects] = useState<string[]>([])
   const [subject, setSubject] = useState('')
   const [customSubject, setCustomSubject] = useState('')
+  const [board, setBoard] = useState('')
+  const [customBoard, setCustomBoard] = useState('')
+  // Only meaningful when board === 'SSC' — India's "State Board" isn't one
+  // board, each state runs its own.
+  const [boardState, setBoardState] = useState('')
+  const [customBoardState, setCustomBoardState] = useState('')
 
   const [topics, setTopics] = useState<Topic[]>([])
   const [loadingTopics, setLoadingTopics] = useState(false)
@@ -151,6 +172,11 @@ export default function AdminSyllabusPage() {
   const [removedTopicIds, setRemovedTopicIds] = useState<Set<string>>(new Set())
   const [extracting, setExtracting] = useState(false)
   const [extractError, setExtractError] = useState('')
+  // Set instead of extractError when the backend archived the PDF to Drive
+  // but AI topic extraction is currently switched off (see AI_EXTRACTION_ENABLED
+  // in syllabus_pdf_jobs.py) — a real success, not a failure, so it gets its
+  // own message rather than showing in the red error box.
+  const [driveSavedMessage, setDriveSavedMessage] = useState('')
   const [extractProgress, setExtractProgress] = useState(0)
   const [extractStatus, setExtractStatus] = useState('')
   const [extracted, setExtracted] = useState<ExtractedTopic[]>([])
@@ -179,6 +205,12 @@ export default function AdminSyllabusPage() {
   const [browseGrade, setBrowseGrade] = useState('')
 
   const activeSubject = subject === '__other__' ? customSubject.trim() : subject
+  const activeBoardState = boardState === '__other__' ? customBoardState.trim() : boardState
+  const activeBoard = board === '__other__'
+    ? customBoard.trim()
+    : board === 'SSC'
+      ? (activeBoardState ? `SSC-${activeBoardState}` : '')
+      : board
 
   // ── Load grades that actually have classes ──────────────────────────────
   useEffect(() => {
@@ -309,6 +341,12 @@ export default function AdminSyllabusPage() {
     const form = new FormData()
     form.append('file', pdfFile, pdfName ?? 'textbook.pdf')
     form.append('language', 'auto')
+    // Identifying info for the Drive archive filename — grade/subject are
+    // already required to reach this panel; board is required alongside them
+    // (see the gate below), so all three are always set by this point.
+    form.append('board', activeBoard)
+    form.append('grade', grade)
+    form.append('subject', activeSubject)
 
     const startRes = await backendFetch(
       `/api/admin/schools/${school.id}/syllabus/extract-pdf/upload`,
@@ -333,6 +371,10 @@ export default function AdminSyllabusPage() {
       setExtractStatus(s.message ?? '')
 
       if (s.status === 'done') {
+        if (s.aiSkipped) {
+          setDriveSavedMessage(s.message || 'Saved to Drive. AI topic extraction is temporarily switched off.')
+          return
+        }
         if (!s.topics?.length) throw new Error('No topics found in this PDF.')
         setExtracted(s.topics)
         setExtractWarnings(Array.isArray(s.warnings) ? s.warnings : [])
@@ -350,7 +392,7 @@ export default function AdminSyllabusPage() {
     if (importMode === 'text' && !importText.trim()) return
     if (importMode === 'pdf' && !pdfFile) return
     setExtracting(true); setExtractError(''); setExtracted([]); setExtractProgress(0); setExtractStatus('')
-    setPdfJobId(null); setRemovedTopicIds(new Set()); setExtractWarnings([])
+    setPdfJobId(null); setRemovedTopicIds(new Set()); setExtractWarnings([]); setDriveSavedMessage('')
     try {
       if (importMode === 'text') await extractFromText()
       else await extractFromPdf()
@@ -734,7 +776,7 @@ export default function AdminSyllabusPage() {
         })() : (
           <>
             {/* ── Dropdown picker — choose grade + subject to add / import into ── */}
-            <div className="paper-card p-5 grid grid-cols-1 gap-4">
+            <div className="paper-card p-5 grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="label">Grade</label>
                 <select value={grade} onChange={e => { setGrade(e.target.value); setSubject(''); setCustomSubject('') }} className="input-field">
@@ -754,12 +796,43 @@ export default function AdminSyllabusPage() {
                     className="input-field mt-2" />
                 )}
               </div>
+              <div>
+                <label className="label">Board</label>
+                <select value={board} onChange={e => { setBoard(e.target.value); setCustomBoard(''); setBoardState(''); setCustomBoardState('') }} className="input-field">
+                  <option value="">Select board…</option>
+                  <option value="CBSE">CBSE</option>
+                  <option value="ICSE">ICSE</option>
+                  <option value="SSC">SSC (State Board)</option>
+                  <option value="__other__">Other (custom)…</option>
+                </select>
+                {board === '__other__' && (
+                  <input value={customBoard} onChange={e => setCustomBoard(e.target.value)} placeholder="Board name"
+                    className="input-field mt-2" />
+                )}
+                {board === 'SSC' && (
+                  <>
+                    <select value={boardState} onChange={e => { setBoardState(e.target.value); setCustomBoardState('') }} className="input-field mt-2">
+                      <option value="">Select state…</option>
+                      {STATE_BOARD_OPTIONS.map(s => <option key={s} value={s}>{s}</option>)}
+                      <option value="__other__">Other (custom)…</option>
+                    </select>
+                    {boardState === '__other__' && (
+                      <input value={customBoardState} onChange={e => setCustomBoardState(e.target.value)} placeholder="State name"
+                        className="input-field mt-2" />
+                    )}
+                  </>
+                )}
+              </div>
             </div>
 
-            {(!grade || !activeSubject) ? (
+            {(!grade || !activeSubject || !activeBoard) ? (
               <div className="paper-card p-8 text-center">
                 <BookOpen className="w-8 h-8 text-ink-faint mx-auto mb-3" />
-                <p className="text-sm text-ink-soft">Pick a grade and subject to add or import its syllabus.</p>
+                <p className="text-sm text-ink-soft">
+                  {board === 'SSC' && !activeBoardState
+                    ? 'Pick which state\'s board this is.'
+                    : 'Pick a grade, subject, and board to add or import its syllabus.'}
+                </p>
               </div>
             ) : (
           <>
@@ -897,6 +970,12 @@ export default function AdminSyllabusPage() {
                 {extractError && (
                   <div className="flex items-center gap-2 bg-red-50 border border-red-200 rounded-xl px-3 py-2.5">
                     <AlertCircle className="w-3.5 h-3.5 text-red-500 shrink-0" /><p className="text-sm text-red-700">{extractError}</p>
+                  </div>
+                )}
+
+                {driveSavedMessage && (
+                  <div className="flex items-center gap-2 bg-emerald-50 border border-emerald-200 rounded-xl px-3 py-2.5">
+                    <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0" /><p className="text-sm text-emerald-800">{driveSavedMessage}</p>
                   </div>
                 )}
 
@@ -1183,7 +1262,7 @@ export default function AdminSyllabusPage() {
                   <BookOpen className="w-4 h-4 text-ink-soft" />
                   <h2 className="font-display font-bold text-ink">Saved Syllabi</h2>
                 </div>
-                <div className="grid grid-cols-1 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                   {overview.map((g, i) => {
                     const palette = PALETTE[i % PALETTE.length]
                     const subjectsWithTopics = g.subjects.filter(s => s.topicCount > 0)

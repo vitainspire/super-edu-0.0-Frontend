@@ -1,5 +1,5 @@
 'use client'
-import { X, BookOpen, CircleHelp as HelpCircle, Zap, CircleAlert as AlertCircle } from 'lucide-react'
+import { X, BookOpen, HelpCircle, Zap, AlertCircle } from 'lucide-react'
 import type { CatchupMaterial } from '@/lib/types'
 
 interface Props {
@@ -9,9 +9,9 @@ interface Props {
 
 export default function ViewPlanModal({ plan, onClose }: Props) {
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center"
+    <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center"
       style={{ background: 'rgba(58,44,30,0.6)' }}>
-      <div className="w-full max-w-lg bg-paper-soft rounded-t-3xl max-h-[90vh] flex flex-col"
+      <div className="w-full md:max-w-lg bg-paper-soft md:rounded-3xl rounded-t-3xl max-h-[90vh] flex flex-col"
         style={{ border: '1.5px solid rgba(58,44,30,0.18)' }}>
 
         {/* Header */}

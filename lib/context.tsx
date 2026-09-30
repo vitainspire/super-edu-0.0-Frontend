@@ -110,8 +110,8 @@ interface AppContextType {
   getCatchupForStudent: (studentId: string) => CatchupMaterial[]
 
   prepMaterials: PrepMaterial[]
-  savePrepMaterial: (data: { classId: string; subject: string; grade: string; topic: string; subtopic?: string; lesson: SmartLesson }) => Promise<PrepMaterial>
-  getPrepMaterial: (classId: string, topic: string, subtopic?: string) => PrepMaterial | null
+  savePrepMaterial: (data: { classId: string; subject: string; grade: string; topic: string; subtopic?: string; lesson: SmartLesson; source?: PrepMaterial['source'] }) => Promise<PrepMaterial>
+  getPrepMaterial: (classId: string, topic: string, subtopic?: string, requireSource?: PrepMaterial['source']) => PrepMaterial | null
 
   taughtTopics: TaughtTopic[]
   saveTaughtTopic: (data: { classId: string; topic: string; subtopic?: string }) => Promise<TaughtTopic>
@@ -831,7 +831,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   // ─── Prep materials ───────────────────────────────────────────────────────────
 
-  const getPrepMaterial = useCallback((classId: string, topic: string, subtopic?: string): PrepMaterial | null => {
+  const getPrepMaterial = useCallback((classId: string, topic: string, subtopic?: string, requireSource?: PrepMaterial['source']): PrepMaterial | null => {
     const sub = (subtopic ?? '').trim()
     // isCurrentSmartLesson skips rows saved under the old (pre-5-part-template)
     // schema — otherwise PrepSheetView would be handed a lesson shape it can't render.
@@ -839,13 +839,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
       p.classId === classId &&
       p.topic.trim().toLowerCase() === topic.trim().toLowerCase() &&
       (p.subtopic ?? '').trim().toLowerCase() === sub.toLowerCase() &&
-      isCurrentSmartLesson(p.lesson)
+      isCurrentSmartLesson(p.lesson) &&
+      (!requireSource || p.source === requireSource)
     ) ?? null
   }, [prepMaterials])
 
   const savePrepMaterial = useCallback(async (data: {
     classId: string; subject: string; grade: string; topic: string; subtopic?: string
-    lesson: SmartLesson
+    lesson: SmartLesson; source?: PrepMaterial['source']
   }): Promise<PrepMaterial> => {
     if (!teacher) throw new Error('Not logged in')
     const existing = getPrepMaterial(data.classId, data.topic, data.subtopic)
@@ -854,6 +855,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       id: existing?.id ?? crypto.randomUUID(),
       teacherId: teacher.id,
       createdAt: existing?.createdAt ?? new Date().toISOString(),
+      source: data.source ?? existing?.source ?? 'shared',
     }
     setPrepMaterials(prev => [...prev.filter(p => p.id !== record.id), record])
     await sbq.upsertPrepMaterial(record).catch(console.error)

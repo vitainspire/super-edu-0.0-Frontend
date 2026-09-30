@@ -1,6 +1,6 @@
 'use client'
 import { useState, useEffect } from 'react'
-import { X, Loader as Loader2, Pencil, Trash2, Plus, CircleCheck as CheckCircle2, TriangleAlert as AlertTriangle } from 'lucide-react'
+import { X, Loader2, Pencil, Trash2, Plus, CheckCircle2, AlertTriangle } from 'lucide-react'
 import { useApp } from '@/lib/context'
 import { aiKey, getAiCache, setAiCache, TTL } from '@/lib/ai-cache'
 import { backendFetch } from '@/lib/backend'
@@ -125,9 +125,9 @@ export default function CatchupModal({ studentId, studentName, topic, score, onC
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center"
+    <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center"
       style={{ background: 'rgba(58,44,30,0.6)' }}>
-      <div className="w-full max-w-lg bg-paper-soft rounded-t-3xl max-h-[90vh] flex flex-col"
+      <div className="w-full md:max-w-lg bg-paper-soft md:rounded-3xl rounded-t-3xl max-h-[90vh] flex flex-col"
         style={{ border: '1.5px solid rgba(58,44,30,0.18)' }}>
 
         {/* Header */}

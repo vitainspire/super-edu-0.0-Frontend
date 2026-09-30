@@ -3,7 +3,7 @@ import { useEffect, useState, useCallback } from 'react'
 import { useAdmin } from '@/lib/admin-context'
 import { backendFetch } from '@/lib/backend'
 import { useParams } from 'next/navigation'
-import { ArrowRight, Loader as Loader2, CalendarDays } from 'lucide-react'
+import { ArrowRight, Loader2, CalendarDays } from 'lucide-react'
 import type { Class, SchoolTimetablePeriod, SchoolSchedule } from '@/lib/types'
 import Link from 'next/link'
 import clsx from 'clsx'
@@ -47,7 +47,7 @@ export default function GradeTimetablePage() {
         subtitle={`${classes.length} section${classes.length !== 1 ? 's' : ''}`}
       />
 
-      <div className="px-5 max-w-[480px] mx-auto relative z-10">
+      <div className="px-5 md:px-6 max-w-5xl mx-auto relative z-10">
         {loading ? (
           <div className="flex items-center justify-center py-20">
             <Loader2 className="w-6 h-6 animate-spin text-ink" />
@@ -58,7 +58,7 @@ export default function GradeTimetablePage() {
             <p className="text-ink-soft font-bold">No sections yet for Grade {grade}</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {classes.map((cls, i) => {
               const palette = PALETTE[i % PALETTE.length]
               const assigned = classAssignedCount(cls.id)

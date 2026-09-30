@@ -636,6 +636,9 @@ export interface Worksheet {
 export interface ExpandableBullet {
   text: string                     // brief but explanatory — readable on its own
   detail?: string                  // the deeper explanation, revealed by the "+"; omit if it'd just be padding
+  detail_te?: string                // Telugu rendering of `detail` (generation/language_layer.py) — ALWAYS an
+                                     // unreviewed draft; no native-speaker review pass exists yet, so any UI
+                                     // showing this must say so alongside it, not present it as final copy
   image?: { url: string } | null   // optional board sketch, shown inside the "+" expansion
 }
 
@@ -658,12 +661,22 @@ export interface LevelSet {
   points: ExpandableBullet[]   // 1-3 bullets, tied back to Explore
 }
 
+// A concrete, in-the-room example the class already knows — from the agentic
+// pipeline's lesson-design skill, which places this between the refresher and
+// the concept. Absent on any lesson generated before this section existed
+// (the original 5-bucket shape), which is why every reader of SmartLesson
+// must treat it as optional, not required.
+export interface RealLife {
+  points: ExpandableBullet[]   // 1-3 bullets
+}
+
 // One misconception/pitfall to watch for DURING each section (headline in text,
 // one-line teacher fix in detail). Keyed by section so the banner can show a
 // "Watch for" note inside every section card, not just one global footnote.
 export interface SectionWatch {
   refresher?: ExpandableBullet | null
   concept?: ExpandableBullet | null
+  realLife?: ExpandableBullet | null
   explore?: ExpandableBullet | null
   challenge?: ExpandableBullet | null
   levelSet?: ExpandableBullet | null
@@ -675,6 +688,7 @@ export interface SectionWatch {
 export interface LessonTimings {
   refresher?: number
   concept?: number
+  realLife?: number
   explore?: number
   challenge?: number
   levelSet?: number
@@ -683,9 +697,13 @@ export interface LessonTimings {
 export interface SmartLesson {
   planningNote?: string                                    // model's own brief reasoning, written first — internal only, never shown to the teacher
   objective?: string                                        // one-sentence "what students should be able to do by the end" — shown as the Today's Goal ribbon
+  floor?: string                                            // the weakest-child path: one sentence describing what EVERY child can do with
+                                                             // this period's own objects/tasks, no comparison to other children required —
+                                                             // shown as its own ribbon, right under Goal
   successCriteria?: string[]                                // 2-4 checkable "students can…" outcomes for the end-of-class check
   previousTopicRefresher?: PreviousTopicRefresher | null    // null when this is the first topic in the syllabus
   concept: ExpandableBullet[]                               // 1-3 bullets introducing the idea
+  realLife?: RealLife                                       // optional 6th section (agentic pipeline only) — a concrete in-the-room example, shown between the refresher and the concept
   explore: Explore
   challenge: LessonChallenge
   watchFor?: ExpandableBullet[]  // LEGACY global misconception list — superseded by sectionWatch; kept so lessons saved before sectionWatch still render
@@ -694,6 +712,8 @@ export interface SmartLesson {
   levelSet: LevelSet
   diagrams?: { section: string; focus: string }[]  // sections the model asked for a board sketch on; server draws each and attaches it to that section's first bullet (concept always included)
   timings?: LessonTimings    // optional per-section minutes for pacing
+  flexMinutes?: number      // time freed by Explore's 5-minute cap (planning.py's EXPLORE_CEILING),
+                            // never folded into another section — the teacher's own to spend
   // 2-3 questions tailored to this specific topic, shown on the post-class
   // feedback step instead of the 3 generic ones. Absent on lessons generated
   // before this existed — the feedback UI falls back to the generic questions.
@@ -737,6 +757,10 @@ export interface PrepMaterial {
   subtopic?: string
   lesson: SmartLesson
   createdAt: string
+  // 'shared' (a cached copy of the shared lesson), 'personal' (an explicit
+  // "make this mine" generation), or 'live_fallback' (nothing shared existed
+  // yet). Only 'personal' rows are ever preferred over the shared pool.
+  source?: 'shared' | 'personal' | 'live_fallback'
 }
 
 // ── Workbook ────────────────────────────────────────────────────────────────

@@ -96,15 +96,15 @@ export default function AdminNotificationBell() {
       <button
         type="button"
         onClick={() => setOpen(v => !v)}
-        className="relative w-9 h-9 flex items-center justify-center rounded-xl transition-colors hover:bg-white/[0.12]"
-        style={{ background: 'rgba(255,255,255,0.08)' }}
+        className="relative w-9 h-9 flex items-center justify-center rounded-xl transition-colors hover:bg-[rgba(27,24,15,0.08)]"
+        style={{ background: 'rgba(27,24,15,0.05)' }}
         aria-label={unread.length > 0 ? `Alerts, ${unread.length} unread` : 'Alerts'}
       >
-        <Bell size={15} className="text-white/70" />
+        <Bell size={15} className="text-ink-soft" />
         {unread.length > 0 && (
           <span
             className="absolute -top-1 -right-1 min-w-[16px] h-[16px] px-[4px] rounded-full text-[9px] font-black text-white flex items-center justify-center"
-            style={{ background: '#B91C1C', border: '1.5px solid var(--ink)' }}
+            style={{ background: '#B91C1C', border: '1.5px solid var(--admin-paper-bg)' }}
           >
             {unread.length > 9 ? '9+' : unread.length}
           </span>

@@ -1,6 +1,9 @@
 'use client'
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { BookMarked, ChevronDown, ChevronUp, Loader as Loader2, TriangleAlert as AlertTriangle, Check, Image as ImageIcon, FileText, Layers, Eye, EyeOff } from 'lucide-react'
+import {
+  BookMarked, ChevronDown, ChevronUp, Loader2, AlertTriangle, Check,
+  ImageIcon, FileText, Layers, Eye, EyeOff, Download,
+} from 'lucide-react'
 import { useAdmin } from '@/lib/admin-context'
 import { backendFetch } from '@/lib/backend'
 import PageHeader from '@/components/theme/PageHeader'
@@ -49,6 +52,24 @@ interface ChapterDetail {
 }
 
 const LANGUAGE_NAMES: Record<string, string> = { en: 'English', te: 'Telugu', ur: 'Urdu', hi: 'Hindi' }
+
+interface ScrapeSubjectOption { header: string; sampleLabel?: string }
+interface ScrapedFile { subject: string; label: string; filename: string; path: string; sizeBytes: number }
+
+// Only TS (Telangana) has a working scraper (app/lib/ts_scert_textbooks.py). The
+// others are listed so the picker's shape is ready for them without pretending
+// they work yet.
+const SCRAPE_BOARDS = [
+  { code: 'TS', label: 'Telangana (TS)', enabled: true },
+  { code: 'AP', label: 'Andhra Pradesh (AP)', enabled: false },
+  { code: 'CBSE', label: 'CBSE', enabled: false },
+  { code: 'ICSE', label: 'ICSE', enabled: false },
+]
+// The site's primary+upper-primary range. Only classes 1-5 have been hand-verified;
+// the table-per-class parsing is otherwise identical for higher classes.
+const SCRAPE_CLASSES = Array.from({ length: 10 }, (_, i) => String(i + 1))
+const SCRAPE_MEDIUMS = ['English', 'Telugu', 'Urdu', 'Hindi']
+const OTHER_VALUE = '__other__'
 
 /**
  * Gaps and overlaps between consecutive chapters' page ranges.
@@ -103,6 +124,94 @@ export default function AdminTextbooksPage() {
   const [showMarkdown, setShowMarkdown] = useState(false)
   const [busy, setBusy] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
+
+  // ── Fetch a textbook (scrape + download only; chapter extraction stays manual) ──
+  const [fetchOpen, setFetchOpen] = useState(false)
+  const [scrapeBoard, setScrapeBoard] = useState('TS')
+  const [scrapeClass, setScrapeClass] = useState('')
+  const [scrapeMedium, setScrapeMedium] = useState('')
+  const [customMedium, setCustomMedium] = useState('')
+  const [scrapeSubject, setScrapeSubject] = useState('')
+  const [customSubject, setCustomSubject] = useState('')
+  const [subjectOptions, setSubjectOptions] = useState<ScrapeSubjectOption[]>([])
+  const [loadingSubjects, setLoadingSubjects] = useState(false)
+  const [subjectsError, setSubjectsError] = useState('')
+  const [scraping, setScraping] = useState(false)
+  const [scrapeProgress, setScrapeProgress] = useState(0)
+  const [scrapeStatus, setScrapeStatus] = useState('')
+  const [scrapeError, setScrapeError] = useState('')
+  const [scrapedFiles, setScrapedFiles] = useState<ScrapedFile[]>([])
+
+  const activeScrapeMedium = scrapeMedium === OTHER_VALUE ? customMedium.trim() : scrapeMedium
+  const activeScrapeSubject = scrapeSubject === OTHER_VALUE ? customSubject.trim() : scrapeSubject
+
+  // Populates the Subject dropdown from what is actually on the SCERT page for
+  // this class/medium, rather than guessing free text against headers that vary
+  // ("Second Language", "Second Language (2)", some classes have no Science).
+  useEffect(() => {
+    if (!school || scrapeBoard !== 'TS' || !scrapeClass || !activeScrapeMedium) {
+      setSubjectOptions([])
+      return
+    }
+    let cancelled = false
+    setLoadingSubjects(true)
+    setSubjectsError('')
+    backendFetch(
+      `/api/admin/schools/${school.id}/textbook-scrape/subjects?board=${scrapeBoard}&class=${scrapeClass}&medium=${encodeURIComponent(activeScrapeMedium)}`,
+    )
+      .then(async r => {
+        const d = await r.json().catch(() => ({}))
+        if (!r.ok) throw new Error(d.detail ?? 'Could not load subjects for this class/medium.')
+        if (!cancelled) setSubjectOptions(d.subjects ?? [])
+      })
+      .catch(e => {
+        if (!cancelled) {
+          setSubjectOptions([])
+          setSubjectsError(e instanceof Error ? e.message : 'Could not load subjects.')
+        }
+      })
+      .finally(() => { if (!cancelled) setLoadingSubjects(false) })
+    return () => { cancelled = true }
+  }, [school, scrapeBoard, scrapeClass, activeScrapeMedium])
+
+  async function startScrape() {
+    if (!school || !scrapeClass || !activeScrapeMedium || !activeScrapeSubject) return
+    setScraping(true)
+    setScrapeError('')
+    setScrapedFiles([])
+    setScrapeProgress(0)
+    setScrapeStatus('Queued…')
+    try {
+      const startRes = await backendFetch(`/api/admin/schools/${school.id}/textbook-scrape`, {
+        method: 'POST',
+        body: JSON.stringify({
+          board: scrapeBoard, class: scrapeClass, subject: activeScrapeSubject, medium: activeScrapeMedium,
+        }),
+      })
+      const start = await startRes.json().catch(() => ({}))
+      if (!startRes.ok || !start.jobId) throw new Error(start.detail ?? 'Could not start the fetch.')
+
+      const jobId: string = start.jobId
+      const MAX_POLLS = 200 // ~10 minutes
+      for (let i = 0; i < MAX_POLLS; i++) {
+        await new Promise(r => setTimeout(r, 3000))
+        const sRes = await backendFetch(`/api/admin/schools/${school.id}/textbook-scrape/${jobId}`)
+        const s = await sRes.json().catch(() => ({}))
+        if (!sRes.ok) throw new Error(s.detail ?? 'Lost track of the fetch job.')
+
+        setScrapeProgress(typeof s.progress === 'number' ? s.progress : 0)
+        setScrapeStatus(s.message ?? '')
+
+        if (s.status === 'done') { setScrapedFiles(s.files ?? []); return }
+        if (s.status === 'error') throw new Error(s.error ?? 'Fetch failed.')
+      }
+      throw new Error('Timed out waiting for the download. Try again.')
+    } catch (e: unknown) {
+      setScrapeError(e instanceof Error ? e.message : 'Fetch failed.')
+    } finally {
+      setScraping(false)
+    }
+  }
 
   const loadBooks = useCallback(async () => {
     if (!school) return
@@ -201,6 +310,158 @@ export default function AdminTextbooksPage() {
             <p className="text-xs text-red-800">{error}</p>
           </div>
         )}
+
+        <div className="paper-card overflow-hidden">
+          <button
+            type="button"
+            onClick={() => setFetchOpen(v => !v)}
+            className="w-full flex items-center justify-between gap-2 px-4 py-3"
+          >
+            <div className="flex items-center gap-2.5">
+              <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: '#DCEBF8' }}>
+                <Download size={16} style={{ color: '#1E3A55' }} />
+              </div>
+              <div className="text-left">
+                <p className="text-sm font-bold text-ink">Fetch a textbook</p>
+                <p className="text-xs text-ink-soft">Download the source PDF from the board's e-textbooks site</p>
+              </div>
+            </div>
+            {fetchOpen ? <ChevronUp size={16} className="text-ink-soft" /> : <ChevronDown size={16} className="text-ink-soft" />}
+          </button>
+
+          {fetchOpen && (
+            <div className="px-4 pb-4 space-y-3">
+              <div>
+                <label className="label">Board</label>
+                <div className="flex gap-2 flex-wrap mt-1">
+                  {SCRAPE_BOARDS.map(b => (
+                    <button
+                      key={b.code}
+                      type="button"
+                      disabled={!b.enabled}
+                      onClick={() => { setScrapeBoard(b.code); setScrapeSubject('') }}
+                      title={b.enabled ? undefined : 'Coming soon — no scraper yet for this board'}
+                      className="px-3 py-1.5 rounded-xl text-xs font-bold transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+                      style={scrapeBoard === b.code
+                        ? { background: '#1E3A55', color: 'white' }
+                        : { background: 'rgba(58,44,30,0.06)', color: 'var(--ink-soft)' }}
+                    >
+                      {b.label}{!b.enabled && ' · Coming soon'}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <div>
+                  <label className="label">Class</label>
+                  <select
+                    value={scrapeClass}
+                    onChange={e => { setScrapeClass(e.target.value); setScrapeSubject('') }}
+                    className="input-field"
+                  >
+                    <option value="">Select class…</option>
+                    {SCRAPE_CLASSES.map(c => <option key={c} value={c}>Class {c}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className="label">Medium</label>
+                  <select
+                    value={scrapeMedium}
+                    onChange={e => { setScrapeMedium(e.target.value); setScrapeSubject('') }}
+                    className="input-field"
+                  >
+                    <option value="">Select medium…</option>
+                    {SCRAPE_MEDIUMS.map(m => <option key={m} value={m}>{m}</option>)}
+                    <option value={OTHER_VALUE}>Other (custom)…</option>
+                  </select>
+                  {scrapeMedium === OTHER_VALUE && (
+                    <input
+                      value={customMedium}
+                      onChange={e => setCustomMedium(e.target.value)}
+                      placeholder="Medium name"
+                      className="input-field mt-2"
+                    />
+                  )}
+                </div>
+                <div>
+                  <label className="label">Subject</label>
+                  <select
+                    value={scrapeSubject}
+                    onChange={e => setScrapeSubject(e.target.value)}
+                    disabled={!scrapeClass || !activeScrapeMedium}
+                    className="input-field disabled:opacity-50"
+                  >
+                    <option value="">{loadingSubjects ? 'Loading…' : 'Select subject…'}</option>
+                    {subjectOptions.map(s => <option key={s.header} value={s.header}>{s.header}</option>)}
+                    <option value={OTHER_VALUE}>Other (custom)…</option>
+                  </select>
+                  {scrapeSubject === OTHER_VALUE && (
+                    <input
+                      value={customSubject}
+                      onChange={e => setCustomSubject(e.target.value)}
+                      placeholder="Subject name"
+                      className="input-field mt-2"
+                    />
+                  )}
+                  {subjectsError && <p className="text-[11px] text-red-600 mt-1">{subjectsError}</p>}
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={startScrape}
+                disabled={scraping || scrapeBoard !== 'TS' || !scrapeClass || !activeScrapeMedium || !activeScrapeSubject}
+                className="w-full flex items-center justify-center gap-2 text-sm font-bold text-white py-2.5 rounded-xl disabled:opacity-40"
+                style={{ background: '#1E3A55' }}
+              >
+                {scraping
+                  ? <><Loader2 className="w-4 h-4 animate-spin" /> {scrapeStatus || 'Working…'}</>
+                  : <><Download size={15} /> Start</>}
+              </button>
+
+              {scraping && (
+                <div className="h-1.5 w-full rounded-full overflow-hidden" style={{ background: 'rgba(58,44,30,0.08)' }}>
+                  <div
+                    className="h-full transition-all duration-500"
+                    style={{ width: `${Math.max(3, scrapeProgress)}%`, background: '#1E3A55' }}
+                  />
+                </div>
+              )}
+
+              {scrapeError && (
+                <div className="flex items-start gap-2 bg-red-50 border border-red-200 rounded-xl px-3 py-2.5">
+                  <AlertTriangle className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
+                  <p className="text-xs text-red-800">{scrapeError}</p>
+                </div>
+              )}
+
+              {scrapedFiles.length > 0 && (
+                <div className="rounded-xl overflow-hidden" style={{ border: '1.5px solid rgba(58,44,30,0.1)' }}>
+                  {scrapedFiles.map((f, i) => (
+                    <div
+                      key={f.path}
+                      className="flex items-start gap-2 px-3 py-2.5"
+                      style={{ background: i % 2 ? 'rgba(58,44,30,0.02)' : 'transparent' }}
+                    >
+                      <FileText size={14} className="text-ink-faint shrink-0 mt-0.5" />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-bold text-ink truncate">{f.filename}</p>
+                        <p className="text-[11px] text-ink-faint mt-0.5 font-mono truncate">{f.path}</p>
+                        <p className="text-[10px] text-ink-faint mt-0.5">{(f.sizeBytes / 1024 / 1024).toFixed(1)} MB</p>
+                      </div>
+                    </div>
+                  ))}
+                  <p className="text-[11px] text-ink-soft px-3 py-2.5" style={{ background: 'rgba(58,44,30,0.03)' }}>
+                    Feed these file(s) into the pdf pipeline, then run{' '}
+                    <code className="font-mono">scripts.publish_textbook</code> to load the resulting
+                    chapters here for review.
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
 
         {loadingBooks && (
           <div className="flex items-center justify-center py-16">
@@ -402,7 +663,7 @@ export default function AdminTextbooksPage() {
                           <p className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-ink-soft mb-1.5">
                             <ImageIcon size={11} /> Illustrations
                           </p>
-                          <div className="grid grid-cols-2 gap-2">
+                          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                             {detail.images.filter(i => !i.decorative).map(image => (
                               <div key={image.imageId} className="rounded-xl overflow-hidden" style={{ border: '1.5px solid rgba(58,44,30,0.1)' }}>
                                 {/* Signed URLs on the storage host, expiring in an hour. next/image

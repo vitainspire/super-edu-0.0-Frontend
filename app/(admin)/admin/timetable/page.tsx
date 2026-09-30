@@ -2,7 +2,10 @@
 import { useEffect, useState, useCallback } from 'react'
 import { useAdmin } from '@/lib/admin-context'
 import { backendFetch } from '@/lib/backend'
-import { CalendarDays, Plus, Trash2, Loader as Loader2, Send, X, Wand as Wand2, Coffee, UtensilsCrossed, ChevronRight, Check, CreditCard as Edit2, ArrowRight, Shuffle } from 'lucide-react'
+import {
+  CalendarDays, Plus, Trash2, Loader2, Send, X, Wand2,
+  Coffee, UtensilsCrossed, ChevronRight, Check, Edit2, ArrowRight, Shuffle,
+} from 'lucide-react'
 import Link from 'next/link'
 import clsx from 'clsx'
 import type { Class, SchoolTimetablePeriod, ScheduleSlot, SchoolSchedule } from '@/lib/types'
@@ -259,7 +262,7 @@ export default function TimetablePage() {
           ) : undefined}
         />
 
-        <div className="px-5 max-w-[480px] mx-auto relative z-10 space-y-5">
+        <div className="px-5 md:px-6 max-w-3xl mx-auto relative z-10 space-y-5">
 
           {/* AI panel */}
           <div className="paper-card p-5" style={{ background: 'rgba(170,205,234,0.2)' }}>
@@ -413,7 +416,7 @@ export default function TimetablePage() {
         }
       />
 
-      <div className="px-5 max-w-[480px] mx-auto relative z-10 space-y-5">
+      <div className="px-5 md:px-6 max-w-5xl mx-auto relative z-10 space-y-5">
 
         {publishMsg && (
           <div className="bg-emerald-50 border border-emerald-100 text-emerald-700 text-sm font-semibold rounded-2xl px-4 py-3 flex items-center justify-between">
@@ -679,7 +682,7 @@ export default function TimetablePage() {
             <p className="text-sm text-ink-faint mt-1">Create classes first, then assign their timetables</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {gradeGroups.map(([grade, secs], i) => {
               const palette = PALETTE[i % PALETTE.length]
               const assigned = secs.reduce((sum, c) => sum + classAssignedCount(c.id), 0)

@@ -35,6 +35,13 @@
      Its component-level color-coding (grades/subjects/avatars) is a
      blue/orange/yellow/green/red set — see lib/admin-theme.ts and the
      .stat-card-* tones below. */
+  /* Admin's own page-canvas color, deliberately separate from --paper-bg:
+     the warm cream reads fine on the teacher/student portals it was designed
+     for, but the admin portal wanted plain white instead. Used only by
+     app/(admin)/layout.tsx -- .paper-page itself stays `background:
+     transparent` for every portal, so this is the only place that needed to
+     change. */
+  --admin-paper-bg: #FFFFFF;
 
   /* ── Student portal — bright, poppy yellow/orange-led "cute & kiddish" theme ──
      Same bones as the teacher/admin paper aesthetic (bold flat-matte outline,
@@ -346,10 +353,7 @@ button, a, [role='button'] { min-height: 44px; cursor: pointer; }
   border: 2px solid var(--card-border);
   position: relative;
 }
-/* Softer reference pastels — mint / peach / gold / blue (teacher portal) */
-.stat-card-blue   { background: #D6E3F3; }
-.stat-card-green  { background: #DCEEE1; }
-.stat-card-coral  { background: #F4D6C0; }
+/* Softer reference pastels (teacher portal) */
 .stat-card-gold   { background: #F7EFC4; }
 .stat-card-violet { background: #DED3F2; }
 .stat-card-pink   { background: #F4D7E1; }

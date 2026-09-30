@@ -32,11 +32,13 @@ export async function upsertSyllabusTopic(t: SyllabusTopic) {
 // content belongs to the class (now typically admin-authored, grade+subject-
 // wide), not to whichever teacher happened to create the row.
 export async function fetchSyllabusTopics(_teacherId: string, classIds: string[]): Promise<SyllabusTopic[]> {
-  if (!classIds.length) return []
-  const res = await backendFetch(`/api/teacher/syllabus-topics?classIds=${classIds.map(encodeURIComponent).join(',')}`)
-  if (!res.ok) throw new Error(`Failed to load syllabus topics (${res.status})`)
-  const { topics } = await res.json() as { topics: SyllabusTopic[] }
-  return topics
+  try {
+    if (!classIds.length) return []
+    const res = await backendFetch(`/api/teacher/syllabus-topics?classIds=${classIds.map(encodeURIComponent).join(',')}`)
+    if (!res.ok) return []
+    const { topics } = await res.json() as { topics: SyllabusTopic[] }
+    return topics
+  } catch { return [] }
 }
 
 export async function deleteSyllabusTopics(ids: string[]) {
@@ -52,10 +54,12 @@ export async function upsertSession(s: Session) {
 }
 
 export async function fetchSessions(_teacherId: string): Promise<Session[]> {
-  const res = await backendFetch('/api/teacher/sessions')
-  if (!res.ok) throw new Error(`Failed to load sessions (${res.status})`)
-  const { sessions } = await res.json() as { sessions: Session[] }
-  return sessions
+  try {
+    const res = await backendFetch('/api/teacher/sessions')
+    if (!res.ok) return []
+    const { sessions } = await res.json() as { sessions: Session[] }
+    return sessions
+  } catch { return [] }
 }
 
 // ─── Students ─────────────────────────────────────────────────────────────────
@@ -66,11 +70,13 @@ export async function upsertStudent(s: Student) {
 }
 
 export async function fetchStudentsByClasses(classIds: string[]): Promise<Student[]> {
-  if (!classIds.length) return []
-  const res = await backendFetch(`/api/teacher/students?classIds=${classIds.map(encodeURIComponent).join(',')}`)
-  if (!res.ok) throw new Error(`Failed to load students (${res.status})`)
-  const { students } = await res.json() as { students: Student[] }
-  return students
+  try {
+    if (!classIds.length) return []
+    const res = await backendFetch(`/api/teacher/students?classIds=${classIds.map(encodeURIComponent).join(',')}`)
+    if (!res.ok) return []
+    const { students } = await res.json() as { students: Student[] }
+    return students
+  } catch { return [] }
 }
 
 // ─── Tests ────────────────────────────────────────────────────────────────────
@@ -81,10 +87,12 @@ export async function upsertTest(t: Test) {
 }
 
 export async function fetchTests(_teacherId: string): Promise<Test[]> {
-  const res = await backendFetch('/api/teacher/tests')
-  if (!res.ok) throw new Error(`Failed to load tests (${res.status})`)
-  const { tests } = await res.json() as { tests: Test[] }
-  return tests
+  try {
+    const res = await backendFetch('/api/teacher/tests')
+    if (!res.ok) return []
+    const { tests } = await res.json() as { tests: Test[] }
+    return tests
+  } catch { return [] }
 }
 
 // ─── Marks ────────────────────────────────────────────────────────────────────
@@ -95,10 +103,12 @@ export async function upsertMark(m: Mark) {
 }
 
 export async function fetchMarks(_teacherId: string): Promise<Mark[]> {
-  const res = await backendFetch('/api/teacher/marks')
-  if (!res.ok) throw new Error(`Failed to load marks (${res.status})`)
-  const { marks } = await res.json() as { marks: Mark[] }
-  return marks
+  try {
+    const res = await backendFetch('/api/teacher/marks')
+    if (!res.ok) return []
+    const { marks } = await res.json() as { marks: Mark[] }
+    return marks
+  } catch { return [] }
 }
 
 // ─── Attendance ───────────────────────────────────────────────────────────────
@@ -109,11 +119,13 @@ export async function upsertAttendanceRecord(a: Attendance) {
 }
 
 export async function fetchAttendance(classIds: string[]): Promise<Attendance[]> {
-  if (!classIds.length) return []
-  const res = await backendFetch(`/api/teacher/attendance?classIds=${classIds.map(encodeURIComponent).join(',')}`)
-  if (!res.ok) throw new Error(`Failed to load attendance (${res.status})`)
-  const { attendance } = await res.json() as { attendance: Attendance[] }
-  return attendance
+  try {
+    if (!classIds.length) return []
+    const res = await backendFetch(`/api/teacher/attendance?classIds=${classIds.map(encodeURIComponent).join(',')}`)
+    if (!res.ok) return []
+    const { attendance } = await res.json() as { attendance: Attendance[] }
+    return attendance
+  } catch { return [] }
 }
 
 export async function deleteAttendanceBySession(sessionId: string) {
@@ -130,11 +142,13 @@ export async function upsertTopicMastery(m: TopicMastery) {
 }
 
 export async function fetchTopicMastery(_teacherId: string, classIds?: string[]): Promise<TopicMastery[]> {
-  const qs = classIds?.length ? `?classIds=${classIds.map(encodeURIComponent).join(',')}` : ''
-  const res = await backendFetch(`/api/teacher/topic-mastery${qs}`)
-  if (!res.ok) throw new Error(`Failed to load topic mastery (${res.status})`)
-  const { mastery } = await res.json() as { mastery: TopicMastery[] }
-  return mastery
+  try {
+    const qs = classIds?.length ? `?classIds=${classIds.map(encodeURIComponent).join(',')}` : ''
+    const res = await backendFetch(`/api/teacher/topic-mastery${qs}`)
+    if (!res.ok) return []
+    const { mastery } = await res.json() as { mastery: TopicMastery[] }
+    return mastery
+  } catch { return [] }
 }
 
 // ─── Syllabus Sub-Topics ──────────────────────────────────────────────────────
