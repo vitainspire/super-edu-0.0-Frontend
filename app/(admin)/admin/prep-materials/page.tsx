@@ -14,6 +14,7 @@ interface AdminPrepMaterial {
   topicDefinitionId?: string
   teacherName: string
   className: string
+  chapterTitle?: string | null
   grade: string
   subject: string
   topic: string
@@ -23,6 +24,27 @@ interface AdminPrepMaterial {
 }
 
 const ALL = '__all__'
+
+// The school's own Grade Subjects setup and the textbook catalog name the
+// same real subject differently ("mathematics" vs "Maths", "environmental
+// science" vs "Environmental Studies") -- see app/lib/subject_aliases.py,
+// the backend's own copy of this same grouping used for matching. Without
+// this, the filter dropdown lists what looks like 4 separate subjects for
+// what are really 2, since it just shows whatever distinct strings exist
+// across "taught" (school's own spelling) and "generated" (catalog's
+// spelling) rows.
+const SUBJECT_ALIAS_GROUPS: string[][] = [
+  ['Environmental Studies', 'EVS', 'Science', 'environmental science'],
+  ['Maths', 'Mathematics', 'mathematics', 'math'],
+]
+
+function canonicalSubject(subject: string): string {
+  const lower = subject.trim().toLowerCase()
+  for (const group of SUBJECT_ALIAS_GROUPS) {
+    if (group.some(g => g.toLowerCase() === lower)) return group[0]
+  }
+  return subject
+}
 
 // The shared textbook library every school's "Generate from Textbook" draws
 // from -- one catalog behind many schools, not something this app owns. This
@@ -43,9 +65,10 @@ export default function AdminPrepMaterialsPage() {
   // fetched on demand the first time its tile is opened, then cached here.
   const [lessons, setLessons] = useState<Record<string, SmartLesson>>({})
 
-  const [classFilter, setClassFilter]   = useState(ALL)
+  const [classFilter, setClassFilter]     = useState(ALL)
+  const [chapterFilter, setChapterFilter] = useState(ALL)
   const [subjectFilter, setSubjectFilter] = useState(ALL)
-  const [topicFilter, setTopicFilter]   = useState(ALL)
+  const [topicFilter, setTopicFilter]     = useState(ALL)
 
   useEffect(() => {
     if (!school) return
@@ -58,9 +81,12 @@ export default function AdminPrepMaterialsPage() {
   }, [school])
 
   // Filter options are drawn only from material that actually exists, so a selection
-  // never lands on an empty result.
-  const classOptions   = useMemo(() => [...new Set(materials.map(m => m.className))].sort(), [materials])
-  const subjectOptions = useMemo(() => [...new Set(materials.map(m => m.subject).filter(Boolean))].sort(), [materials])
+  // never lands on an empty result. className is "" for a "generated" row (it
+  // isn't tied to one class), so filter(Boolean) keeps it out of a dropdown
+  // literally labelled "All classes" -- chapterTitle gets its own dropdown below.
+  const classOptions   = useMemo(() => [...new Set(materials.map(m => m.className).filter(Boolean))].sort(), [materials])
+  const chapterOptions = useMemo(() => [...new Set(materials.map(m => m.chapterTitle).filter((c): c is string => Boolean(c)))].sort(), [materials])
+  const subjectOptions = useMemo(() => [...new Set(materials.map(m => canonicalSubject(m.subject)).filter(Boolean))].sort(), [materials])
   const topicOptions   = useMemo(() => [...new Set(materials.map(m => m.topic))].sort(), [materials])
 
   // Opens the tile's lesson full-screen (see FullScreenLessonPreview) rather
@@ -90,7 +116,8 @@ export default function AdminPrepMaterialsPage() {
 
   const filtered = materials.filter(m =>
     (classFilter === ALL || m.className === classFilter) &&
-    (subjectFilter === ALL || m.subject === subjectFilter) &&
+    (chapterFilter === ALL || m.chapterTitle === chapterFilter) &&
+    (subjectFilter === ALL || canonicalSubject(m.subject) === subjectFilter) &&
     (topicFilter === ALL || m.topic === topicFilter)
   )
 
@@ -144,6 +171,15 @@ export default function AdminPrepMaterialsPage() {
               </select>
               <ChevronDown size={12} className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-ink-faint" />
             </div>
+            {chapterOptions.length > 0 && (
+              <div className="relative flex-1 min-w-[120px]">
+                <select value={chapterFilter} onChange={e => setChapterFilter(e.target.value)} className={selectClass} style={selectStyle}>
+                  <option value={ALL}>All chapters</option>
+                  {chapterOptions.map(c => <option key={c} value={c}>{c}</option>)}
+                </select>
+                <ChevronDown size={12} className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-ink-faint" />
+              </div>
+            )}
             <div className="relative flex-1 min-w-[120px]">
               <select value={subjectFilter} onChange={e => setSubjectFilter(e.target.value)} className={selectClass} style={selectStyle}>
                 <option value={ALL}>All subjects</option>
@@ -199,7 +235,7 @@ export default function AdminPrepMaterialsPage() {
                     {m.topic}{m.subtopic ? ` — ${m.subtopic}` : ''}
                   </p>
                   <p className="text-[10px] text-ink-soft mt-1 truncate">
-                    {m.teacherName} · {m.className}
+                    {m.teacherName} · {m.className || m.chapterTitle}
                   </p>
                   <div className="flex items-center gap-1 mt-1.5 flex-wrap">
                     <span className="flex items-center gap-1 text-[9px] font-bold px-1.5 py-0.5 rounded-full" style={{ background: 'rgba(58,44,30,0.06)', color: 'var(--ink-soft)' }}>
