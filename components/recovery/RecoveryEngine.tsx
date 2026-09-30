@@ -137,7 +137,7 @@ export default function RecoveryEngine({
                 <button
                   onClick={() => handleFeedback(null)}
                   className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl font-semibold text-sm text-ink-soft"
-                  style={{ background: 'rgba(58,44,30,0.06)' }}
+                  style={{ background: 'rgba(15,23,42,0.06)' }}
                 >
                   <Minus size={16} /> Partially
                 </button>

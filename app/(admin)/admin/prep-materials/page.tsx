@@ -122,7 +122,7 @@ export default function AdminPrepMaterialsPage() {
   )
 
   const selectClass = 'w-full appearance-none px-3 py-2 pr-8 rounded-xl text-xs font-semibold text-ink focus:outline-none transition-all'
-  const selectStyle  = { background: 'rgba(58,44,30,0.04)', border: '1.5px solid rgba(58,44,30,0.1)' }
+  const selectStyle  = { background: 'rgba(15,23,42,0.04)', border: '1.5px solid rgba(15,23,42,0.1)' }
 
   return (
     <div className="paper-page pb-16">
@@ -135,7 +135,7 @@ export default function AdminPrepMaterialsPage() {
               type="button"
               onClick={() => setShowBrowse(true)}
               className="flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl text-xs font-bold"
-              style={{ background: 'rgba(27,24,15,0.05)', color: 'var(--ink)' }}
+              style={{ background: 'rgba(15,23,42,0.05)', color: 'var(--ink)' }}
             >
               <BookOpen size={14} />
               Browse Shared Library
@@ -143,8 +143,7 @@ export default function AdminPrepMaterialsPage() {
             <button
               type="button"
               onClick={() => setShowGenerate(true)}
-              className="flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl text-white text-xs font-bold"
-              style={{ background: 'var(--forest)' }}
+              className="admin-btn-primary flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl text-white text-xs font-bold"
             >
               <Sparkles size={14} />
               Generate from Textbook
@@ -238,7 +237,7 @@ export default function AdminPrepMaterialsPage() {
                     {m.teacherName} · {m.className || m.chapterTitle}
                   </p>
                   <div className="flex items-center gap-1 mt-1.5 flex-wrap">
-                    <span className="flex items-center gap-1 text-[9px] font-bold px-1.5 py-0.5 rounded-full" style={{ background: 'rgba(58,44,30,0.06)', color: 'var(--ink-soft)' }}>
+                    <span className="flex items-center gap-1 text-[9px] font-bold px-1.5 py-0.5 rounded-full" style={{ background: 'rgba(15,23,42,0.06)', color: 'var(--ink-soft)' }}>
                       <CalendarDays size={8} />
                       {new Date(m.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}
                     </span>
@@ -251,7 +250,7 @@ export default function AdminPrepMaterialsPage() {
                         className="text-[9px] font-bold px-1.5 py-0.5 rounded-full"
                         style={m.sessionCount > 0
                           ? { background: 'rgba(170,214,160,.2)', color: '#234A1D' }
-                          : { background: 'rgba(58,44,30,0.06)', color: 'var(--ink-faint)' }}
+                          : { background: 'rgba(15,23,42,0.06)', color: 'var(--ink-faint)' }}
                       >
                         {m.sessionCount === 0 ? 'Not taught' : `Taught ${m.sessionCount}×`}
                       </span>
@@ -279,7 +278,7 @@ export default function AdminPrepMaterialsPage() {
             onClose={() => setPreviewing(null)}
           />
         ) : !previewError ? (
-          <div className="fixed inset-0 z-[60] flex items-center justify-center" style={{ background: 'rgba(27,24,15,0.45)' }}>
+          <div className="fixed inset-0 z-[60] flex items-center justify-center" style={{ background: 'rgba(15,23,42,0.45)' }}>
             <Loader2 size={28} className="animate-spin text-white" />
           </div>
         ) : null
@@ -456,14 +455,14 @@ function GenerateFromBookModal({ schoolId, onClose }: { schoolId: string; onClos
   const selectStyle = { border: '1.5px solid var(--card-border)' }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center" style={{ background: 'rgba(27,24,15,0.45)' }}>
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center" style={{ background: 'rgba(15,23,42,0.45)' }}>
       <div className="w-full sm:max-w-md bg-white rounded-t-3xl sm:rounded-3xl overflow-hidden" style={{ border: '2px solid var(--card-border)' }}>
         <div className="flex items-center justify-between px-5 py-4" style={{ borderBottom: '1.5px solid var(--card-border)' }}>
           <div className="flex items-center gap-2">
-            <Sparkles size={16} style={{ color: 'var(--forest)' }} />
+            <Sparkles size={16} style={{ color: 'var(--admin-accent)' }} />
             <p className="text-sm font-bold text-ink">Generate from Textbook</p>
           </div>
-          <button type="button" onClick={onClose} className="w-8 h-8 flex items-center justify-center rounded-full" style={{ background: 'rgba(27,24,15,0.05)' }}>
+          <button type="button" onClick={onClose} className="w-8 h-8 flex items-center justify-center rounded-full" style={{ background: 'rgba(15,23,42,0.05)' }}>
             <X size={14} className="text-ink-soft" />
           </button>
         </div>
@@ -480,7 +479,7 @@ function GenerateFromBookModal({ schoolId, onClose }: { schoolId: string; onClos
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-1.5 text-[11px] font-bold"
-                style={{ color: 'var(--forest)' }}
+                style={{ color: 'var(--admin-accent)' }}
               >
                 <ExternalLink size={12} />
                 Don&apos;t see your textbook? Browse or add it in the shared library
@@ -492,7 +491,7 @@ function GenerateFromBookModal({ schoolId, onClose }: { schoolId: string; onClos
                   <div className="flex items-center gap-2 text-xs text-ink-soft py-2"><Loader2 size={13} className="animate-spin" /> Loading catalog…</div>
                 ) : booksError ? (
                   <div className="space-y-2.5">
-                    <div className="rounded-xl p-3" style={{ background: 'rgba(58,44,30,0.04)', border: '1.5px solid rgba(58,44,30,0.1)' }}>
+                    <div className="rounded-xl p-3" style={{ background: 'rgba(15,23,42,0.04)', border: '1.5px solid rgba(15,23,42,0.1)' }}>
                       <label className="text-[11px] font-bold uppercase tracking-wide text-ink-soft mb-1.5 block">
                         Or paste a chapter link directly
                       </label>
@@ -513,8 +512,7 @@ function GenerateFromBookModal({ schoolId, onClose }: { schoolId: string; onClos
                           type="button"
                           onClick={usePastedLink}
                           disabled={!pastedLink.trim()}
-                          className="px-3 py-2 rounded-lg text-xs font-bold text-white disabled:opacity-40 shrink-0"
-                          style={{ background: 'var(--forest)' }}
+                          className="admin-btn-primary px-3 py-2 rounded-xl text-xs font-bold text-white disabled:opacity-40 shrink-0"
                         >
                           Use link
                         </button>
@@ -523,7 +521,7 @@ function GenerateFromBookModal({ schoolId, onClose }: { schoolId: string; onClos
                         <p className="text-[11px] mt-1.5" style={{ color: '#B3261E' }}>{pastedLinkError}</p>
                       )}
                       {pastedLinkParsed && (
-                        <p className="text-[11px] mt-1.5" style={{ color: 'var(--forest)' }}>
+                        <p className="text-[11px] mt-1.5" style={{ color: 'var(--admin-accent)' }}>
                           ✓ Got it — book <code className="font-mono">{pastedLinkParsed.bookId}</code>, chapter {pastedLinkParsed.chapterNumber}. Scroll down and click Generate.
                         </p>
                       )}
@@ -565,8 +563,7 @@ function GenerateFromBookModal({ schoolId, onClose }: { schoolId: string; onClos
                 type="button"
                 disabled={!bookId || chapterNumber === '' || starting}
                 onClick={handleGenerate}
-                className="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-white text-sm font-bold disabled:opacity-40 transition-opacity"
-                style={{ background: 'var(--forest)' }}
+                className="admin-btn-primary w-full flex items-center justify-center gap-2 py-3 rounded-xl text-white text-sm font-bold disabled:opacity-40"
               >
                 {starting ? <Loader2 size={15} className="animate-spin" /> : <Sparkles size={15} />}
                 Generate lessons
@@ -576,7 +573,7 @@ function GenerateFromBookModal({ schoolId, onClose }: { schoolId: string; onClos
 
           {job?.status === 'running' && (
             <div className="flex flex-col items-center text-center py-6 gap-3">
-              <Loader2 size={28} className="animate-spin" style={{ color: 'var(--forest)' }} />
+              <Loader2 size={28} className="animate-spin" style={{ color: 'var(--admin-accent)' }} />
               <div>
                 <p className="text-sm font-bold text-ink">Generating…</p>
                 <p className="text-xs text-ink-soft mt-1">
@@ -588,7 +585,7 @@ function GenerateFromBookModal({ schoolId, onClose }: { schoolId: string; onClos
 
           {job?.status === 'done' && job.result && (
             <div className="flex flex-col items-center text-center py-4 gap-3">
-              <CheckCircle2 size={30} style={{ color: 'var(--forest)' }} />
+              <CheckCircle2 size={30} style={{ color: 'var(--admin-accent)' }} />
               <div>
                 <p className="text-sm font-bold text-ink">
                   {job.result.saved} lesson{job.result.saved !== 1 ? 's' : ''} saved
@@ -609,7 +606,7 @@ function GenerateFromBookModal({ schoolId, onClose }: { schoolId: string; onClos
 
               <SharedTopicsPreview schoolId={schoolId} grade={job.result.grade} subject={job.result.subject} />
 
-              <button type="button" onClick={onClose} className="mt-2 px-4 py-2 rounded-xl text-xs font-bold" style={{ background: 'rgba(27,24,15,0.05)', color: 'var(--ink)' }}>
+              <button type="button" onClick={onClose} className="mt-2 px-4 py-2 rounded-xl text-xs font-bold" style={{ background: 'rgba(15,23,42,0.05)', color: 'var(--ink)' }}>
                 Done
               </button>
             </div>
@@ -622,7 +619,7 @@ function GenerateFromBookModal({ schoolId, onClose }: { schoolId: string; onClos
                 <p className="text-sm font-bold text-ink">Generation failed</p>
                 <p className="text-xs text-ink-soft mt-1">{job.error || 'Something went wrong.'}</p>
               </div>
-              <button type="button" onClick={() => setJob(null)} className="mt-2 px-4 py-2 rounded-xl text-xs font-bold" style={{ background: 'rgba(27,24,15,0.05)', color: 'var(--ink)' }}>
+              <button type="button" onClick={() => setJob(null)} className="mt-2 px-4 py-2 rounded-xl text-xs font-bold" style={{ background: 'rgba(15,23,42,0.05)', color: 'var(--ink)' }}>
                 Try again
               </button>
             </div>
@@ -668,14 +665,14 @@ function BrowseSharedLibraryModal({ schoolId, onClose }: { schoolId: string; onC
   const selectStyle = { border: '1.5px solid var(--card-border)' }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center" style={{ background: 'rgba(27,24,15,0.45)' }}>
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center" style={{ background: 'rgba(15,23,42,0.45)' }}>
       <div className="w-full h-full sm:w-[92vw] sm:h-[92vh] sm:max-w-6xl bg-white sm:rounded-3xl overflow-hidden flex flex-col" style={{ border: '2px solid var(--card-border)' }}>
         <div className="flex items-center justify-between px-5 py-4 shrink-0" style={{ borderBottom: '1.5px solid var(--card-border)' }}>
           <div className="flex items-center gap-2">
-            <BookOpen size={16} style={{ color: 'var(--forest)' }} />
+            <BookOpen size={16} style={{ color: 'var(--admin-accent)' }} />
             <p className="text-sm font-bold text-ink">Browse Shared Library</p>
           </div>
-          <button type="button" onClick={onClose} className="w-8 h-8 flex items-center justify-center rounded-full" style={{ background: 'rgba(27,24,15,0.05)' }}>
+          <button type="button" onClick={onClose} className="w-8 h-8 flex items-center justify-center rounded-full" style={{ background: 'rgba(15,23,42,0.05)' }}>
             <X size={14} className="text-ink-soft" />
           </button>
         </div>
@@ -724,8 +721,7 @@ function BrowseSharedLibraryModal({ schoolId, onClose }: { schoolId: string; onC
             type="button"
             disabled={!grade || !subject}
             onClick={() => setBrowsing({ grade, subject })}
-            className="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-white text-sm font-bold disabled:opacity-40 transition-opacity shrink-0"
-            style={{ background: 'var(--forest)' }}
+            className="admin-btn-primary w-full flex items-center justify-center gap-2 py-3 rounded-xl text-white text-sm font-bold disabled:opacity-40 shrink-0"
           >
             <BookOpen size={15} />
             Browse
@@ -823,7 +819,7 @@ function SharedTopicsPreview({ schoolId, grade, subject }: { schoolId: string; g
             onClose={() => setPreviewing(null)}
           />
         ) : !previewError ? (
-          <div className="fixed inset-0 z-[60] flex items-center justify-center" style={{ background: 'rgba(27,24,15,0.45)' }}>
+          <div className="fixed inset-0 z-[60] flex items-center justify-center" style={{ background: 'rgba(15,23,42,0.45)' }}>
             <Loader2 size={28} className="animate-spin text-white" />
           </div>
         ) : null

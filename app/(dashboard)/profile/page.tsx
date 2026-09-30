@@ -42,7 +42,7 @@ export default function ProfilePage() {
           onClick={() => router.push('/profile/teaching')}
           className="w-full flex items-center gap-3 px-4 py-4 rounded-2xl text-left"
           style={isTeachingProfileComplete(teacher?.teachingProfile)
-            ? { background: 'rgba(58,44,30,0.04)', border: '2px solid var(--card-border)' }
+            ? { background: 'rgba(15,23,42,0.04)', border: '2px solid var(--card-border)' }
             : { background: 'rgba(31,61,44,0.08)', border: '2px solid var(--card-border)' }}
         >
           <Sparkles size={18} style={{ color: 'var(--forest)' }} className="shrink-0" />
@@ -62,7 +62,7 @@ export default function ProfilePage() {
             <div
               key={row.label}
               className="flex items-center justify-between py-3"
-              style={{ borderBottom: i < rows.length - 1 ? '1px solid rgba(58,44,30,0.08)' : 'none' }}
+              style={{ borderBottom: i < rows.length - 1 ? '1px solid rgba(15,23,42,0.08)' : 'none' }}
             >
               <span className="text-xs font-bold text-ink-soft uppercase tracking-wide">{row.label}</span>
               <span className="text-sm font-bold text-ink">{row.value || '—'}</span>

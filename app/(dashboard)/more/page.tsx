@@ -29,7 +29,7 @@ export default function MorePage() {
               type="button"
               onClick={() => router.push(href)}
               className="menu-row"
-              style={{ borderBottom: i < ROWS.length - 1 ? '1px solid rgba(58,44,30,0.08)' : 'none' }}
+              style={{ borderBottom: i < ROWS.length - 1 ? '1px solid rgba(15,23,42,0.08)' : 'none' }}
             >
               <Sticker tone={tone} size={44} radius={14}>
                 {lucide ? <Icon size={20} className="text-ink-soft" /> : <Icon size={24} />}

@@ -63,7 +63,7 @@ export function TopicGrid({ topics, onOpen }: { topics: SharedTopic[]; onOpen: (
               style={{ border: '1.5px solid var(--card-border)' }}
             />
           ) : (
-            <span className="w-full aspect-square rounded-xl flex items-center justify-center" style={{ background: 'rgba(27,24,15,0.05)' }}>
+            <span className="w-full aspect-square rounded-xl flex items-center justify-center" style={{ background: 'rgba(15,23,42,0.05)' }}>
               <BookOpen size={24} className="text-ink-faint" />
             </span>
           )}

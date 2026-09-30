@@ -113,15 +113,15 @@ export default function YearSummaryPage() {
                 </span>
               </div>
               <div className="grid grid-cols-3 gap-2 text-center">
-                <div className="rounded-xl py-2" style={{ background: 'rgba(58,44,30,0.05)' }}>
+                <div className="rounded-xl py-2" style={{ background: 'rgba(15,23,42,0.05)' }}>
                   <p className="text-sm font-black text-ink">{count}</p>
                   <p className="text-[10px] text-ink-soft font-semibold">Students</p>
                 </div>
-                <div className="rounded-xl py-2" style={{ background: 'rgba(58,44,30,0.05)' }}>
+                <div className="rounded-xl py-2" style={{ background: 'rgba(15,23,42,0.05)' }}>
                   <p className="text-sm font-black text-ink">{done}/{total}</p>
                   <p className="text-[10px] text-ink-soft font-semibold">Topics done</p>
                 </div>
-                <div className="rounded-xl py-2" style={{ background: count > 0 && avgAttendance < 0.75 ? 'rgba(220,38,38,0.08)' : 'rgba(58,44,30,0.05)' }}>
+                <div className="rounded-xl py-2" style={{ background: count > 0 && avgAttendance < 0.75 ? 'rgba(220,38,38,0.08)' : 'rgba(15,23,42,0.05)' }}>
                   <p className={clsx('text-sm font-black', count > 0 && avgAttendance < 0.75 ? 'text-red-700' : 'text-ink')}>
                     {count === 0 ? '—' : `${Math.round(avgAttendance * 100)}%`}
                   </p>
@@ -183,17 +183,17 @@ export default function YearSummaryPage() {
               </div>
 
               <div className="grid grid-cols-3 gap-2 text-center mb-2">
-                <div className="rounded-xl py-1.5" style={{ background: 'rgba(58,44,30,0.05)' }}>
+                <div className="rounded-xl py-1.5" style={{ background: 'rgba(15,23,42,0.05)' }}>
                   <p className="text-sm font-black text-ink">{Math.round(avgMastery * 100)}%</p>
                   <p className="text-[10px] text-ink-soft font-semibold">Avg score</p>
                 </div>
-                <div className="rounded-xl py-1.5" style={{ background: attendance < 0.75 ? 'rgba(220,38,38,0.08)' : 'rgba(58,44,30,0.05)' }}>
+                <div className="rounded-xl py-1.5" style={{ background: attendance < 0.75 ? 'rgba(220,38,38,0.08)' : 'rgba(15,23,42,0.05)' }}>
                   <p className={clsx('text-sm font-black', attendance < 0.75 ? 'text-red-700' : 'text-ink')}>
                     {Math.round(attendance * 100)}%
                   </p>
                   <p className="text-[10px] text-ink-soft font-semibold">Attendance</p>
                 </div>
-                <div className="rounded-xl py-1.5" style={{ background: 'rgba(58,44,30,0.05)' }}>
+                <div className="rounded-xl py-1.5" style={{ background: 'rgba(15,23,42,0.05)' }}>
                   <p className="text-sm font-black text-ink">{mCount}</p>
                   <p className="text-[10px] text-ink-soft font-semibold">Tests</p>
                 </div>

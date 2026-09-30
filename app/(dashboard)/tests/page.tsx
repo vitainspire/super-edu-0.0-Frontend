@@ -613,7 +613,7 @@ export default function TestsPage() {
             <button
               onClick={async () => { setSyncing(true); await forceSync(); setSyncing(false) }}
               disabled={syncing || syncStatus === 'offline'}
-              style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'rgba(58,44,30,0.08)', color: 'var(--ink-soft)', border: 'none', borderRadius: 12, padding: '9px 12px', fontSize: 12, fontWeight: 700, cursor: 'pointer', opacity: syncing || syncStatus === 'offline' ? 0.5 : 1 }}>
+              style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'rgba(15,23,42,0.08)', color: 'var(--ink-soft)', border: 'none', borderRadius: 12, padding: '9px 12px', fontSize: 12, fontWeight: 700, cursor: 'pointer', opacity: syncing || syncStatus === 'offline' ? 0.5 : 1 }}>
               <RefreshCw size={13} className={syncing ? 'animate-spin' : ''} />
             </button>
             <button onClick={handleNewWorkbook}
@@ -672,7 +672,7 @@ export default function TestsPage() {
                   </span>
                 </div>
                 <button onClick={() => { setSelectedClassId(cls.id); resetForm(); setStep('new-test') }}
-                  style={{ fontSize: 12, fontWeight: 700, color: 'var(--ink)', background: 'rgba(58,44,30,0.08)', padding: '5px 13px', borderRadius: 10, border: 'none', cursor: 'pointer' }}>
+                  style={{ fontSize: 12, fontWeight: 700, color: 'var(--ink)', background: 'rgba(15,23,42,0.08)', padding: '5px 13px', borderRadius: 10, border: 'none', cursor: 'pointer' }}>
                   + New Test
                 </button>
               </div>
@@ -684,7 +684,7 @@ export default function TestsPage() {
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                     {revisionTopics.map(({ topic, avg }) => (
                       <div key={topic} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                        <div style={{ flex: 1, background: 'rgba(58,44,30,0.15)', borderRadius: 99, height: 6 }}>
+                        <div style={{ flex: 1, background: 'rgba(15,23,42,0.15)', borderRadius: 99, height: 6 }}>
                           <div style={{ height: 6, borderRadius: 99, background: '#AD8A2C', width: `${Math.round(avg * 100)}%` }} />
                         </div>
                         <span style={{ fontSize: 11.5, fontWeight: 600, color: '#4A3809', width: 100, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', textAlign: 'right' }}>{topic}</span>
@@ -731,7 +731,7 @@ export default function TestsPage() {
                   })()
 
                   return (
-                    <div key={t.id} style={{ borderBottom: ti < classTests.length - 1 ? '1px solid rgba(58,44,30,0.08)' : 'none', borderLeft: `5px solid ${meta.border}` }}>
+                    <div key={t.id} style={{ borderBottom: ti < classTests.length - 1 ? '1px solid rgba(15,23,42,0.08)' : 'none', borderLeft: `5px solid ${meta.border}` }}>
                       <button type="button"
                         onClick={() => openEnterMarks(cls.id, t.id)}
                         className="active:bg-black/[0.03] transition-colors"
@@ -769,7 +769,7 @@ export default function TestsPage() {
                         <div style={{ padding: '0 16px 10px' }}>
                           <button type="button" onClick={() => fetchAnalysis(cls.id, t.id)}
                             className="w-full flex items-center justify-center gap-2 py-2 rounded-2xl text-xs font-bold transition-all"
-                            style={{ background: isOpen ? 'rgba(31,61,44,0.10)' : 'rgba(58,44,30,0.04)', color: isOpen ? 'var(--forest)' : 'var(--ink-soft)' }}>
+                            style={{ background: isOpen ? 'rgba(31,61,44,0.10)' : 'rgba(15,23,42,0.04)', color: isOpen ? 'var(--forest)' : 'var(--ink-soft)' }}>
                             <Sparkles size={12} />
                             {isOpen ? 'Hide Analysis' : 'Analyse Class'}
                             {analysisLoading && isOpen && <RefreshCw size={11} className="animate-spin" />}
@@ -782,7 +782,7 @@ export default function TestsPage() {
                         <div style={{ margin: '0 18px 12px', background: '#fff', border: '2px solid var(--card-border)', borderRadius: 16, padding: '16px' }}>
                           {!analysis && analysisLoading && (
                             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                              {[1,2,3,4].map(i => <div key={i} className="animate-pulse" style={{ height: 16, background: 'rgba(58,44,30,0.10)', borderRadius: 8 }} />)}
+                              {[1,2,3,4].map(i => <div key={i} className="animate-pulse" style={{ height: 16, background: 'rgba(15,23,42,0.10)', borderRadius: 8 }} />)}
                             </div>
                           )}
                           {!analysis && !analysisLoading && (
@@ -814,13 +814,13 @@ export default function TestsPage() {
                               </p>
                               <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                                 {questionStats.map(q => {
-                                  const ec = q.dominant === 'conceptual' ? 'bg-[#FBE3DC] text-[#8A3A28]' : q.dominant === 'procedural' ? 'bg-[#F8ECC9] text-[#4A3809]' : q.dominant === 'careless' ? 'bg-[#DCEBF8] text-[#1E3A55]' : 'bg-[rgba(58,44,30,0.06)] text-ink-soft'
+                                  const ec = q.dominant === 'conceptual' ? 'bg-[#FBE3DC] text-[#8A3A28]' : q.dominant === 'procedural' ? 'bg-[#F8ECC9] text-[#4A3809]' : q.dominant === 'careless' ? 'bg-[#DCEBF8] text-[#1E3A55]' : 'bg-[rgba(15,23,42,0.06)] text-ink-soft'
                                   const rec = q.dominant === 'conceptual' ? 'Re-explain core concept from scratch' : q.dominant === 'procedural' ? 'Show a worked example step by step' : q.dominant === 'careless' ? 'Quick drill — they understand but need practice' : 'Review this question with the class'
                                   return (
                                     <div key={q.qNum}>
                                       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                                         <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--ink)', flexShrink: 0 }}>Q{q.qNum}</span>
-                                        <div style={{ flex: 1, background: 'rgba(58,44,30,0.1)', borderRadius: 99, height: 8, overflow: 'hidden' }}>
+                                        <div style={{ flex: 1, background: 'rgba(15,23,42,0.1)', borderRadius: 99, height: 8, overflow: 'hidden' }}>
                                           <div style={{ height: 8, borderRadius: 99, background: q.wrongPct >= 70 ? '#C46B54' : q.wrongPct >= 50 ? '#AD8A2C' : 'var(--forest)', width: `${q.wrongPct}%` }} />
                                         </div>
                                         <span style={{ fontSize: 11, fontWeight: 800, color: 'var(--ink-soft)', width: 36, textAlign: 'right', flexShrink: 0 }}>{q.wrongPct}%</span>
@@ -847,7 +847,7 @@ export default function TestsPage() {
 
       {/* Class picker modal */}
       {classPicker && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(58,44,30,.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100 }}
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(15,23,42,.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100 }}
           onClick={() => setClassPicker(false)}>
           <div style={{ background: 'var(--paper-soft)', borderRadius: 24, padding: '28px 24px', width: 380, maxWidth: 'calc(100vw - 32px)', border: '2px solid var(--card-border)' }}
             onClick={e => e.stopPropagation()}>

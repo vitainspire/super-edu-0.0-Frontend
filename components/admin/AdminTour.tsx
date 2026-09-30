@@ -221,7 +221,7 @@ export default function AdminTour({ open, onClose }: { open: boolean; onClose: (
                 className="h-1.5 rounded-full transition-all"
                 style={{
                   width: i === index ? 18 : 6,
-                  background: i === index ? 'var(--ink)' : 'rgba(58,44,30,0.18)',
+                  background: i === index ? 'var(--ink)' : 'rgba(15,23,42,0.18)',
                 }}
               />
             ))}

@@ -96,8 +96,8 @@ export default function AdminNotificationBell() {
       <button
         type="button"
         onClick={() => setOpen(v => !v)}
-        className="relative w-9 h-9 flex items-center justify-center rounded-xl transition-colors hover:bg-[rgba(27,24,15,0.08)]"
-        style={{ background: 'rgba(27,24,15,0.05)' }}
+        className="relative w-9 h-9 flex items-center justify-center rounded-xl transition-colors hover:bg-[rgba(15,23,42,0.08)]"
+        style={{ background: 'rgba(15,23,42,0.05)' }}
         aria-label={unread.length > 0 ? `Alerts, ${unread.length} unread` : 'Alerts'}
       >
         <Bell size={15} className="text-ink-soft" />
@@ -116,7 +116,7 @@ export default function AdminNotificationBell() {
           className="absolute top-[115%] right-0 z-50 paper-card overflow-hidden text-left"
           style={{ width: 320, maxHeight: 400 }}
         >
-          <div className="flex items-center justify-between px-4 py-3" style={{ borderBottom: '1.5px solid rgba(58,44,30,0.1)' }}>
+          <div className="flex items-center justify-between px-4 py-3" style={{ borderBottom: '1.5px solid rgba(15,23,42,0.1)' }}>
             <p className="text-xs font-bold text-ink-soft uppercase tracking-wide">School Alerts</p>
             {unread.length > 0 && (
               <button
@@ -142,7 +142,7 @@ export default function AdminNotificationBell() {
                   type="button"
                   onClick={() => onAlertClick(n)}
                   className="w-full text-left px-4 py-3 flex items-start gap-2.5 transition-colors hover:bg-black/[0.02]"
-                  style={{ borderBottom: '1px solid rgba(58,44,30,0.06)' }}
+                  style={{ borderBottom: '1px solid rgba(15,23,42,0.06)' }}
                 >
                   {!n.readAt && (
                     <span className="w-2 h-2 rounded-full mt-1.5 shrink-0" style={{ background: '#B91C1C' }} />

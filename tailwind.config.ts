@@ -18,18 +18,21 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
+        // Teacher dashboard design system — royal-blue primary + navy accent.
         primary: {
-          50:  "#eff6ff",
-          100: "#dbeafe",
-          500: "#3b82f6",
-          600: "#2563eb",
-          700: "#1d4ed8",
-          800: "#1e40af",
+          DEFAULT: "#2952E3",   // sidebar background, primary CTA buttons
+          hover:   "#4569E8",   // hover states, active nav icons
+          light:   "#E5EAFB",   // active menu item backgrounds, subtle highlights
+        },
+        navy: "#162D7C",         // high-contrast text, active sidebar text, deep borders
+        surface: {
+          bg:   "#F4F6F9",       // main dashboard background behind white cards
+          card: "#FFFFFF",       // white cards, modally raised surfaces
         },
         paper: {
           DEFAULT: "#FFFFFF",   // card surface
-          soft:    "#FBFBF6",   // slightly warm card
-          line:    "#E4E2D6",
+          soft:    "#F8FAFC",   // slate-50 card tint
+          line:    "#E2E8F0",   // slate-200 hairline border
         },
         // Sage canvas + forest-green nav/accent — the redesign palette.
         sage: {
@@ -37,15 +40,18 @@ const config: Config = {
           soft:    "#B7CEB0",
           deep:    "#95B48D",
         },
+        // Teacher portal brand/primary — alias of `primary` above, kept because
+        // most existing components (SideNav, BottomNav, .paper-btn-primary)
+        // already reference `forest`/`var(--forest)`.
         forest: {
-          DEFAULT: "#1F3D2C",
-          soft:    "#2C5540",
-          bright:  "#3E7A57",
+          DEFAULT: "#2952E3",   // == primary
+          soft:    "#4569E8",   // == primary-hover
+          bright:  "#E5EAFB",   // == primary-light
         },
         ink: {
-          DEFAULT: "#17140F",   // near-black headings / text / dark buttons
-          soft:    "#4A4740",
-          faint:   "#8A887F",
+          DEFAULT: "#0F172A",   // slate-900 — headings / primary text
+          soft:    "#64748B",   // slate-500 — secondary text (time slots, labels)
+          faint:   "#94A3B8",   // slate-400 — tertiary / disabled text
         },
         sticker: {
           blue:      "#AACDEA",

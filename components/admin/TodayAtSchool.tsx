@@ -30,6 +30,12 @@ export default function TodayAtSchool({ operations }: { operations: Operations }
     hint?: string
     href?: string
     tone?: 'alert'
+    // Status dot next to the number, at a glance: 'green' = resolved/fine,
+    // 'amber' = needs attention, 'gray' = purely informational (no defined
+    // good/bad for this metric — attendance rate and "teachers away" don't
+    // have a threshold anywhere in this data model, so they stay neutral
+    // rather than inventing one).
+    dot: 'green' | 'amber' | 'gray'
   }[] = [
     {
       key: 'attendance',
@@ -39,6 +45,7 @@ export default function TodayAtSchool({ operations }: { operations: Operations }
       hint: attendanceRate === null
         ? 'None recorded in the last 7 days'
         : `${attendanceRecords.toLocaleString()} record${attendanceRecords === 1 ? '' : 's'}, last 7 days`,
+      dot: attendanceRate === null ? 'gray' : 'green',
     },
     {
       key: 'cover',
@@ -48,6 +55,7 @@ export default function TodayAtSchool({ operations }: { operations: Operations }
       hint: unresolvedCover > 0 ? 'Periods today with no substitute' : 'Every absence is covered',
       href: '/admin/substitutes',
       tone: unresolvedCover > 0 ? 'alert' : undefined,
+      dot: unresolvedCover > 0 ? 'amber' : 'green',
     },
     {
       key: 'absent',
@@ -56,6 +64,7 @@ export default function TodayAtSchool({ operations }: { operations: Operations }
       label: 'Teachers away',
       hint: 'Marked unavailable today',
       href: '/admin/substitutes',
+      dot: 'gray',
     },
     {
       key: 'doubts',
@@ -64,13 +73,18 @@ export default function TodayAtSchool({ operations }: { operations: Operations }
       label: 'Unanswered doubts',
       hint: pendingDoubts > 0 ? 'Students waiting on a reply' : 'Nothing waiting',
       tone: pendingDoubts > 0 ? 'alert' : undefined,
+      dot: pendingDoubts > 0 ? 'amber' : 'green',
     },
   ]
 
+  const DOT_COLOR: Record<'green' | 'amber' | 'gray', string> = {
+    green: '#22C55E', amber: '#D97706', gray: '#CBD5E1',
+  }
+
   return (
-    <div className="paper-card p-5 mb-6">
-      <p className="text-[11px] font-bold text-ink-soft uppercase tracking-widest mb-4">Today</p>
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+    <div className="admin-card p-5 mb-6">
+      <p className="text-[11px] font-bold uppercase tracking-widest mb-4" style={{ color: '#64748B' }}>Today</p>
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {cells.map(cell => {
           const clickable = !!cell.href
           const Tag = clickable ? 'button' : 'div'
@@ -80,23 +94,27 @@ export default function TodayAtSchool({ operations }: { operations: Operations }
               {...(clickable
                 ? { type: 'button' as const, onClick: () => router.push(cell.href!) }
                 : {})}
-              className={`text-left rounded-2xl p-3.5 ${clickable ? 'active:scale-[0.98] transition-transform' : ''}`}
-              style={{ background: 'rgba(58,44,30,0.05)', border: '1px solid rgba(58,44,30,0.1)' }}
+              className={clickable ? 'admin-card-hover text-left rounded-2xl p-4' : 'admin-card text-left rounded-2xl p-4'}
             >
               <span
                 className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wide"
-                style={{ color: cell.tone === 'alert' ? '#7A2E17' : 'var(--ink-soft)' }}
+                style={{ color: cell.tone === 'alert' ? '#D97706' : '#64748B' }}
               >
                 {cell.icon}
                 {cell.label}
               </span>
               <p
-                className="font-display font-extrabold mt-1.5"
-                style={{ fontSize: 24, letterSpacing: '-0.02em', color: cell.tone === 'alert' ? '#7A2E17' : 'var(--ink)' }}
+                className="font-display font-extrabold mt-1.5 flex items-center gap-2"
+                style={{ fontSize: 24, letterSpacing: '-0.02em', color: cell.tone === 'alert' ? '#B45309' : '#0F172A' }}
               >
                 {cell.value}
+                <span
+                  className="rounded-full shrink-0"
+                  style={{ width: 8, height: 8, background: DOT_COLOR[cell.dot] }}
+                  aria-hidden="true"
+                />
               </p>
-              {cell.hint && <p className="text-[11px] text-ink-faint mt-0.5 leading-snug">{cell.hint}</p>}
+              {cell.hint && <p className="text-[11px] mt-0.5 leading-snug" style={{ color: '#94A3B8' }}>{cell.hint}</p>}
             </Tag>
           )
         })}

@@ -108,7 +108,7 @@ export default function ClassroomModeFeedbackPage() {
                     onClick={() => setAnswers(prev => ({ ...prev, [q.key]: opt.value }))}
                     className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-xs font-bold transition-all active:scale-95"
                     style={{
-                      background: selected ? 'var(--ink)' : 'rgba(58,44,30,0.05)',
+                      background: selected ? 'var(--ink)' : 'rgba(15,23,42,0.05)',
                       color: selected ? '#fff' : 'var(--ink-soft)',
                     }}
                   >
@@ -128,7 +128,7 @@ export default function ClassroomModeFeedbackPage() {
               onClick={listening ? stopListening : startListening}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-colors shrink-0"
               style={{
-                background: listening ? '#FEE2E2' : 'rgba(58,44,30,0.05)',
+                background: listening ? '#FEE2E2' : 'rgba(15,23,42,0.05)',
                 color: listening ? '#B91C1C' : 'var(--ink-soft)',
               }}
             >

@@ -248,6 +248,7 @@ export default function TimetablePage() {
     return (
       <div className="paper-page pb-16">
         <PageHeader
+          variant="admin"
           title={editingTemplate ? 'Edit Schedule Template' : 'Set Up School Schedule'}
           subtitle="Define your school's daily period structure"
           back={false}
@@ -255,7 +256,7 @@ export default function TimetablePage() {
             <button
               onClick={() => { setEditingTemplate(false); setShowPreview(false) }}
               className="w-9 h-9 flex items-center justify-center rounded-full active:scale-90 transition-transform"
-              style={{ background: 'rgba(58,44,30,0.08)' }}
+              style={{ background: 'rgba(15,23,42,0.08)' }}
             >
               <X className="w-4 h-4 text-ink" />
             </button>
@@ -273,7 +274,7 @@ export default function TimetablePage() {
                 </div>
                 <p className="text-sm font-bold" style={{ color: '#1E3A55' }}>Generate with AI</p>
               </div>
-              <button onClick={() => setShowAiPanel(v => !v)} className="text-xs font-bold underline" style={{ color: '#1E3A55' }}>
+              <button onClick={() => setShowAiPanel(v => !v)} className="text-xs font-bold underline hover:opacity-70 transition-opacity" style={{ color: '#1E3A55' }}>
                 {showAiPanel ? 'Hide' : 'Describe your schedule'}
               </button>
             </div>
@@ -281,7 +282,7 @@ export default function TimetablePage() {
               <div className="space-y-3">
                 <textarea value={aiPrompt} onChange={e => setAiPrompt(e.target.value)} rows={3}
                   placeholder='e.g. "School 9am–4pm, 45-min periods, short break 10:30–10:45, lunch 1pm–1:45pm"'
-                  className="w-full px-3 py-2.5 rounded-2xl border-[1.5px] border-[rgba(58,44,30,0.16)] text-sm focus:outline-none bg-white/70 resize-none"
+                  className="w-full px-3 py-2.5 admin-input rounded-xl text-sm resize-none"
                 />
                 <button onClick={handleAiGenerate} disabled={aiLoading || !aiPrompt.trim()}
                   className="paper-btn-primary disabled:opacity-50">
@@ -294,7 +295,7 @@ export default function TimetablePage() {
           </div>
 
           {/* Manual form */}
-          <div className="paper-card p-6 space-y-5">
+          <div className="admin-card p-6 space-y-5">
             <p className="text-sm font-bold text-ink">Or configure manually</p>
             <div className="grid grid-cols-3 gap-4">
               {[
@@ -305,7 +306,7 @@ export default function TimetablePage() {
                   <label className="block text-xs font-bold text-ink-soft mb-1.5">{f.label}</label>
                   <input type="time" value={setupForm[f.key] as string}
                     onChange={e => setSetupForm(s => ({ ...s, [f.key]: e.target.value }))}
-                    className="w-full px-3 py-2.5 rounded-2xl border-[1.5px] border-[rgba(58,44,30,0.16)] text-sm focus:outline-none bg-white/70"
+                    className="w-full px-3 py-2.5 admin-input rounded-xl text-sm"
                   />
                 </div>
               ))}
@@ -313,7 +314,7 @@ export default function TimetablePage() {
                 <label className="block text-xs font-bold text-ink-soft mb-1.5">Period Duration (min)</label>
                 <input type="number" min={20} max={120} value={setupForm.periodMins}
                   onChange={e => setSetupForm(s => ({ ...s, periodMins: +e.target.value }))}
-                  className="w-full px-3 py-2.5 rounded-2xl border-[1.5px] border-[rgba(58,44,30,0.16)] text-sm focus:outline-none bg-white/70"
+                  className="w-full px-3 py-2.5 admin-input rounded-xl text-sm"
                 />
               </div>
             </div>
@@ -331,16 +332,16 @@ export default function TimetablePage() {
                   <div key={i} className="flex items-center gap-2">
                     <input value={b.label} placeholder="Break name"
                       onChange={e => setSetupForm(s => ({ ...s, breaks: s.breaks.map((x, j) => j === i ? { ...x, label: e.target.value } : x) }))}
-                      className="flex-1 px-3 py-2 rounded-xl border-[1.5px] border-[rgba(58,44,30,0.14)] text-sm focus:outline-none bg-white/70"
+                      className="flex-1 px-3 py-2 admin-input rounded-xl text-sm"
                     />
                     <input type="time" value={b.startTime}
                       onChange={e => setSetupForm(s => ({ ...s, breaks: s.breaks.map((x, j) => j === i ? { ...x, startTime: e.target.value } : x) }))}
-                      className="px-3 py-2 rounded-xl border-[1.5px] border-[rgba(58,44,30,0.14)] text-sm focus:outline-none bg-white/70"
+                      className="px-3 py-2 admin-input rounded-xl text-sm"
                     />
                     <span className="text-ink-faint text-xs">to</span>
                     <input type="time" value={b.endTime}
                       onChange={e => setSetupForm(s => ({ ...s, breaks: s.breaks.map((x, j) => j === i ? { ...x, endTime: e.target.value } : x) }))}
-                      className="px-3 py-2 rounded-xl border-[1.5px] border-[rgba(58,44,30,0.14)] text-sm focus:outline-none bg-white/70"
+                      className="px-3 py-2 admin-input rounded-xl text-sm"
                     />
                     <button onClick={() => setSetupForm(s => ({ ...s, breaks: s.breaks.filter((_, j) => j !== i) }))}
                       className="p-1.5 text-ink-faint hover:text-red-500 rounded-lg">
@@ -358,14 +359,14 @@ export default function TimetablePage() {
 
           {/* Preview */}
           {showPreview && previewSlots.length > 0 && (
-            <div className="paper-card overflow-hidden">
-              <div className="px-5 py-3.5 flex items-center justify-between border-b-[1.5px] border-[rgba(58,44,30,0.12)]">
+            <div className="admin-card overflow-hidden">
+              <div className="px-5 py-3.5 flex items-center justify-between border-b-[1.5px] border-[rgba(15,23,42,0.12)]">
                 <p className="font-bold text-ink text-sm">
                   Preview — {previewSlots.filter(s => s.type === 'period').length} periods/day
                 </p>
                 <p className="text-xs text-ink-faint">{setupForm.startTime} – {setupForm.endTime}</p>
               </div>
-              <div className="divide-y divide-[rgba(58,44,30,0.08)]">
+              <div className="divide-y divide-[rgba(15,23,42,0.08)]">
                 {previewSlots.map((slot, i) => (
                   <div key={i} className="flex items-center gap-3 px-5 py-3" style={slot.type === 'break' ? { background: 'rgba(234,201,104,0.16)' } : undefined}>
                     <div className={`w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 ${slot.type === 'break' ? 'bg-sticker-gold' : 'bg-sticker-blue'}`}>
@@ -380,10 +381,10 @@ export default function TimetablePage() {
                   </div>
                 ))}
               </div>
-              <div className="px-5 py-4 flex gap-3 border-t-[1.5px] border-[rgba(58,44,30,0.12)]">
-                <button onClick={() => setShowPreview(false)} className="flex-1 py-2.5 rounded-2xl border-[1.5px] border-[rgba(58,44,30,0.16)] text-sm font-bold text-ink-soft">Edit</button>
+              <div className="px-5 py-4 flex gap-3 border-t-[1.5px] border-[rgba(15,23,42,0.12)]">
+                <button onClick={() => setShowPreview(false)} className="flex-1 py-2.5 rounded-xl admin-btn-secondary text-sm font-bold text-ink-soft">Edit</button>
                 <button onClick={saveSchedule} disabled={savingSchedule}
-                  className="flex-1 py-2.5 rounded-2xl bg-emerald-600 text-white text-sm font-bold flex items-center justify-center gap-2 disabled:opacity-60">
+                  className="flex-1 py-2.5 rounded-xl bg-emerald-600 text-white text-sm font-bold flex items-center justify-center gap-2 disabled:opacity-60">
                   {savingSchedule ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />} Save Schedule
                 </button>
               </div>
@@ -398,17 +399,18 @@ export default function TimetablePage() {
   return (
     <div className="paper-page pb-16">
       <PageHeader
+        variant="admin"
         title="Timetable"
         subtitle={`${periodSlotsCount} periods/day · ${classes.length} classes`}
         back={false}
         action={
           <div className="flex items-center gap-2">
             <button onClick={() => { setEditingTemplate(true); setShowPreview(false); setPreviewSlots([]) }}
-              className="flex items-center gap-1.5 px-3.5 py-2.5 rounded-2xl border-[1.5px] border-[rgba(58,44,30,0.16)] text-xs font-bold text-ink-soft active:scale-95 transition-transform">
+              className="flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl admin-btn-secondary text-xs font-bold text-ink-soft">
               <Edit2 className="w-3.5 h-3.5" /> Edit Template
             </button>
             <button onClick={publish} disabled={publishing || periods.length === 0}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-emerald-600 text-white text-sm font-bold disabled:opacity-60 active:scale-95 transition-transform">
+              className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-600 text-white text-sm font-bold disabled:opacity-60 active:scale-95 transition-transform">
               {publishing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
               Publish to Teachers
             </button>
@@ -435,7 +437,7 @@ export default function TimetablePage() {
                 Schedules every grade and section together in one pass — teachers covering multiple grades/subjects are treated as one shared resource, not scheduled per-grade in isolation. Safe to re-run any time: periods that haven&apos;t changed are left exactly as they are — only new or changed requirements get placed.
               </p>
             </div>
-            <div className="flex rounded-xl overflow-hidden shrink-0" style={{ border: '1.5px solid rgba(58,44,30,0.16)' }}>
+            <div className="flex rounded-xl overflow-hidden shrink-0" style={{ border: '1.5px solid rgba(15,23,42,0.16)' }}>
               {[{ label: '6-Day Week', value: true }, { label: '5-Day Week', value: false }].map(opt => (
                 <button
                   key={opt.label}
@@ -505,7 +507,7 @@ export default function TimetablePage() {
         </div>
 
         {/* Schedule summary strip */}
-        <div className="paper-card p-4 overflow-x-auto">
+        <div className="admin-card p-4 overflow-x-auto">
           <p className="text-xs font-black text-ink-soft uppercase tracking-widest mb-3">Daily Schedule</p>
           <div className="flex items-center gap-2 flex-nowrap">
             {schedule.slots.map((slot, i) => (
@@ -523,7 +525,7 @@ export default function TimetablePage() {
         </div>
 
         {/* Subject lineup & shuffle */}
-        <div className="paper-card p-5">
+        <div className="admin-card p-5">
           <div className="flex items-center justify-between mb-4 gap-3 flex-wrap">
             <div>
               <p className="text-sm font-bold text-ink flex items-center gap-2">
@@ -536,7 +538,7 @@ export default function TimetablePage() {
             <select
               value={selectedGrade}
               onChange={e => { setSelectedGrade(e.target.value); setShuffleResult(null); setShuffleError(null); setShufflePublishMsg('') }}
-              className="px-3 py-2.5 rounded-2xl border-[1.5px] border-[rgba(58,44,30,0.16)] text-sm text-ink focus:outline-none bg-white/70"
+              className="px-3 py-2.5 admin-input rounded-xl text-sm text-ink"
             >
               <option value="">Select grade…</option>
               {grades.map(g => <option key={g} value={g}>Grade {g}</option>)}
@@ -567,9 +569,9 @@ export default function TimetablePage() {
               )}
 
               {shuffleResult && shuffleResult.length > 0 && schedule && (
-                <div className="mt-3 rounded-2xl overflow-hidden border-[1.5px] border-[rgba(58,44,30,0.14)]">
+                <div className="mt-3 admin-card overflow-hidden">
                   {/* Section tabs */}
-                  <div className="flex flex-wrap gap-1.5 p-3 border-b-[1.5px] border-[rgba(58,44,30,0.1)]" style={{ background: 'rgba(58,44,30,0.03)' }}>
+                  <div className="flex flex-wrap gap-1.5 p-3 border-b-[1.5px] border-[rgba(15,23,42,0.1)]" style={{ background: 'rgba(15,23,42,0.03)' }}>
                     {shuffleResult.map(s => (
                       <button
                         key={s.classId}
@@ -578,7 +580,7 @@ export default function TimetablePage() {
                           'px-3 py-1.5 rounded-xl text-xs font-bold transition-colors',
                           activeShuffleTab === s.classId
                             ? 'text-white'
-                            : 'bg-white/70 text-ink-soft border-[1.5px] border-[rgba(58,44,30,0.14)]'
+                            : 'bg-white/70 text-ink-soft border-[1.5px] border-[rgba(15,23,42,0.14)]'
                         )}
                         style={activeShuffleTab === s.classId ? { background: 'var(--ink)' } : undefined}
                       >
@@ -623,7 +625,7 @@ export default function TimetablePage() {
                                           {cell.label}
                                         </div>
                                       ) : (
-                                        <div className="rounded-lg px-2 py-1.5 text-center text-ink-faint" style={{ background: 'rgba(58,44,30,0.05)' }}>—</div>
+                                        <div className="rounded-lg px-2 py-1.5 text-center text-ink-faint" style={{ background: 'rgba(15,23,42,0.05)' }}>—</div>
                                       )}
                                     </td>
                                   )
@@ -663,7 +665,7 @@ export default function TimetablePage() {
                   <button
                     onClick={publishShuffled}
                     disabled={publishingShuffled}
-                    className="flex-1 py-3 rounded-2xl bg-emerald-600 text-white text-sm font-bold flex items-center justify-center gap-2 disabled:opacity-60"
+                    className="flex-1 py-3 rounded-xl bg-emerald-600 text-white text-sm font-bold flex items-center justify-center gap-2 disabled:opacity-60"
                   >
                     {publishingShuffled ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
                     Publish Grade {selectedGrade} to Teachers
@@ -676,7 +678,7 @@ export default function TimetablePage() {
 
         {/* Grade cards */}
         {gradeGroups.length === 0 ? (
-          <div className="paper-card text-center py-16">
+          <div className="admin-card text-center py-16">
             <CalendarDays className="w-10 h-10 text-ink-faint mx-auto mb-3" />
             <p className="text-ink-soft font-bold">No classes yet</p>
             <p className="text-sm text-ink-faint mt-1">Create classes first, then assign their timetables</p>

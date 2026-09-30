@@ -29,7 +29,7 @@ export default function AttendanceChart({ weeks, height = 100 }: Props) {
           const y = PAD_T + chartH - v * chartH
           return (
             <line key={v} x1={0} y1={y} x2={W} y2={y}
-              stroke="rgba(58,44,30,0.14)" strokeWidth={1} strokeDasharray={v === 1 ? '0' : '4 3'} />
+              stroke="rgba(15,23,42,0.14)" strokeWidth={1} strokeDasharray={v === 1 ? '0' : '4 3'} />
           )
         })}
 

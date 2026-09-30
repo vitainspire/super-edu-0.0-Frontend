@@ -73,7 +73,7 @@ export default function ClassStatChips({ snapshot }: { snapshot: ClassSnapshot }
           style={
             chip.tone === 'alert'
               ? { background: 'rgba(196,107,84,0.14)', color: '#7A2E17' }
-              : { background: 'rgba(58,44,30,0.06)', color: 'var(--ink-soft)' }
+              : { background: 'rgba(15,23,42,0.06)', color: 'var(--ink-soft)' }
           }
         >
           {chip.icon}

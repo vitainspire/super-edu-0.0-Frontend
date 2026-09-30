@@ -163,7 +163,7 @@ export default function WorkbookModal({ open, onClose, classId, className, subje
 
   return (
     <div
-      style={{ position: 'fixed', inset: 0, background: 'rgba(27,24,15,0.6)', display: 'flex', alignItems: 'flex-end', justifyContent: 'center', zIndex: 120 }}
+      style={{ position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.6)', display: 'flex', alignItems: 'flex-end', justifyContent: 'center', zIndex: 120 }}
       onClick={onClose}
     >
       <div
@@ -202,7 +202,7 @@ export default function WorkbookModal({ open, onClose, classId, className, subje
                     const selCount = subtopicSel[t.id]?.size ?? 0
                     return (
                       <div key={t.id} className="rounded-2xl overflow-hidden border-2 transition-colors"
-                        style={{ borderColor: selected ? 'var(--ink)' : 'var(--card-border)', background: selected ? 'rgba(58,44,30,0.05)' : '#fff' }}>
+                        style={{ borderColor: selected ? 'var(--ink)' : 'var(--card-border)', background: selected ? 'rgba(15,23,42,0.05)' : '#fff' }}>
                         <div className="flex items-center gap-2.5 px-3.5 py-2.5">
                           <button type="button" onClick={() => toggleTopic(t.id)} className="flex items-center gap-2.5 flex-1 min-w-0 text-left">
                             <span className="w-5 h-5 rounded-md flex items-center justify-center shrink-0 border-2"
@@ -228,7 +228,7 @@ export default function WorkbookModal({ open, onClose, classId, className, subje
                               return (
                                 <button key={s.id} type="button" onClick={() => toggleSub(t.id, s.name)}
                                   className="text-xs font-semibold px-2.5 py-1 rounded-full transition-colors inline-flex items-center gap-1"
-                                  style={on ? { background: 'var(--ink)', color: 'var(--paper-soft)' } : taught ? { background: '#DFF0DA', color: '#234A1D' } : { background: 'rgba(58,44,30,0.07)', color: 'var(--ink-soft)' }}>
+                                  style={on ? { background: 'var(--ink)', color: 'var(--paper-soft)' } : taught ? { background: '#DFF0DA', color: '#234A1D' } : { background: 'rgba(15,23,42,0.07)', color: 'var(--ink-soft)' }}>
                                   {taught && <Check className="w-3 h-3" strokeWidth={3} />}
                                   {s.name}
                                 </button>
@@ -241,7 +241,7 @@ export default function WorkbookModal({ open, onClose, classId, className, subje
                   })}
 
                   {customTopics.map((t, i) => (
-                    <div key={`c-${i}`} className="flex items-center gap-2.5 px-3.5 py-2.5 rounded-2xl border-2" style={{ borderColor: 'var(--ink)', background: 'rgba(58,44,30,0.05)' }}>
+                    <div key={`c-${i}`} className="flex items-center gap-2.5 px-3.5 py-2.5 rounded-2xl border-2" style={{ borderColor: 'var(--ink)', background: 'rgba(15,23,42,0.05)' }}>
                       <span className="w-5 h-5 rounded-md flex items-center justify-center shrink-0" style={{ background: 'var(--ink)' }}>
                         <CheckSquare className="w-3 h-3 text-white" strokeWidth={3} />
                       </span>
@@ -287,7 +287,7 @@ export default function WorkbookModal({ open, onClose, classId, className, subje
               )}
               {state === 'loading' && (
                 <div style={{ textAlign: 'center', padding: '4px' }}>
-                  <div style={{ width: 30, height: 30, border: '3px solid rgba(27,24,15,0.15)', borderTopColor: 'var(--forest)', borderRadius: '50%', margin: '0 auto', animation: 'spin 0.8s linear infinite' }} />
+                  <div style={{ width: 30, height: 30, border: '3px solid rgba(15,23,42,0.15)', borderTopColor: 'var(--forest)', borderRadius: '50%', margin: '0 auto', animation: 'spin 0.8s linear infinite' }} />
                   <p style={{ fontSize: 12, color: 'var(--ink-soft)', marginTop: 8 }}>Grounding practice in what these chapters were taught…</p>
                   <style>{`@keyframes spin { to { transform: rotate(360deg) } }`}</style>
                 </div>

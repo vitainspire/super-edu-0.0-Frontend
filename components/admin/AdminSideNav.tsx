@@ -9,7 +9,10 @@ import AdminNotificationBell from '@/components/admin/AdminNotificationBell'
 // The one accent color against an otherwise white/black sidebar -- the logo
 // mark, the active nav item, and the avatar all read as one palette. Dark
 // enough that anything sitting on top of it needs white, not --ink.
-const ACCENT = '#0000CD'
+// Reuses --admin-accent (the app's existing indigo, --primary) rather than
+// introducing a second, unrelated blue -- part of the admin portal's
+// deliberate soft-UI divergence from the rest of the app (see globals.css).
+const ACCENT = 'var(--admin-accent)'
 
 // Ordered by what blocks what, not alphabetically or by how often a page is
 // used. Every one of these works in isolation, which is exactly the problem:
@@ -50,10 +53,10 @@ export default function AdminSideNav() {
   return (
     <aside
       className="hidden md:flex flex-col w-64 shrink-0 h-screen sticky top-0 overflow-y-auto"
-      style={{ background: 'var(--admin-paper-bg)', borderRight: '3px solid var(--card-border)' }}
+      style={{ background: '#FFFFFF', borderRight: '1px solid var(--admin-border)', boxShadow: 'var(--admin-shadow-sm)' }}
     >
-      <div className="flex items-center gap-3 px-6 py-6" style={{ borderBottom: '1px solid rgba(27,24,15,0.1)' }}>
-        <div className="w-10 h-10 rounded-2xl flex items-center justify-center shrink-0" style={{ background: ACCENT, border: '1.5px solid var(--card-border)' }}>
+      <div className="flex items-center gap-3 px-6 py-6" style={{ borderBottom: '1px solid var(--admin-border)' }}>
+        <div className="w-10 h-10 rounded-2xl flex items-center justify-center shrink-0" style={{ background: ACCENT }}>
           <GraduationCap size={20} className="text-white" />
         </div>
         <div className="min-w-0 flex-1">
@@ -65,8 +68,8 @@ export default function AdminSideNav() {
 
       {school && (
         <div className="px-4 pt-4">
-          <div className="flex items-center gap-2.5 rounded-2xl px-3 py-2.5 bg-white" style={{ border: '1.5px solid var(--card-border)' }}>
-            <div className="w-7 h-7 rounded-xl flex items-center justify-center shrink-0" style={{ background: 'rgba(27,24,15,0.05)' }}>
+          <div className="flex items-center gap-2.5 rounded-2xl px-3 py-2.5 bg-white" style={{ border: '1px solid var(--admin-border)' }}>
+            <div className="w-7 h-7 rounded-xl flex items-center justify-center shrink-0" style={{ background: 'rgba(15,23,42,0.04)' }}>
               <School size={13} className="text-ink-soft" />
             </div>
             <div className="min-w-0 flex-1">
@@ -86,7 +89,7 @@ export default function AdminSideNav() {
                   reads as deliberate rather than arbitrary. */}
               {group && (
                 <div className="px-4 pt-4 pb-1.5">
-                  <div style={{ height: 1, background: 'rgba(27,24,15,0.1)' }} className="mb-2.5" />
+                  <div style={{ height: 1, background: 'rgba(15,23,42,0.06)' }} className="mb-2.5" />
                   <p className="text-[9px] font-black uppercase tracking-widest text-ink-faint leading-none">
                     {group}
                   </p>
@@ -98,11 +101,10 @@ export default function AdminSideNav() {
                   data-tour={`nav-${href.replace('/admin/', '')}`}
                   className={clsx(
                     'relative w-full flex items-center gap-3 pl-4 pr-3 py-2.5 rounded-2xl text-sm font-bold transition-all text-left',
-                    active ? 'text-ink' : 'text-ink-soft hover:text-ink hover:bg-[rgba(27,24,15,0.04)]',
+                    active ? 'text-ink' : 'text-ink-soft hover:text-ink hover:bg-[rgba(15,23,42,0.03)]',
                   )}
                   style={{
-                    border: active ? '2px solid var(--card-border)' : '2px solid transparent',
-                    background: active ? 'rgba(0,0,205,0.08)' : undefined,
+                    background: active ? 'var(--admin-accent-soft)' : undefined,
                   }}
                 >
                   {/* Left accent bar reads as "you are here" at a glance, without
@@ -115,7 +117,7 @@ export default function AdminSideNav() {
                   )}
                   <span
                     className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0 transition-colors"
-                    style={{ background: active ? ACCENT : 'rgba(27,24,15,0.05)' }}
+                    style={{ background: active ? ACCENT : 'rgba(15,23,42,0.04)' }}
                   >
                     <Icon size={16} strokeWidth={2.4} className={active ? 'text-white' : undefined} />
                   </span>
@@ -127,9 +129,9 @@ export default function AdminSideNav() {
         })}
       </nav>
 
-      <div className="px-4 py-4" style={{ borderTop: '1px solid rgba(27,24,15,0.1)' }}>
+      <div className="px-4 py-4" style={{ borderTop: '1px solid var(--admin-border)' }}>
         <div className="flex items-center gap-3 mb-3 px-2">
-          <div className="w-8 h-8 rounded-xl flex items-center justify-center font-black text-sm shrink-0 text-white" style={{ background: ACCENT, border: '1.5px solid var(--card-border)' }}>
+          <div className="w-8 h-8 rounded-xl flex items-center justify-center font-black text-sm shrink-0 text-white" style={{ background: ACCENT }}>
             {admin?.name?.charAt(0).toUpperCase() ?? 'A'}
           </div>
           <div className="flex-1 min-w-0">

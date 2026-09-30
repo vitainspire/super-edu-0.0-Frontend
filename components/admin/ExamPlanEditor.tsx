@@ -115,13 +115,13 @@ export default function ExamPlanEditor({ schoolId, onSchedule }: Props) {
       )}
 
       {items.length === 0 ? (
-        <div className="text-center py-8 rounded-2xl" style={{ background: 'rgba(58,44,30,0.04)', border: '1.5px solid rgba(58,44,30,0.12)' }}>
+        <div className="admin-card text-center py-8">
           <ClipboardList className="w-8 h-8 text-ink-faint mx-auto mb-2" />
           <p className="text-sm text-ink-soft font-semibold">No exam types added yet</p>
           <p className="text-xs text-ink-faint mt-0.5">e.g. Unit Test, Quarterly, Half-Yearly, Final</p>
         </div>
       ) : (
-        <div className="rounded-2xl bg-white/70 divide-y divide-[rgba(58,44,30,0.1)] overflow-hidden" style={{ border: '1.5px solid rgba(58,44,30,0.14)' }}>
+        <div className="rounded-2xl bg-white/70 divide-y divide-[rgba(15,23,42,0.1)] overflow-hidden" style={{ border: '1.5px solid rgba(15,23,42,0.14)' }}>
           {items.map(i => (
             <div key={i.id} className="flex items-center gap-3 px-4 py-2.5">
               <span className="flex-1 text-sm font-bold text-ink">{i.name}</span>
@@ -131,8 +131,7 @@ export default function ExamPlanEditor({ schoolId, onSchedule }: Props) {
                 max={20}
                 value={i.count}
                 onChange={e => updateCount(i, Math.max(1, Number(e.target.value) || 1))}
-                className="w-16 px-2 py-1.5 rounded-xl border text-sm text-center bg-white focus:outline-none focus:ring-2"
-                style={{ borderColor: 'rgba(58,44,30,0.18)' }}
+                className="admin-input w-16 px-2 py-1.5 rounded-xl text-sm text-center"
               />
               <span className="text-xs text-ink-faint w-16 shrink-0">this year</span>
               {onSchedule && (
@@ -164,8 +163,7 @@ export default function ExamPlanEditor({ schoolId, onSchedule }: Props) {
         <select
           value={newName}
           onChange={e => setNewName(e.target.value)}
-          className="flex-1 min-w-[140px] px-3 py-2 rounded-xl border text-sm bg-white focus:outline-none focus:ring-2"
-          style={{ borderColor: 'rgba(58,44,30,0.18)' }}
+          className="admin-input flex-1 min-w-[140px] px-3 py-2 rounded-xl text-sm"
         >
           {availableTypes.map(t => <option key={t} value={t}>{t}</option>)}
           <option value={OTHER}>Other (custom name)…</option>
@@ -175,8 +173,7 @@ export default function ExamPlanEditor({ schoolId, onSchedule }: Props) {
             value={customName}
             onChange={e => setCustomName(e.target.value)}
             placeholder="e.g. Periodic Test, SA1"
-            className="flex-1 min-w-[140px] px-3 py-2 rounded-xl border text-sm bg-white focus:outline-none focus:ring-2"
-            style={{ borderColor: 'rgba(58,44,30,0.18)' }}
+            className="admin-input flex-1 min-w-[140px] px-3 py-2 rounded-xl text-sm"
           />
         )}
         <input
@@ -185,8 +182,7 @@ export default function ExamPlanEditor({ schoolId, onSchedule }: Props) {
           max={20}
           value={newCount}
           onChange={e => setNewCount(e.target.value)}
-          className="w-16 px-2 py-2 rounded-xl border text-sm text-center bg-white focus:outline-none focus:ring-2"
-          style={{ borderColor: 'rgba(58,44,30,0.18)' }}
+          className="admin-input w-16 px-2 py-2 rounded-xl text-sm text-center"
         />
         <button
           type="submit"

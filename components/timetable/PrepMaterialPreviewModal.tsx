@@ -142,7 +142,7 @@ export default function PrepMaterialPreviewModal({
         ) : material ? (
           <>
             {(simUrl || boardUrl) && (
-              <div className="flex items-center gap-2 p-1 rounded-2xl" style={{ background: 'rgba(58,44,30,0.06)' }}>
+              <div className="flex items-center gap-2 p-1 rounded-2xl" style={{ background: 'rgba(15,23,42,0.06)' }}>
                 <button type="button" onClick={() => setView('sheet')}
                   className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-bold transition-all"
                   style={{ background: view === 'sheet' ? '#fff' : 'transparent', color: view === 'sheet' ? 'var(--forest)' : 'var(--ink-soft)' }}>

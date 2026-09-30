@@ -708,7 +708,7 @@ export default function AdminSyllabusPage() {
               ) : (
                 subjectsWithTopics.map(subj => (
                   <div key={subj.subject} className="paper-card p-5">
-                    <div className="flex items-center gap-2 flex-wrap mb-3 pb-3 border-b border-[rgba(58,44,30,0.1)]">
+                    <div className="flex items-center gap-2 flex-wrap mb-3 pb-3 border-b border-[rgba(15,23,42,0.1)]">
                       <BookOpen className="w-4 h-4 text-ink-soft" />
                       <h3 className="font-display font-bold text-ink">{subj.subject}</h3>
                       <span className="paper-pill ml-auto">{subj.topicCount} topic{subj.topicCount !== 1 ? 's' : ''}</span>
@@ -752,7 +752,7 @@ export default function AdminSyllabusPage() {
                             {t.subtopics.length > 0 && (
                               <div className="flex flex-wrap gap-1.5 mt-2">
                                 {t.subtopics.map((s, si) => (
-                                  <span key={si} className="text-[11px] font-medium px-2 py-0.5 rounded-full" style={{ background: 'rgba(58,44,30,0.06)', color: 'var(--ink-soft)' }}>{s}</span>
+                                  <span key={si} className="text-[11px] font-medium px-2 py-0.5 rounded-full" style={{ background: 'rgba(15,23,42,0.06)', color: 'var(--ink-soft)' }}>{s}</span>
                                 ))}
                               </div>
                             )}
@@ -848,11 +848,11 @@ export default function AdminSyllabusPage() {
                 <p className="text-xs text-ink-soft">Loading…</p>
               ) : (
                 <div className="grid grid-cols-2 gap-3">
-                  <div className="rounded-2xl px-4 py-3 text-center" style={{ background: 'rgba(58,44,30,0.04)' }}>
+                  <div className="rounded-2xl px-4 py-3 text-center" style={{ background: 'rgba(15,23,42,0.04)' }}>
                     <p className="text-2xl font-black text-ink">{availableSessions}</p>
                     <p className="text-[11px] text-ink-soft font-semibold mt-1">Real sessions left this year</p>
                   </div>
-                  <div className="rounded-2xl px-4 py-3 text-center" style={{ background: overBudget ? '#fffbeb' : 'rgba(58,44,30,0.04)' }}>
+                  <div className="rounded-2xl px-4 py-3 text-center" style={{ background: overBudget ? '#fffbeb' : 'rgba(15,23,42,0.04)' }}>
                     <p className={clsx('text-2xl font-black', overBudget ? 'text-amber-700' : 'text-ink')}>{totalEstimated}</p>
                     <p className="text-[11px] text-ink-soft font-semibold mt-1">Estimated across topics</p>
                   </div>
@@ -1014,12 +1014,12 @@ export default function AdminSyllabusPage() {
                             {((t.exerciseCount ?? 0) > 0 || (t.sidebarCount ?? 0) > 0) && (
                               <div className="flex items-center gap-1.5 mt-1">
                                 {(t.exerciseCount ?? 0) > 0 && (
-                                  <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full" style={{ background: 'rgba(58,44,30,0.06)', color: 'var(--ink-soft)' }}>
+                                  <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full" style={{ background: 'rgba(15,23,42,0.06)', color: 'var(--ink-soft)' }}>
                                     {t.exerciseCount} exercise{t.exerciseCount !== 1 ? 's' : ''}
                                   </span>
                                 )}
                                 {(t.sidebarCount ?? 0) > 0 && (
-                                  <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full" style={{ background: 'rgba(58,44,30,0.06)', color: 'var(--ink-soft)' }}>
+                                  <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full" style={{ background: 'rgba(15,23,42,0.06)', color: 'var(--ink-soft)' }}>
                                     {t.sidebarCount} sidebar{t.sidebarCount !== 1 ? 's' : ''}
                                   </span>
                                 )}
@@ -1102,7 +1102,7 @@ export default function AdminSyllabusPage() {
                 </p>
                 <div className="space-y-2">
                   {topics.map((t, ti) => (
-                    <div key={t.definitionId} className="rounded-2xl overflow-hidden" style={{ background: 'rgba(58,44,30,0.03)' }}>
+                    <div key={t.definitionId} className="rounded-2xl overflow-hidden" style={{ background: 'rgba(15,23,42,0.03)' }}>
                       <div className="flex items-center gap-3 px-4 py-3">
                         {/* Position in the progression. Up/down rather than drag:
                             it works on a phone, with a keyboard, and over the
@@ -1150,7 +1150,7 @@ export default function AdminSyllabusPage() {
                             placeholder="—"
                             title="Which week of the year this topic is planned for"
                             className="w-14 px-2 py-1.5 rounded-xl border text-sm text-center bg-white"
-                            style={{ borderColor: 'rgba(58,44,30,0.18)' }}
+                            style={{ borderColor: 'rgba(15,23,42,0.18)' }}
                           />
                           <span className="text-[10px] text-ink-faint">week</span>
                           <input
@@ -1159,7 +1159,7 @@ export default function AdminSyllabusPage() {
                             onChange={e => updateEstimate(t.definitionId, Math.max(1, Number(e.target.value) || 1))}
                             placeholder="—"
                             className="w-16 px-2 py-1.5 rounded-xl border text-sm text-center bg-white"
-                            style={{ borderColor: 'rgba(58,44,30,0.18)' }}
+                            style={{ borderColor: 'rgba(15,23,42,0.18)' }}
                           />
                           <span className="text-[10px] text-ink-faint">sessions</span>
                         </div>
@@ -1204,7 +1204,7 @@ export default function AdminSyllabusPage() {
                                     onChange={e => updateSubtopicEstimate(t.definitionId, s.definitionId, Math.max(1, Number(e.target.value) || 1))}
                                     placeholder="—"
                                     className="w-14 px-1.5 py-1 rounded-lg border text-xs text-center bg-white"
-                                    style={{ borderColor: 'rgba(58,44,30,0.18)' }}
+                                    style={{ borderColor: 'rgba(15,23,42,0.18)' }}
                                   />
                                   <span className="text-[9px] text-ink-faint shrink-0">sess.</span>
                                   <button type="button" onClick={() => deleteSubtopic(t.definitionId, s.definitionId)} className="p-1 rounded-lg text-ink-faint hover:text-red-500 hover:bg-red-50 transition-colors shrink-0">
@@ -1227,7 +1227,7 @@ export default function AdminSyllabusPage() {
                               onChange={e => setNewSubtopicName(e.target.value)}
                               placeholder="Add a sub-topic…"
                               className="flex-1 px-3 py-1.5 rounded-xl border text-xs bg-white"
-                              style={{ borderColor: 'rgba(58,44,30,0.18)' }}
+                              style={{ borderColor: 'rgba(15,23,42,0.18)' }}
                             />
                             <button
                               type="submit"

@@ -126,12 +126,12 @@ export default function CatchupModal({ studentId, studentName, topic, score, onC
 
   return (
     <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center"
-      style={{ background: 'rgba(58,44,30,0.6)' }}>
+      style={{ background: 'rgba(15,23,42,0.6)' }}>
       <div className="w-full md:max-w-lg bg-paper-soft md:rounded-3xl rounded-t-3xl max-h-[90vh] flex flex-col"
-        style={{ border: '1.5px solid rgba(58,44,30,0.18)' }}>
+        style={{ border: '1.5px solid rgba(15,23,42,0.18)' }}>
 
         {/* Header */}
-        <div className="flex items-center justify-between px-5 pt-5 pb-3 border-b shrink-0" style={{ borderColor: 'rgba(58,44,30,0.08)' }}>
+        <div className="flex items-center justify-between px-5 pt-5 pb-3 border-b shrink-0" style={{ borderColor: 'rgba(15,23,42,0.08)' }}>
           <div className="flex-1 min-w-0">
             <p className="text-xs font-bold text-sticker-violetDark uppercase tracking-wide">Catch-up Plan</p>
             <p className="font-black text-ink text-base leading-tight">{studentName}</p>
@@ -159,7 +159,7 @@ export default function CatchupModal({ studentId, studentName, topic, score, onC
           </div>
           <button type="button" onClick={onClose}
             className="w-9 h-9 flex items-center justify-center rounded-full text-ink-soft active:bg-black/10 shrink-0 ml-3"
-            style={{ background: 'rgba(58,44,30,0.08)' }}>
+            style={{ background: 'rgba(15,23,42,0.08)' }}>
             <X size={16} />
           </button>
         </div>
@@ -262,7 +262,7 @@ export default function CatchupModal({ studentId, studentName, topic, score, onC
 
         {/* Footer */}
         {!loading && (!error || manual) && (
-          <div className="px-5 pb-6 pt-3 border-t shrink-0 flex gap-3" style={{ borderColor: 'rgba(58,44,30,0.08)' }}>
+          <div className="px-5 pb-6 pt-3 border-t shrink-0 flex gap-3" style={{ borderColor: 'rgba(15,23,42,0.08)' }}>
             <button type="button" onClick={onClose}
               className="flex-1 py-3 rounded-2xl border-2 border-ink/15 text-sm font-bold text-ink-soft active:bg-black/[0.03]">
               Discard

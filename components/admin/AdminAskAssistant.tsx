@@ -270,23 +270,23 @@ export default function AdminAskAssistant() {
           type="button"
           onClick={() => setOpen(true)}
           title="Argus"
-          className="fixed bottom-6 right-6 z-40 w-14 h-14 flex items-center justify-center rounded-full active:scale-90 transition-transform"
-          style={{ background: 'var(--ink)', boxShadow: '0 6px 20px rgba(0,0,0,0.25)' }}
+          className="admin-btn-primary fixed bottom-6 right-6 z-40 w-14 h-14 flex items-center justify-center rounded-full"
+          style={{ boxShadow: '0 6px 20px rgba(0,0,0,0.25)' }}
         >
           <MessageCircleQuestion size={24} className="text-white" />
         </button>
       )}
 
-      <Modal open={open} onClose={() => setOpen(false)} title="Argus">
+      <Modal open={open} onClose={() => setOpen(false)} title="Argus" variant="admin">
         <div className="space-y-4">
           {speechOutputSupported && (
             <div className="flex justify-end">
               <button
                 type="button"
                 onClick={toggleVoiceOutput}
-                className="flex items-center gap-1.5 px-3 h-8 rounded-full text-xs font-bold active:scale-95 transition-all"
+                className="flex items-center gap-1.5 px-3 h-8 rounded-full text-xs font-bold active:scale-95 transition-all hover:opacity-90 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--admin-accent)] focus-visible:ring-offset-1"
                 style={{
-                  background: voiceOutputOn ? 'var(--forest)' : 'rgba(58,44,30,0.06)',
+                  background: voiceOutputOn ? 'var(--admin-accent)' : 'rgba(15,23,42,0.06)',
                   color: voiceOutputOn ? 'white' : 'var(--ink-soft)',
                 }}
               >
@@ -313,22 +313,20 @@ export default function AdminAskAssistant() {
           </div>
 
           {pending && (
-            <div className="p-3 rounded-2xl space-y-2.5" style={{ background: 'rgba(58,44,30,0.05)', border: '1.5px solid var(--card-border)' }}>
+            <div className="p-3 rounded-2xl space-y-2.5" style={{ background: 'rgba(15,23,42,0.05)', border: '1.5px solid var(--card-border)' }}>
               <p className="text-[13px] font-semibold text-ink">{pending.label} — go ahead?</p>
               <div className="flex items-center gap-2">
                 <button
                   type="button"
                   onClick={confirmPending}
-                  className="h-8 px-3.5 rounded-xl text-xs font-bold text-white active:scale-95 transition-all"
-                  style={{ background: 'var(--forest)' }}
+                  className="admin-btn-primary h-8 px-3.5 rounded-xl text-xs font-bold text-white"
                 >
                   Confirm
                 </button>
                 <button
                   type="button"
                   onClick={() => setPending(null)}
-                  className="h-8 px-3.5 rounded-xl text-xs font-bold text-ink-soft active:scale-95 transition-all bg-white"
-                  style={{ border: '1.5px solid var(--card-border)' }}
+                  className="admin-btn-secondary h-8 px-3.5 rounded-xl text-xs font-bold text-ink-soft"
                 >
                   Cancel
                 </button>
@@ -347,15 +345,14 @@ export default function AdminAskAssistant() {
               onChange={e => setQuestion(e.target.value)}
               onKeyDown={e => { if (e.key === 'Enter') ask() }}
               placeholder={listening ? 'Listening…' : 'Type a question…'}
-              className="flex-1 h-10 px-3.5 rounded-xl text-sm bg-white"
-              style={{ border: '2px solid var(--card-border)' }}
+              className="admin-input flex-1 h-10 px-3.5 rounded-xl text-sm"
             />
             {speechInputSupported && (
               <button
                 type="button"
                 onClick={toggleListening}
                 title={listening ? 'Stop listening' : 'Ask by voice'}
-                className="h-10 w-10 shrink-0 flex items-center justify-center rounded-xl active:scale-95 transition-all"
+                className={`h-10 w-10 shrink-0 flex items-center justify-center rounded-xl active:scale-95 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 ${listening ? 'focus-visible:ring-red-400' : 'hover:bg-black/[0.03] focus-visible:ring-[var(--admin-accent)]'}`}
                 style={{
                   background: listening ? '#B91C1C' : 'white',
                   border: listening ? 'none' : '2px solid var(--card-border)',
@@ -368,8 +365,7 @@ export default function AdminAskAssistant() {
               type="button"
               onClick={ask}
               disabled={loading || !question.trim()}
-              className="h-10 px-4 shrink-0 rounded-xl text-xs font-bold text-white active:scale-95 transition-all disabled:opacity-50"
-              style={{ background: 'var(--ink)' }}
+              className="admin-btn-primary h-10 px-4 shrink-0 rounded-xl text-xs font-bold text-white disabled:opacity-50"
             >
               {loading ? '…' : 'Ask'}
             </button>

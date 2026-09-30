@@ -93,7 +93,7 @@ export default function ClassroomModeLessonPage() {
         </div>
         {countdownLabel && (
           <span className="flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-full shrink-0"
-            style={{ background: 'rgba(58,44,30,0.06)', color: 'var(--ink-soft)' }}>
+            style={{ background: 'rgba(15,23,42,0.06)', color: 'var(--ink-soft)' }}>
             <Clock size={10} /> {countdownLabel}
           </span>
         )}

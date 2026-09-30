@@ -173,7 +173,7 @@ export default function ScanAttendanceModal({ open, onClose, students, className
                 type="button"
                 onClick={() => galleryInputRef.current?.click()}
                 className="flex flex-col items-center justify-center gap-2 py-6 rounded-2xl text-sm font-bold active:scale-95 transition-all"
-                style={{ background: 'rgba(58,44,30,0.04)', color: 'var(--ink-soft)', border: '1.5px solid rgba(58,44,30,0.12)' }}
+                style={{ background: 'rgba(15,23,42,0.04)', color: 'var(--ink-soft)', border: '1.5px solid rgba(15,23,42,0.12)' }}
               >
                 <ImageIcon size={22} /> Upload Photo
               </button>
@@ -192,11 +192,11 @@ export default function ScanAttendanceModal({ open, onClose, students, className
         {stage === 'preview' && imageUrl && (
           <>
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={imageUrl} alt="Attendance sheet" className="w-full rounded-2xl" style={{ border: '1.5px solid rgba(58,44,30,0.1)' }} />
+            <img src={imageUrl} alt="Attendance sheet" className="w-full rounded-2xl" style={{ border: '1.5px solid rgba(15,23,42,0.1)' }} />
             <div className="flex gap-2">
               <button type="button" onClick={reset}
                 className="flex-1 flex items-center justify-center gap-1.5 py-3 rounded-2xl text-sm font-bold active:scale-95 transition-all"
-                style={{ color: 'var(--ink-soft)', border: '1.5px solid rgba(58,44,30,0.12)' }}>
+                style={{ color: 'var(--ink-soft)', border: '1.5px solid rgba(15,23,42,0.12)' }}>
                 <RotateCcw size={14} /> Retake
               </button>
               <button type="button" onClick={scan}
@@ -210,7 +210,7 @@ export default function ScanAttendanceModal({ open, onClose, students, className
 
         {stage === 'scanning' && (
           <div className="flex flex-col items-center justify-center py-12 gap-3">
-            <span className="w-8 h-8 rounded-full animate-spin" style={{ border: '2px solid rgba(58,44,30,0.15)', borderTopColor: 'var(--ink)' }} />
+            <span className="w-8 h-8 rounded-full animate-spin" style={{ border: '2px solid rgba(15,23,42,0.15)', borderTopColor: 'var(--ink)' }} />
             <p className="text-sm text-ink-soft font-medium">Reading the attendance sheet…</p>
           </div>
         )}
@@ -222,7 +222,7 @@ export default function ScanAttendanceModal({ open, onClose, students, className
             </div>
             <button type="button" onClick={reset}
               className="w-full py-3 rounded-2xl text-sm font-bold"
-              style={{ color: 'var(--ink-soft)', border: '1.5px solid rgba(58,44,30,0.12)' }}>
+              style={{ color: 'var(--ink-soft)', border: '1.5px solid rgba(15,23,42,0.12)' }}>
               Try again
             </button>
           </>
@@ -244,7 +244,7 @@ export default function ScanAttendanceModal({ open, onClose, students, className
                     type="button"
                     onClick={() => cycleStatus(r.studentId)}
                     className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left active:bg-black/[0.03] transition-colors"
-                    style={{ border: '1px solid rgba(58,44,30,0.08)' }}
+                    style={{ border: '1px solid rgba(15,23,42,0.08)' }}
                   >
                     <div className="w-8 h-8 rounded-full flex items-center justify-center font-extrabold text-xs shrink-0" style={{ background: cfg.bg, color: cfg.color }}>
                       {cfg.label}
@@ -254,7 +254,7 @@ export default function ScanAttendanceModal({ open, onClose, students, className
                       <p className="text-[11px] text-ink-faint">Roll {r.rollNumber}</p>
                     </div>
                     {!r.detected && (
-                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0" style={{ color: 'var(--ink-soft)', background: 'rgba(58,44,30,0.06)' }}>
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0" style={{ color: 'var(--ink-soft)', background: 'rgba(15,23,42,0.06)' }}>
                         not detected
                       </span>
                     )}
@@ -266,7 +266,7 @@ export default function ScanAttendanceModal({ open, onClose, students, className
             <div className="flex gap-2">
               <button type="button" onClick={downloadExcel}
                 className="flex-1 flex items-center justify-center gap-1.5 py-3 rounded-2xl text-sm font-bold active:scale-95 transition-all"
-                style={{ color: 'var(--ink-soft)', border: '1.5px solid rgba(58,44,30,0.12)' }}>
+                style={{ color: 'var(--ink-soft)', border: '1.5px solid rgba(15,23,42,0.12)' }}>
                 <Download size={14} /> Download Excel
               </button>
               <button type="button" onClick={apply}

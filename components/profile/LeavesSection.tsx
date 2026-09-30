@@ -172,7 +172,7 @@ export default function LeavesSection() {
           {ranges.map(range => {
             const key = `${range.startDate}-${range.endDate}`
             return (
-              <div key={key} className="flex items-center justify-between gap-3 rounded-2xl px-4 py-3" style={{ background: 'rgba(58,44,30,0.04)' }}>
+              <div key={key} className="flex items-center justify-between gap-3 rounded-2xl px-4 py-3" style={{ background: 'rgba(15,23,42,0.04)' }}>
                 <div className="min-w-0">
                   <p className="text-sm font-bold text-ink flex items-center gap-2 flex-wrap">
                     {REASON_LABEL[range.reason] ?? range.reason}
@@ -249,7 +249,7 @@ export default function LeavesSection() {
               onClick={() => setReason(r)}
               className="px-3 py-2 rounded-xl text-sm font-bold transition-colors"
               style={{
-                background: reason === r ? 'var(--ink)' : 'rgba(58,44,30,0.06)',
+                background: reason === r ? 'var(--ink)' : 'rgba(15,23,42,0.06)',
                 color: reason === r ? '#fff' : 'var(--ink-soft)',
               }}
             >
@@ -270,7 +270,7 @@ export default function LeavesSection() {
           <button
             type="button"
             onClick={() => setOpen(false)}
-            className="flex-1 py-2.5 rounded-2xl border border-[rgba(58,44,30,0.15)] text-sm font-bold text-ink-soft"
+            className="flex-1 py-2.5 rounded-2xl border border-[rgba(15,23,42,0.15)] text-sm font-bold text-ink-soft"
           >
             Cancel
           </button>

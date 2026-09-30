@@ -180,7 +180,7 @@ export default function ClassSyllabusPage() {
               className="shrink-0 px-3.5 py-2 rounded-2xl text-xs font-bold active:scale-95 transition-all"
               style={s === activeSubject
                 ? { background: 'var(--ink)', color: '#fff' }
-                : { background: 'rgba(58,44,30,0.06)', color: 'var(--ink-soft)' }}
+                : { background: 'rgba(15,23,42,0.06)', color: 'var(--ink-soft)' }}
             >
               {s}
             </button>
@@ -208,7 +208,7 @@ export default function ClassSyllabusPage() {
             <span className="font-bold text-ink">Syllabus Progress</span>
             <span className="text-sm font-black" style={{ color: 'var(--forest)' }}>{pct}% done</span>
           </div>
-          <div className="w-full rounded-full h-3" style={{ background: 'rgba(58,44,30,0.08)' }}>
+          <div className="w-full rounded-full h-3" style={{ background: 'rgba(15,23,42,0.08)' }}>
             <div className="h-3 rounded-full transition-all duration-500" style={{ width: `${pct}%`, background: 'var(--forest)' }} />
           </div>
           <p className="text-xs text-ink-soft mt-2 font-medium">{completed} of {topics.length} topics completed</p>
@@ -222,7 +222,7 @@ export default function ClassSyllabusPage() {
           onClick={() => setFocusMode(f => !f)}
           className="w-full flex items-center justify-center gap-2 py-2.5 rounded-2xl text-xs font-bold mb-4 active:scale-[0.98] transition-all"
           style={{
-            background: focusMode ? 'var(--ink)' : 'rgba(58,44,30,0.06)',
+            background: focusMode ? 'var(--ink)' : 'rgba(15,23,42,0.06)',
             color: focusMode ? '#fff' : 'var(--ink-soft)',
           }}
         >

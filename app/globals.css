@@ -7,29 +7,30 @@
 :root {
   --nav-height: 72px;
   --header-height: 64px;
-  --radius-card: 20px;
-  --radius-btn: 16px;
-  /* Matte theme — shadows are flat/off, depth comes from borders only */
-  --shadow-card: none;
-  --shadow-card-hover: none;
-  --shadow-btn: none;
-  --primary: #4f46e5;
-  --primary-dark: #3730a3;
-  --primary-light: #e0e7ff;
+  --radius-card: 12px;
+  --radius-btn: 10px;
+  /* Soft-UI theme — depth comes from subtle shadows, borders are hairline */
+  --shadow-card: 0 1px 2px 0 rgba(15,23,42,0.04), 0 1px 3px 0 rgba(15,23,42,0.06);
+  --shadow-card-hover: 0 4px 6px -1px rgba(15,23,42,0.06), 0 2px 4px -2px rgba(15,23,42,0.05);
+  --shadow-btn: 0 1px 2px 0 rgba(15,23,42,0.05);
+  --primary: #2952E3;
+  --primary-hover: #4569E8;
+  --primary-light: #E5EAFB;
+  --navy: #162D7C;
 
-  /* ── Warm cream + bold-outline redesign theme ───────────── */
-  --paper-bg: #F1EDDF;    /* warm ivory page canvas */
-  --paper-soft: #FBFAF3;  /* card surface (near-white, warm) */
-  --card: #FFFFFF;
-  --card-border: #1B180F;             /* BOLD near-black outline on everything */
-  --card-border-soft: rgba(27, 24, 15, 0.55);
-  --ink: #17140F;         /* near-black — headings, text, dark buttons */
-  --ink-soft: #4A4740;
-  --forest: #1F3D2C;      /* nav + darkest green — teacher portal accent */
-  --forest-soft: #2C5540; /* active nav item */
-  --forest-bright: #3E7A57;
-  --shadow-paper: none;
-  --shadow-paper-sm: none;
+  /* ── Teacher dashboard design system (Linear/Vercel/Stripe-style SaaS) ── */
+  --paper-bg: #F4F6F9;    /* surface-bg — main dashboard background */
+  --paper-soft: #F4F6F9;  /* card surface tint */
+  --card: #FFFFFF;        /* surface-card */
+  --card-border: #E2E8F0;             /* border-light — slate-200 hairline */
+  --card-border-soft: rgba(226, 232, 240, 0.7);
+  --ink: #0F172A;         /* slate-900 — headings, primary text */
+  --ink-soft: #64748B;    /* slate-500 — secondary text */
+  --forest: #2952E3;      /* == --primary: sidebar + primary action buttons */
+  --forest-soft: #4569E8; /* == --primary-hover */
+  --forest-bright: #E5EAFB; /* == --primary-light */
+  --shadow-paper: var(--shadow-card);
+  --shadow-paper-sm: 0 1px 2px 0 rgba(15,23,42,0.04);
   /* Admin portal's main color is black — it reuses --ink/--ink-soft directly
      (see components/admin/AdminSideNav.tsx) rather than a dedicated token.
      Its component-level color-coding (grades/subjects/avatars) is a
@@ -42,6 +43,20 @@
      transparent` for every portal, so this is the only place that needed to
      change. */
   --admin-paper-bg: #FFFFFF;
+
+  /* ── Admin portal soft-UI panel (Stripe/Linear-style) — deliberately
+     divergent from the flat-matte/bold-outline convention above. Depth here
+     comes from a soft shadow, not a bold border. Scoped to .admin-card /
+     .admin-card-hover / .admin-alert below; .card/.paper-card/.stat-card and
+     every other portal are untouched. */
+  --admin-bg: #F3F4F6;          /* gray-100 canvas -- more contrast against white cards than the previous #F8FAFC */
+  --admin-accent: #162D7C;      /* admin's own basic branding color (deep navy) */
+  --admin-accent-soft: #E8ECFB;
+  --admin-border: #E5E7EB;      /* visible structural edge on every admin card/button/input, not a barely-there hairline */
+  --admin-shadow-sm: 0 2px 4px rgba(0,0,0,0.08);
+  --admin-shadow-md: 0 4px 8px rgba(0,0,0,0.12);
+  --admin-ink: #111827;         /* gray-900 -- strong dark slate for admin headings, not shared --ink's warm near-black */
+  --admin-ink-soft: #4B5563;    /* gray-600 -- admin secondary text */
 
   /* ── Student portal — bright, poppy yellow/orange-led "cute & kiddish" theme ──
      Same bones as the teacher/admin paper aesthetic (bold flat-matte outline,
@@ -174,45 +189,44 @@ button, a, [role='button'] { min-height: 44px; cursor: pointer; }
 
   /* ── BUTTONS ─────────────────────────────────────────────── */
   .btn-primary {
-    @apply relative font-bold py-3.5 px-6 rounded-2xl text-sm text-white
-      active:scale-95 transition-all duration-150
+    @apply relative font-semibold py-3.5 px-6 rounded-lg text-sm text-white
+      transition-all duration-150 hover:brightness-110 active:scale-[0.98]
       disabled:opacity-40 disabled:cursor-not-allowed
       min-h-[52px] flex items-center justify-center gap-2;
     background: #4f46e5;
   }
 
   .btn-secondary {
-    @apply font-bold py-3.5 px-6 rounded-2xl text-sm
-      border-2 border-indigo-100 active:scale-95 transition-all duration-150
-      hover:bg-indigo-50 disabled:opacity-40
+    @apply font-semibold py-3.5 px-6 rounded-lg text-sm
+      border border-slate-200 transition-all duration-150
+      hover:bg-slate-50 disabled:opacity-40 active:scale-[0.98]
       min-h-[52px] flex items-center justify-center gap-2;
     color: #4f46e5;
     background: white;
   }
   .btn-ghost {
-    @apply text-slate-600 font-semibold py-2 px-4 rounded-xl text-sm
-      active:bg-slate-100 transition-colors min-h-[44px] flex items-center justify-center;
+    @apply text-slate-600 font-semibold py-2 px-4 rounded-lg text-sm
+      hover:bg-slate-100 transition-colors min-h-[44px] flex items-center justify-center;
   }
   .btn-danger {
-    @apply font-bold py-3.5 px-6 rounded-2xl text-sm text-white
-      active:scale-95 transition-all duration-150
+    @apply font-semibold py-3.5 px-6 rounded-lg text-sm text-white
+      transition-all duration-150 hover:brightness-110 active:scale-[0.98]
       disabled:opacity-40 disabled:cursor-not-allowed
       min-h-[52px] flex items-center justify-center gap-2;
     background: #dc2626;
   }
 
-  /* ── CARDS — bold outline aesthetic ──────────────────────── */
+  /* ── CARDS — soft-UI aesthetic (hairline border + subtle shadow) ────── */
   .card {
-    @apply bg-white rounded-3xl p-4;
-    border: 2px solid var(--card-border);
+    @apply bg-white rounded-xl p-4 border border-slate-200 shadow-sm;
   }
   .card-interactive {
-    @apply bg-white rounded-3xl p-4 active:bg-black/[0.03] transition-all cursor-pointer;
-    border: 2px solid var(--card-border);
+    @apply bg-white rounded-xl p-4 border border-slate-200 shadow-sm
+      transition-all cursor-pointer hover:bg-slate-50 hover:shadow-md;
   }
   .card-hover {
-    @apply bg-white rounded-3xl p-4 active:scale-[0.98] transition-all cursor-pointer;
-    border: 2px solid var(--card-border);
+    @apply bg-white rounded-xl p-4 border border-slate-200 shadow-sm
+      transition-all cursor-pointer hover:shadow-md active:scale-[0.99];
   }
 
   /* ── GLASS CARD (flattened — no blur, solid tint) ─────────── */
@@ -275,32 +289,30 @@ button, a, [role='button'] { min-height: 44px; cursor: pointer; }
     @apply text-[10px] font-black text-slate-400 uppercase tracking-widest;
   }
 
-  /* ── PAPER THEME (notebook redesign) ────────────────────── */
+  /* ── TEACHER PORTAL THEME (Slate/Indigo SaaS aesthetic) ──── */
   .paper-page {
     @apply min-h-screen relative;
     background: transparent;
   }
   .paper-card {
-    @apply rounded-3xl bg-white;
-    border: 2px solid var(--card-border);
+    @apply rounded-xl bg-white border border-slate-200 shadow-sm;
   }
   .paper-card-interactive {
-    @apply rounded-3xl bg-white active:scale-[0.98] transition-transform cursor-pointer;
-    border: 2px solid var(--card-border);
+    @apply rounded-xl bg-white border border-slate-200 shadow-sm
+      transition-all cursor-pointer hover:bg-slate-50 hover:shadow-md active:scale-[0.99];
   }
   .paper-pill {
-    @apply text-xs font-bold px-3 py-1 rounded-full;
-    background: rgba(255, 255, 255, 0.7);
-    border: 1.5px solid var(--card-border);
+    @apply text-xs font-semibold px-3 py-1 rounded-full bg-white border border-slate-200;
     color: var(--ink);
   }
   .paper-btn-primary {
-    @apply font-bold py-3 px-6 rounded-2xl text-sm text-white active:scale-95 transition-transform
-      min-h-[48px] flex items-center justify-center gap-2;
-    background: var(--ink);
+    @apply font-semibold py-3 px-6 rounded-lg text-sm text-white transition-colors
+      min-h-[48px] flex items-center justify-center gap-2 active:scale-[0.98];
+    background: var(--forest);
   }
+  .paper-btn-primary:hover { background: var(--forest-soft); }
   .menu-row {
-    @apply w-full flex items-center gap-4 px-5 py-4 bg-white text-left active:bg-black/[0.03] transition-colors;
+    @apply w-full flex items-center gap-4 px-5 py-4 bg-white text-left transition-colors hover:bg-slate-50;
   }
 
   /* ── KID THEME (student portal) ─────────────────────────────
@@ -346,11 +358,100 @@ button, a, [role='button'] { min-height: 44px; cursor: pointer; }
   }
 }
 
+/* ── ADMIN PRIMARY ACTION (whole admin portal) ───────────────────────────
+   Was var(--forest), the dark green that is otherwise the TEACHER PORTAL'S
+   own brand color (33 files — nav, home, classes, tests…), reused here as a
+   coincidence rather than a design choice. Scoped to admin via its own
+   class/color, not by touching --forest itself, so the teacher portal's
+   actual identity is untouched. #162D7C (--admin-accent, admin's basic
+   branding color) against white text is 12.3:1 contrast — well past WCAG
+   AAA (7:1), let alone AA (4.5:1), for normal text. Originally named
+   .prep-accent-btn when it only served prep-materials; generalized here to
+   the whole admin portal's one primary-action color, same class, same
+   behavior. */
+.admin-btn-primary {
+  background: var(--admin-accent);
+  transition: background-color 0.15s ease, transform 0.1s ease;
+}
+.admin-btn-primary:hover:not(:disabled) { background: #0F2160; }   /* darker navy */
+.admin-btn-primary:active:not(:disabled) { background: #0A1745; transform: scale(0.97); } /* darkest navy */
+.admin-btn-primary:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px #fff, 0 0 0 4px var(--admin-accent);
+}
+.admin-btn-primary:disabled { cursor: not-allowed; }
+
+/* Secondary/cancel action — replaces the several admin buttons that had NO
+   hover/active state at all (a static bg-white with nothing else). */
+.admin-btn-secondary {
+  background: #FFFFFF;
+  border: 1px solid var(--admin-border);
+  box-shadow: var(--admin-shadow-sm);
+  transition: background-color 0.15s ease, transform 0.1s ease;
+}
+.admin-btn-secondary:hover:not(:disabled) { background: rgba(15, 23, 42, 0.03); }
+.admin-btn-secondary:active:not(:disabled) { transform: scale(0.97); }
+.admin-btn-secondary:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px #fff, 0 0 0 4px var(--admin-accent);
+}
+.admin-btn-secondary:disabled { cursor: not-allowed; }
+
+/* Admin's one input/select treatment — replaces three competing patterns
+   found across the portal: a bare focus:outline-none with nothing to
+   replace it (invisible focus), focus:ring-2 with no color set (falls back
+   to Tailwind's default blue, clashing with the indigo used everywhere
+   else here), and one-off "outline-none" pill selects with no focus state
+   at all. Not applied to .input-field (shared cross-portal, already has
+   adequate on-brand focus feedback, out of scope). */
+.admin-input {
+  background: #FFFFFF;
+  border: 1px solid var(--admin-border);
+  border-radius: 12px;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.admin-input:focus {
+  outline: none;
+  border-color: var(--admin-accent);
+}
+.admin-input:focus-visible {
+  box-shadow: 0 0 0 2px #fff, 0 0 0 4px var(--admin-accent-soft);
+}
+.admin-input:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* ── ADMIN SOFT-UI CARDS (Stripe/Linear-style, admin portal only) ───────── */
+.admin-card {
+  background: #FFFFFF;
+  border-radius: 20px;
+  border: 1px solid var(--admin-border);
+  box-shadow: var(--admin-shadow-sm);
+}
+.admin-card-hover {
+  background: #FFFFFF;
+  border-radius: 20px;
+  border: 1px solid var(--admin-border);
+  box-shadow: var(--admin-shadow-sm);
+  transition: box-shadow 0.15s ease, transform 0.15s ease;
+  cursor: pointer;
+}
+.admin-card-hover:hover { box-shadow: var(--admin-shadow-md); }
+.admin-card-hover:active { transform: scale(0.99); }
+
+/* Amber alert/callout — for panels that need to draw the eye (School
+   Readiness gaps), instead of the same neutral card every other panel uses. */
+.admin-alert-amber {
+  border-radius: 16px;
+  background: #FFFBEB;
+  border: 1px solid #FDE68A;
+  border-left: 4px solid #F59E0B;
+}
+
 /* ── Stat / class cards (solid pastel, "sticker note" style) ── */
 .stat-card {
-  border-radius: 20px;
+  border-radius: 12px;
   padding: 18px 18px 16px;
-  border: 2px solid var(--card-border);
+  border: 1px solid var(--card-border);
+  box-shadow: var(--shadow-card);
   position: relative;
 }
 /* Softer reference pastels (teacher portal) */

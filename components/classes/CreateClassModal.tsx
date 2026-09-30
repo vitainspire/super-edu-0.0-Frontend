@@ -76,7 +76,7 @@ export default function CreateClassModal({ open, onClose }: Props) {
                 onClick={() => toggleGrade(g)}
                 className="py-2.5 rounded-2xl text-sm font-bold transition-all active:scale-95"
                 style={{
-                  background: grades.includes(g) ? 'var(--ink)' : 'rgba(58,44,30,0.06)',
+                  background: grades.includes(g) ? 'var(--ink)' : 'rgba(15,23,42,0.06)',
                   color: grades.includes(g) ? '#fff' : 'var(--ink-soft)',
                 }}
               >
@@ -98,7 +98,7 @@ export default function CreateClassModal({ open, onClose }: Props) {
                 onClick={() => toggleSection(s)}
                 className="flex items-center gap-1.5 px-4 py-2 rounded-2xl text-sm font-bold transition-all active:scale-95"
                 style={{
-                  background: sections.includes(s) ? 'var(--ink)' : 'rgba(58,44,30,0.06)',
+                  background: sections.includes(s) ? 'var(--ink)' : 'rgba(15,23,42,0.06)',
                   color: sections.includes(s) ? '#fff' : 'var(--ink-soft)',
                 }}
               >
@@ -122,7 +122,7 @@ export default function CreateClassModal({ open, onClose }: Props) {
               onClick={addCustomSection}
               disabled={!customInput.trim()}
               className="px-4 rounded-2xl font-bold disabled:opacity-40"
-              style={{ background: 'rgba(58,44,30,0.06)', color: 'var(--ink-soft)' }}
+              style={{ background: 'rgba(15,23,42,0.06)', color: 'var(--ink-soft)' }}
             >
               <Plus size={16} />
             </button>

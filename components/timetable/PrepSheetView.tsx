@@ -81,7 +81,7 @@ function splitIntoPoints(detail: string): string[] {
 // deck section so the caution rides with the section it belongs to.
 export function WatchStrip({ watch }: { watch: ExpandableBullet }) {
   return (
-    <div className="flex items-start gap-1.5" style={{ borderTop: '1.5px solid rgba(27,24,15,0.1)', padding: '8px 14px 10px', background: 'rgba(176,119,30,0.06)' }}>
+    <div className="flex items-start gap-1.5" style={{ borderTop: '1.5px solid rgba(15,23,42,0.1)', padding: '8px 14px 10px', background: 'rgba(176,119,30,0.06)' }}>
       <AlertTriangle size={12} style={{ color: '#B0771E', flexShrink: 0, marginTop: 2 }} />
       <div className="min-w-0">
         <p style={{ fontSize: 8.5, fontWeight: 800, color: '#B0771E', textTransform: 'uppercase', letterSpacing: '.09em' }}>Watch For</p>
@@ -200,7 +200,7 @@ export default function PrepSheetView({ lesson, topic, subtopic, fromCache, head
                   type="button"
                   onClick={() => openDeck(sec.key)}
                   className="w-full flex items-center gap-2 px-3 py-2.5 active:scale-[0.99] transition-transform"
-                  style={{ textAlign: 'left', borderBottom: '1.5px solid rgba(27,24,15,0.1)' }}
+                  style={{ textAlign: 'left', borderBottom: '1.5px solid rgba(15,23,42,0.1)' }}
                 >
                   <span className="flex items-center justify-center shrink-0 text-white" style={{ width: 24, height: 24, borderRadius: 8, background: ACCENT }}>
                     <Icon size={13} />
@@ -408,7 +408,7 @@ export default function PrepSheetView({ lesson, topic, subtopic, fromCache, head
                   aria-label={`Go to ${activeSection.title} ${i + 1}`}
                   style={{
                     width: 6, height: i === safeIndex ? 18 : 6, borderRadius: 999,
-                    background: i === safeIndex ? ACCENT : 'rgba(27,24,15,0.2)',
+                    background: i === safeIndex ? ACCENT : 'rgba(15,23,42,0.2)',
                     transition: 'all .15s',
                   }}
                 />

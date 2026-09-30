@@ -57,7 +57,7 @@ export default function ClassroomLessonView({ lesson, topic, subtopic }: Classro
               key={s.key}
               style={{
                 flex: 1, height: 6, borderRadius: 999,
-                background: i < index ? ACCENT : i === index ? 'var(--ink)' : 'rgba(27,24,15,0.12)',
+                background: i < index ? ACCENT : i === index ? 'var(--ink)' : 'rgba(15,23,42,0.12)',
               }}
             />
           ))}
@@ -68,7 +68,7 @@ export default function ClassroomLessonView({ lesson, topic, subtopic }: Classro
         </p>
 
         <section className="rounded-2xl overflow-hidden bg-white" style={{ border: BORDER }}>
-          <div className="flex items-center gap-2.5 px-4 py-3.5" style={{ borderBottom: '1.5px solid rgba(27,24,15,0.1)' }}>
+          <div className="flex items-center gap-2.5 px-4 py-3.5" style={{ borderBottom: '1.5px solid rgba(15,23,42,0.1)' }}>
             <span className="flex items-center justify-center shrink-0 text-white" style={{ width: 34, height: 34, borderRadius: 11, background: ACCENT }}>
               <Icon size={17} />
             </span>

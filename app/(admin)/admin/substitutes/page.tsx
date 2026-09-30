@@ -196,6 +196,7 @@ export default function SubstitutesPage() {
         title="Substitutes"
         back={false}
         subtitle="Mark teacher availability and manage substitute coverage"
+        variant="admin"
       />
 
       <div className="px-5 pt-3 relative z-10 space-y-4">
@@ -209,7 +210,7 @@ export default function SubstitutesPage() {
         {/* Pending leave requests — awaiting approval, independent of the date navigator below */}
         {pendingRanges.length > 0 && (
           <div className="paper-card overflow-hidden">
-            <div className="px-5 py-3 flex items-center gap-2" style={{ borderBottom: '1.5px solid rgba(58,44,30,0.12)' }}>
+            <div className="px-5 py-3 flex items-center gap-2" style={{ borderBottom: '1.5px solid rgba(15,23,42,0.12)' }}>
               <Inbox size={13} className="text-ink-soft" />
               <p className="text-xs font-bold text-ink-soft uppercase tracking-wide">Pending Leave Requests ({pendingRanges.length})</p>
             </div>
@@ -221,7 +222,7 @@ export default function SubstitutesPage() {
                   <div
                     key={key}
                     className="flex items-center justify-between gap-3 px-5 py-3.5"
-                    style={i < pendingRanges.length - 1 ? { borderBottom: '1px solid rgba(58,44,30,0.08)' } : undefined}
+                    style={i < pendingRanges.length - 1 ? { borderBottom: '1px solid rgba(15,23,42,0.08)' } : undefined}
                   >
                     <div className="min-w-0">
                       <p className="text-sm font-bold text-ink">{range.teacherName}</p>
@@ -247,8 +248,7 @@ export default function SubstitutesPage() {
                           <button
                             type="button"
                             onClick={() => decide(range, 'approve')}
-                            className="flex items-center gap-1.5 px-3 h-8 rounded-xl text-xs font-bold text-white active:scale-95 transition-transform"
-                            style={{ background: 'var(--forest, #1F3D2C)' }}
+                            className="admin-btn-primary flex items-center gap-1.5 px-3 h-8 rounded-xl text-xs font-bold text-white"
                           >
                             <Check size={13} /> Approve
                           </button>
@@ -267,7 +267,7 @@ export default function SubstitutesPage() {
           <button
             onClick={() => setDate(d => addDays(d, -1))}
             className="w-9 h-9 flex items-center justify-center rounded-xl active:scale-90 transition-transform"
-            style={{ background: 'rgba(58,44,30,0.06)' }}
+            style={{ background: 'rgba(15,23,42,0.06)' }}
           >
             <ChevronLeft size={18} className="text-ink-soft" />
           </button>
@@ -280,7 +280,7 @@ export default function SubstitutesPage() {
           <button
             onClick={() => setDate(d => addDays(d, 1))}
             className="w-9 h-9 flex items-center justify-center rounded-xl active:scale-90 transition-transform"
-            style={{ background: 'rgba(58,44,30,0.06)' }}
+            style={{ background: 'rgba(15,23,42,0.06)' }}
           >
             <ChevronRight size={18} className="text-ink-soft" />
           </button>
@@ -294,7 +294,7 @@ export default function SubstitutesPage() {
           <>
             {/* Teacher availability */}
             <div className="paper-card overflow-hidden">
-              <div className="px-5 py-3" style={{ borderBottom: '1.5px solid rgba(58,44,30,0.12)' }}>
+              <div className="px-5 py-3" style={{ borderBottom: '1.5px solid rgba(15,23,42,0.12)' }}>
                 <p className="text-xs font-bold text-ink-soft uppercase tracking-wide">Teacher Availability</p>
               </div>
               {teachers.length === 0 ? (
@@ -307,7 +307,7 @@ export default function SubstitutesPage() {
                       <div
                         key={t.id}
                         className="flex items-center justify-between gap-3 px-5 py-3"
-                        style={i < teachers.length - 1 ? { borderBottom: '1px solid rgba(58,44,30,0.08)' } : undefined}
+                        style={i < teachers.length - 1 ? { borderBottom: '1px solid rgba(15,23,42,0.08)' } : undefined}
                       >
                         <div className="flex items-center gap-3 min-w-0">
                           <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold shrink-0" style={{ background: 'var(--ink)', color: 'var(--paper-soft)' }}>
@@ -329,12 +329,11 @@ export default function SubstitutesPage() {
                             value={a?.reason ?? 'available'}
                             onChange={e => setStatus(t.id, e.target.value)}
                             disabled={savingTeacherId === t.id}
-                            className="text-xs font-bold rounded-xl px-2.5 py-2 outline-none"
-                            style={{
-                              background: a ? '#FEF3C7' : 'rgba(58,44,30,0.06)',
-                              color: a ? '#92400E' : 'var(--ink-soft)',
-                              border: '1.5px solid ' + (a ? 'rgba(217,119,6,0.3)' : 'rgba(58,44,30,0.12)'),
-                            }}
+                            className={
+                              a
+                                ? 'text-xs font-bold rounded-xl px-2.5 py-2 bg-amber-50 text-amber-700 border border-amber-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-400 focus-visible:ring-offset-1 transition-shadow'
+                                : 'admin-input text-xs font-bold rounded-xl px-2.5 py-2 text-ink-soft'
+                            }
                           >
                             <option value="available">Available</option>
                             {REASON_OPTIONS.map(r => (
@@ -351,7 +350,7 @@ export default function SubstitutesPage() {
 
             {/* Today's coverage */}
             <div className="paper-card overflow-hidden">
-              <div className="px-5 py-3" style={{ borderBottom: '1.5px solid rgba(58,44,30,0.12)' }}>
+              <div className="px-5 py-3" style={{ borderBottom: '1.5px solid rgba(15,23,42,0.12)' }}>
                 <p className="text-xs font-bold text-ink-soft uppercase tracking-wide">Coverage for {formatDate(date)}</p>
               </div>
               {substitutions.length === 0 ? (
@@ -370,7 +369,7 @@ export default function SubstitutesPage() {
                       <div
                         key={s.id}
                         className="px-5 py-3.5"
-                        style={i < substitutions.length - 1 ? { borderBottom: '1px solid rgba(58,44,30,0.08)' } : undefined}
+                        style={i < substitutions.length - 1 ? { borderBottom: '1px solid rgba(15,23,42,0.08)' } : undefined}
                       >
                         <div className="flex items-center justify-between gap-3">
                           <div className="min-w-0">
@@ -406,8 +405,7 @@ export default function SubstitutesPage() {
                               value={s.substituteTeacherId ?? ''}
                               onChange={e => e.target.value && reassign(s.id, e.target.value)}
                               disabled={savingSubId === s.id}
-                              className="text-xs font-bold rounded-xl px-2.5 py-2 outline-none"
-                              style={{ background: 'rgba(58,44,30,0.06)', color: 'var(--ink-soft)', border: '1.5px solid rgba(58,44,30,0.12)' }}
+                              className="admin-input text-xs font-bold rounded-xl px-2.5 py-2 text-ink-soft"
                             >
                               <option value="" disabled>{s.substituteTeacherId ? 'Reassign…' : 'Assign…'}</option>
                               {teachers.filter(t => t.id !== s.originalTeacherId).map(t => (

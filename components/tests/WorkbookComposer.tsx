@@ -28,7 +28,7 @@ function PaletteItem({ meta, onAdd }: { meta: KindMeta; onAdd: () => void }) {
     <button ref={setNodeRef} {...listeners} {...attributes} onClick={onAdd} type="button"
       className="flex items-center gap-2 px-3 py-2 rounded-xl border-2 bg-white text-left active:scale-[0.98] touch-none"
       style={{ borderColor: 'var(--card-border)', opacity: isDragging ? 0.4 : 1, cursor: 'grab' }}>
-      <div className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0" style={{ background: 'rgba(58,44,30,0.06)' }}>
+      <div className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0" style={{ background: 'rgba(15,23,42,0.06)' }}>
         <Icon className="w-3.5 h-3.5 text-ink-soft" />
       </div>
       <div className="min-w-0">
@@ -52,7 +52,7 @@ function SortableBlock({ block, index, onChange, onRemove }: {
       <button {...attributes} {...listeners} type="button" title="Drag to reorder" className="touch-none cursor-grab shrink-0 text-ink-faint">
         <GripVertical className="w-4 h-4" />
       </button>
-      <span className="w-6 h-6 rounded-md flex items-center justify-center shrink-0" style={{ background: 'rgba(58,44,30,0.06)' }}>
+      <span className="w-6 h-6 rounded-md flex items-center justify-center shrink-0" style={{ background: 'rgba(15,23,42,0.06)' }}>
         <Icon className="w-3.5 h-3.5 text-ink-soft" />
       </span>
       <span className="text-xs font-bold text-ink shrink-0" style={{ minWidth: 78 }}>{meta?.label ?? block.kind}</span>
@@ -80,7 +80,7 @@ function Canvas({ blocks, children }: { blocks: WorkbookBlock[]; children: React
   return (
     <div ref={setNodeRef}
       className="rounded-2xl border-2 p-2.5"
-      style={{ borderStyle: 'dashed', borderColor: isOver ? 'var(--ink)' : 'var(--card-border)', background: isOver ? 'rgba(58,44,30,0.04)' : 'transparent', minHeight: 96 }}>
+      style={{ borderStyle: 'dashed', borderColor: isOver ? 'var(--ink)' : 'var(--card-border)', background: isOver ? 'rgba(15,23,42,0.04)' : 'transparent', minHeight: 96 }}>
       {blocks.length === 0 ? (
         <div className="flex flex-col items-center justify-center gap-1.5 py-6 text-center">
           <Plus className="w-5 h-5 text-ink-faint" />

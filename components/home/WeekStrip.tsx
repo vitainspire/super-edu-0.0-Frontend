@@ -12,12 +12,6 @@ import clsx from 'clsx'
 const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
 const DAYS_FULL = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat']
 
-// Sunday isn't a published calendar event — it's the standing weekly off day
-// — so it gets its own tint rather than going through academicEvents. Red
-// rather than the holiday teal, so the two reasons for a day off stay visually
-// distinct from each other.
-const SUNDAY_TINT  = '#fee2e2'
-const SUNDAY_COLOR = '#b91c1c'
 
 /** Local date, not UTC — a straight toISOString() shifts the date near
     midnight in timezones ahead of UTC, which would flag the wrong day. */
@@ -90,8 +84,8 @@ export default function WeekStrip({
             type="button"
             onClick={() => onSelect(addDays(selected, -7))}
             aria-label="Previous week"
-            className="w-8 h-8 rounded-xl flex items-center justify-center bg-white active:scale-90 transition-transform"
-            style={{ border: '2px solid var(--card-border)' }}
+            className="w-11 h-11 rounded-xl flex items-center justify-center bg-white active:scale-90 transition-transform focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
+            style={{ border: '1px solid var(--card-border)' }}
           >
             <ChevronLeft size={15} className="text-ink" />
           </button>
@@ -99,8 +93,8 @@ export default function WeekStrip({
             type="button"
             onClick={() => onSelect(addDays(selected, 7))}
             aria-label="Next week"
-            className="w-8 h-8 rounded-xl flex items-center justify-center bg-white active:scale-90 transition-transform"
-            style={{ border: '2px solid var(--card-border)' }}
+            className="w-11 h-11 rounded-xl flex items-center justify-center bg-white active:scale-90 transition-transform focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
+            style={{ border: '1px solid var(--card-border)' }}
           >
             <ChevronRight size={15} className="text-ink" />
           </button>
@@ -116,7 +110,6 @@ export default function WeekStrip({
           const dateStr = toDateStr(day)
           const holiday = academicEvents.find(
             e => e.category === 'holiday' && dateStr >= e.startDate && dateStr <= e.endDate)
-          const isSunday = day.getDay() === 0
           // First/last column tooltips would otherwise render half off-screen
           // pinned to the card's center anchor — pin those two to an edge instead.
           const tipSide = idx === 0 ? 'left-0' : idx === days.length - 1 ? 'right-0' : 'left-1/2 -translate-x-1/2'
@@ -127,15 +120,16 @@ export default function WeekStrip({
               onClick={() => onSelect(day)}
               aria-label={`${DAYS_FULL[day.getDay()]} ${day.getDate()}, ${count} period${count === 1 ? '' : 's'}${holiday ? `, holiday: ${holiday.title}` : ''}`}
               aria-current={isSelected ? 'date' : undefined}
-              className="relative flex flex-col items-center gap-1 py-1.5 rounded-2xl active:scale-95 transition-transform"
+              className="relative flex flex-col items-center gap-1 py-1.5 rounded-xl active:scale-95 transition-transform focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
               style={{
                 // A holiday still tints the cell when it's selected/today too —
-                // just a plain wash under the ink/dashed styling, not replaced by it.
-                // Holiday wins over the plain Sunday tint when a holiday lands on one.
-                background: isSelected ? 'var(--ink)' : holiday ? CATEGORY_CELL_TINT.holiday : isSunday ? SUNDAY_TINT : 'transparent',
+                // just a plain wash under the navy/dashed styling, not replaced by it.
+                // Sunday gets no special tint — just the standard muted/empty
+                // treatment any day with nothing scheduled gets, below.
+                background: isSelected ? 'var(--navy)' : holiday ? CATEGORY_CELL_TINT.holiday : 'transparent',
                 border: isSelected
-                  ? '2px solid var(--card-border)'
-                  : isToday ? '2px dashed rgba(58,44,30,0.28)' : '2px solid transparent',
+                  ? '2px solid var(--navy)'
+                  : isToday ? '2px dashed rgba(15,23,42,0.28)' : '2px solid transparent',
               }}
             >
               {/* Holiday marker sits on the weekday-initial line, in normal
@@ -169,7 +163,6 @@ export default function WeekStrip({
                   color: isSelected
                     ? '#fff'
                     : holiday ? CATEGORY_META.holiday.color
-                    : isSunday ? SUNDAY_COLOR
                     : count ? 'var(--ink)' : 'var(--ink-faint)',
                 }}
               >
@@ -220,7 +213,7 @@ export default function WeekStrip({
 
       {progress.total > 0 && (
         <div className="mt-4">
-          <div className="h-1.5 rounded-full overflow-hidden" style={{ background: 'rgba(58,44,30,0.10)' }}>
+          <div className="h-1.5 rounded-full overflow-hidden" style={{ background: 'rgba(15,23,42,0.10)' }}>
             <div
               className="h-full rounded-full transition-all"
               style={{ width: `${pct}%`, background: 'var(--forest)' }}

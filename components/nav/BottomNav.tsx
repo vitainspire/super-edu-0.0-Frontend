@@ -27,8 +27,8 @@ export default function BottomNav() {
   )
 
   return (
-    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 safe-bottom text-white"
-      style={{ background: 'var(--forest)' }}>
+    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 safe-bottom bg-white"
+      style={{ borderTop: '1px solid var(--card-border)', boxShadow: '0 -2px 8px rgba(15,23,42,0.04)' }}>
       <div className="max-w-[480px] mx-auto flex items-center px-2 py-2">
         {NAV_ITEMS.map(({ href, label, Icon, match }) => {
           const active = match(path)
@@ -39,26 +39,26 @@ export default function BottomNav() {
               key={href}
               type="button"
               onClick={() => router.push(href)}
-              className="flex-1 flex flex-col items-center justify-center gap-1 py-1.5 min-h-[56px]"
+              className="flex-1 flex flex-col items-center justify-center gap-1 py-1.5 min-h-[48px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 rounded-xl"
             >
               <div className="relative flex items-center justify-center h-7 w-14 rounded-full transition-colors"
-                style={{ background: active ? 'var(--forest-soft)' : 'transparent' }}>
+                style={{ background: active ? 'var(--forest)' : 'transparent' }}>
                 <Icon
                   size={21}
                   strokeWidth={active ? 2.4 : 1.8}
-                  style={{ color: active ? '#fff' : 'rgba(255,255,255,0.55)' }}
+                  style={{ color: active ? '#fff' : '#94A3B8' }}
                 />
                 {badge > 0 && (
                   <span
-                    className="absolute -top-1 right-2 min-w-[15px] h-[15px] px-1 rounded-full bg-red-400 text-forest text-[9px] font-black flex items-center justify-center leading-none"
+                    className="absolute -top-1 right-2 min-w-[15px] h-[15px] px-1 rounded-full bg-red-500 text-white text-[9px] font-black flex items-center justify-center leading-none"
                   >
                     {badge > 9 ? '9+' : badge}
                   </span>
                 )}
               </div>
               <span
-                className={clsx('text-[10.5px] font-bold')}
-                style={{ color: active ? '#fff' : 'rgba(255,255,255,0.55)' }}
+                className="text-[10.5px] font-bold"
+                style={{ color: active ? 'var(--forest)' : '#94A3B8' }}
               >
                 {label}
               </span>

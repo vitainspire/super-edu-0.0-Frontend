@@ -112,8 +112,8 @@ export default function MonthCalendarGrid({
               className="group relative min-h-[64px] rounded-lg p-1 text-left align-top flex flex-col gap-0.5 transition-colors"
               style={{
                 opacity: !cell.inMonth ? 0.35 : outOfRange ? 0.45 : 1,
-                background: cellBg ?? (isToday ? 'rgba(58,44,30,0.06)' : 'transparent'),
-                border: isToday ? '1.5px solid rgba(58,44,30,0.2)' : '1.5px solid transparent',
+                background: cellBg ?? (isToday ? 'rgba(15,23,42,0.06)' : 'transparent'),
+                border: isToday ? '1.5px solid rgba(15,23,42,0.2)' : '1.5px solid transparent',
                 cursor: onDayClick ? 'pointer' : 'default',
               }}
             >
@@ -143,7 +143,7 @@ export default function MonthCalendarGrid({
               {onDayClick && cell.inMonth && dayEvents.length === 0 && (
                 <span
                   className="absolute bottom-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity rounded-full p-0.5"
-                  style={{ background: 'rgba(58,44,30,0.1)' }}
+                  style={{ background: 'rgba(15,23,42,0.1)' }}
                 >
                   <Plus className="w-3 h-3 text-ink-soft" />
                 </span>

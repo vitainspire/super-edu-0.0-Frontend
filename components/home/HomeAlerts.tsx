@@ -64,7 +64,7 @@ export default function HomeAlerts() {
       </div>
 
       {/* Alert rows */}
-      <div className="divide-y" style={{ borderColor: 'rgba(58,44,30,0.08)' }}>
+      <div className="divide-y" style={{ borderColor: 'rgba(15,23,42,0.08)' }}>
         {alerts.map(alert => (
           <button
             key={alert.id}

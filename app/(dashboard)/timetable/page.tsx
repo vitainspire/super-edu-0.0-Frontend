@@ -83,7 +83,7 @@ const PX_PER_MIN = 1.3
 
 // A period handed to a substitute stays on the grid — the teacher should be able
 // to see what happened to their class — but greyed, since they aren't teaching it.
-const COVERED_AWAY_BG = 'rgba(58,44,30,0.06)'
+const COVERED_AWAY_BG = 'rgba(15,23,42,0.06)'
 // Violet marks coverage throughout the portal; SubstituteBanner uses the same pair.
 const COVERING_INK = '#31215C'
 
@@ -103,7 +103,7 @@ function CoverageTag({ entry, compact = false }: { entry: TimetableEntry; compac
       <span
         className={`inline-flex items-center gap-1 rounded-full font-black uppercase tracking-wide ${compact ? 'px-1.5 text-[8px]' : 'px-2 py-0.5 text-[9px]'}`}
         style={{
-          background: entry.unresolved ? '#FEE2E2' : 'rgba(58,44,30,0.10)',
+          background: entry.unresolved ? '#FEE2E2' : 'rgba(15,23,42,0.10)',
           color: entry.unresolved ? '#991B1B' : 'var(--ink-soft)',
         }}
       >
@@ -261,7 +261,7 @@ export default function TimetablePage() {
         />
 
         {/* Current / next class banner */}
-        <div className="rounded-3xl p-5" style={{ background: heroIsLive ? '#AACDEA' : 'rgba(58,44,30,0.06)', border: '2px solid var(--card-border)' }}>
+        <div className="rounded-3xl p-5" style={{ background: heroIsLive ? '#AACDEA' : 'rgba(15,23,42,0.06)', border: '2px solid var(--card-border)' }}>
           <p className="text-xs font-bold uppercase tracking-wide mb-1" style={{ color: heroIsLive ? '#1E3A55' : 'var(--ink-soft)' }}>
             {heroIsLive ? 'Current Class' : heroEntry ? 'Up Next' : 'No Class Right Now'}
           </p>
@@ -327,7 +327,7 @@ export default function TimetablePage() {
                   onClick={() => setSelectedDay(dayNum)}
                   className="flex-1 flex flex-col items-center gap-1 py-2 rounded-xl text-xs font-bold transition-colors"
                   style={{
-                    background: isSelected ? 'var(--ink)' : 'rgba(58,44,30,0.06)',
+                    background: isSelected ? 'var(--ink)' : 'rgba(15,23,42,0.06)',
                     color: isSelected ? '#fff' : 'var(--ink-soft)',
                   }}
                 >
@@ -364,7 +364,7 @@ export default function TimetablePage() {
                   })}
                   className={`w-full flex items-center gap-3 text-left rounded-2xl px-3 py-2.5 transition-transform ${tappable ? 'active:scale-[0.98] cursor-pointer' : 'cursor-default'}`}
                   style={{
-                    background: handedOver ? COVERED_AWAY_BG : (isToday ? color.bg : 'rgba(58,44,30,0.06)'),
+                    background: handedOver ? COVERED_AWAY_BG : (isToday ? color.bg : 'rgba(15,23,42,0.06)'),
                     border: '2px solid var(--card-border)',
                     borderStyle: handedOver ? 'dashed' : 'solid',
                     opacity: isToday ? 1 : 0.85,
@@ -414,7 +414,7 @@ export default function TimetablePage() {
                       </span>
                     )}
                   </div>
-                  <div className="relative rounded-2xl" style={{ height: gridHeight, background: 'rgba(58,44,30,0.03)' }}>
+                  <div className="relative rounded-2xl" style={{ height: gridHeight, background: 'rgba(15,23,42,0.03)' }}>
                     {dayEntries.map(({ entry, col, cols }) => {
                       const rawTop    = (toMinutes(entry.startTime) - dayStartMin) * PX_PER_MIN
                       const rawHeight = Math.max((toMinutes(entry.endTime) - toMinutes(entry.startTime)) * PX_PER_MIN, 46)
@@ -444,7 +444,7 @@ export default function TimetablePage() {
                             top, height,
                             left:  `calc(${col * colPct}% + 2px)`,
                             width: `calc(${colPct}% - 4px)`,
-                            background: handedOver ? COVERED_AWAY_BG : (isToday ? color.bg : 'rgba(58,44,30,0.08)'),
+                            background: handedOver ? COVERED_AWAY_BG : (isToday ? color.bg : 'rgba(15,23,42,0.08)'),
                             border: '2px solid var(--card-border)',
                             borderStyle: handedOver ? 'dashed' : 'solid',
                             opacity: isToday ? 1 : 0.8,

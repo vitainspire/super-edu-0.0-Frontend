@@ -87,6 +87,7 @@ export default function AssignTeacherPage() {
       <PageHeader
         title="Assign Teachers"
         subtitle="Assign teachers to this class and specify which subject each one teaches."
+        variant="admin"
       />
 
       <div className="px-5 pt-2 max-w-2xl mx-auto space-y-4 relative z-10">
@@ -117,7 +118,7 @@ export default function AssignTeacherPage() {
                 <div
                   key={t.id}
                   className="flex items-center justify-between px-5 py-4 gap-3"
-                  style={{ borderTop: i > 0 ? '1px solid rgba(58,44,30,0.08)' : 'none' }}
+                  style={{ borderTop: i > 0 ? '1px solid rgba(15,23,42,0.08)' : 'none' }}
                 >
                   <div className="flex items-center gap-3 min-w-0">
                     <div className="w-9 h-9 rounded-2xl flex items-center justify-center text-sm font-black flex-shrink-0" style={{ background: 'var(--ink)', color: 'var(--paper-soft)' }}>
@@ -137,7 +138,7 @@ export default function AssignTeacherPage() {
                       <button
                         onClick={() => openAssign(t)}
                         className="px-3 py-1.5 rounded-xl text-xs font-bold text-ink-soft transition-colors hover:text-ink"
-                        style={{ border: '1.5px solid rgba(58,44,30,0.18)' }}
+                        style={{ border: '1.5px solid rgba(15,23,42,0.18)' }}
                       >
                         Edit Subject
                       </button>
@@ -148,7 +149,7 @@ export default function AssignTeacherPage() {
                       className="flex items-center gap-2 px-4 py-1.5 rounded-xl text-sm font-bold transition-colors disabled:opacity-60"
                       style={assigned_
                         ? { background: 'rgba(16,185,129,0.12)', color: '#047857', border: '1.5px solid rgba(16,185,129,0.35)' }
-                        : { background: 'rgba(58,44,30,0.06)', color: 'var(--ink-soft)', border: '1.5px solid rgba(58,44,30,0.14)' }}
+                        : { background: 'rgba(15,23,42,0.06)', color: 'var(--ink-soft)', border: '1.5px solid rgba(15,23,42,0.14)' }}
                     >
                       {saving === t.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : assigned_ ? <Check className="w-3.5 h-3.5" /> : null}
                       {assigned_ ? 'Assigned' : 'Assign'}
@@ -163,11 +164,11 @@ export default function AssignTeacherPage() {
 
       {/* Subject modal */}
       {pendingTeacher && (
-        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4" style={{ background: 'rgba(58,44,30,0.45)' }}>
-          <div className="relative w-full max-w-sm rounded-3xl p-6" style={{ background: 'var(--paper-soft)', border: '1.5px solid rgba(58,44,30,0.18)' }}>
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4" style={{ background: 'rgba(15,23,42,0.45)' }}>
+          <div className="relative w-full max-w-sm rounded-3xl p-6" style={{ background: 'var(--paper-soft)', border: '1px solid rgba(15,23,42,0.06)', boxShadow: 'var(--admin-shadow-md)' }}>
             <div className="flex items-center justify-between mb-4">
               <h2 className="font-display text-base font-bold text-ink">Assign {pendingTeacher.name}</h2>
-              <button onClick={() => setPendingTeacher(null)} className="w-9 h-9 flex items-center justify-center rounded-full transition-colors" style={{ background: 'rgba(58,44,30,0.06)' }}>
+              <button onClick={() => setPendingTeacher(null)} className="w-9 h-9 flex items-center justify-center rounded-full transition-colors" style={{ background: 'rgba(15,23,42,0.06)' }}>
                 <X className="w-4 h-4 text-ink-soft" />
               </button>
             </div>
@@ -184,12 +185,12 @@ export default function AssignTeacherPage() {
               />
             </div>
             <div className="flex gap-3">
-              <button onClick={() => setPendingTeacher(null)} className="flex-1 py-2.5 rounded-2xl text-sm font-bold text-ink-soft transition-colors hover:text-ink" style={{ border: '1.5px solid rgba(58,44,30,0.18)' }}>
+              <button onClick={() => setPendingTeacher(null)} className="admin-btn-secondary flex-1 py-2.5 rounded-xl text-sm font-bold text-ink-soft transition-colors hover:text-ink">
                 Cancel
               </button>
               <button
                 onClick={confirmAssign}
-                className="paper-btn-primary flex-1 text-sm py-2.5"
+                className="admin-btn-primary flex-1 rounded-xl text-sm text-white py-2.5"
               >
                 Confirm
               </button>

@@ -22,7 +22,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   if (!ready) {
     return (
-      <div className="min-h-screen flex items-center justify-center relative" style={{ background: 'var(--admin-paper-bg)' }}>
+      <div className="min-h-screen flex items-center justify-center relative" style={{ background: 'var(--admin-bg)' }}>
         <Loader2 className="w-6 h-6 animate-spin text-ink relative z-10" />
       </div>
     )
@@ -30,7 +30,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   return (
     <AdminProvider>
-      <div className="min-h-screen md:flex relative" style={{ background: 'var(--admin-paper-bg)' }}>
+      <div className="min-h-screen md:flex relative" style={{ background: 'var(--admin-bg)' }}>
         <AdminSideNav />
         <main className="flex-1 min-w-0 overflow-auto relative z-10">
           {children}

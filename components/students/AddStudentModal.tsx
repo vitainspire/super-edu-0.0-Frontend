@@ -138,7 +138,7 @@ export default function AddStudentModal({ open, onClose, classId }: Props) {
   return (
     <Modal open={open} onClose={onClose} title="Add Students">
       {/* Tab switcher */}
-      <div className="flex gap-1.5 mb-5 p-1 rounded-2xl" style={{ background: 'rgba(58,44,30,0.06)' }}>
+      <div className="flex gap-1.5 mb-5 p-1 rounded-2xl" style={{ background: 'rgba(15,23,42,0.06)' }}>
         <button
           onClick={() => setTab('single')}
           className="flex-1 py-2.5 rounded-xl text-sm font-bold transition-all active:scale-95"
@@ -206,7 +206,7 @@ export default function AddStudentModal({ open, onClose, classId }: Props) {
                   )}
                   style={selectedInterests.includes(label)
                     ? { background: 'var(--ink)', color: '#fff' }
-                    : { background: 'rgba(58,44,30,0.06)', color: 'var(--ink-soft)' }}
+                    : { background: 'rgba(15,23,42,0.06)', color: 'var(--ink-soft)' }}
                 >
                   <Icon size={13} /> {label}
                 </button>
@@ -291,7 +291,7 @@ export default function AddStudentModal({ open, onClose, classId }: Props) {
             <button
               onClick={() => fileInputRef.current?.click()}
               className="w-full rounded-2xl py-10 flex flex-col items-center gap-3 active:bg-black/[0.03] transition-colors"
-              style={{ border: '2px dashed rgba(58,44,30,0.2)' }}
+              style={{ border: '2px dashed rgba(15,23,42,0.2)' }}
             >
               <div className="w-14 h-14 rounded-2xl flex items-center justify-center"
                 style={{ background: '#DCEBF8' }}>
@@ -303,13 +303,13 @@ export default function AddStudentModal({ open, onClose, classId }: Props) {
               </div>
             </button>
           ) : (
-            <div className="relative rounded-2xl overflow-hidden" style={{ border: '1.5px solid rgba(58,44,30,0.12)' }}>
+            <div className="relative rounded-2xl overflow-hidden" style={{ border: '1.5px solid rgba(15,23,42,0.12)' }}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={scanPreview} alt="Scan preview" className="w-full max-h-52 object-cover" />
               <button
                 onClick={() => { setScanPreview(null); setScanImage(null); setScannedNames(''); setScanError(null) }}
                 className="absolute top-2 right-2 w-7 h-7 flex items-center justify-center rounded-full active:scale-90 transition-transform"
-                style={{ background: 'rgba(58,44,30,0.6)' }}
+                style={{ background: 'rgba(15,23,42,0.6)' }}
               >
                 <X size={13} className="text-white" />
               </button>

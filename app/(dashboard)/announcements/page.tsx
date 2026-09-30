@@ -50,7 +50,7 @@ export default function AnnouncementsPage() {
 
         {loading && (
           <div className="paper-card p-8 text-center">
-            <div className="w-8 h-8 border-4 rounded-full animate-spin mx-auto mb-3" style={{ borderColor: 'rgba(58,44,30,0.15)', borderTopColor: 'var(--ink)' }} />
+            <div className="w-8 h-8 border-4 rounded-full animate-spin mx-auto mb-3" style={{ borderColor: 'rgba(15,23,42,0.15)', borderTopColor: 'var(--ink)' }} />
             <p className="text-sm text-ink-soft">Loading announcements…</p>
           </div>
         )}

@@ -56,18 +56,18 @@ export default function SideNav() {
         type="button"
         onClick={() => router.push(href)}
         className={clsx(
-          'w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-bold transition-all text-left',
-          active ? 'text-white' : 'text-white/60 hover:text-white hover:bg-white/[0.06]',
+          'w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-all text-left min-h-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70',
+          active ? '' : 'text-white/70 hover:text-white hover:bg-white/[0.08]',
         )}
         style={{
-          border: active ? '2px solid var(--card-border)' : '2px solid transparent',
-          background: active ? 'var(--forest-soft)' : undefined,
+          background: active ? 'var(--primary-light)' : undefined,
+          color: active ? 'var(--navy)' : undefined,
         }}
       >
         <div className="relative shrink-0">
           <Icon size={18} strokeWidth={active ? 2.4 : 2} />
           {badge > 0 && (
-            <span className="absolute -top-1.5 -right-1.5 min-w-[14px] h-3.5 px-0.5 rounded-full bg-red-400 text-forest text-[8px] font-black flex items-center justify-center leading-none">
+            <span className="absolute -top-1.5 -right-1.5 min-w-[14px] h-3.5 px-0.5 rounded-full bg-red-400 text-white text-[8px] font-black flex items-center justify-center leading-none">
               {badge > 9 ? '9+' : badge}
             </span>
           )}
@@ -86,7 +86,7 @@ export default function SideNav() {
   return (
     <aside
       className="hidden md:flex flex-col w-64 shrink-0 h-screen sticky top-0 overflow-y-auto text-white"
-      style={{ background: 'var(--forest)', borderRight: '3px solid var(--card-border)' }}
+      style={{ background: 'var(--forest)', borderRight: '1px solid rgba(255,255,255,0.12)' }}
     >
       <div className="flex items-center gap-3 px-6 py-6" style={{ borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
         <div className="w-10 h-10 rounded-2xl flex items-center justify-center shrink-0" style={{ background: 'rgba(255,255,255,0.12)' }}>

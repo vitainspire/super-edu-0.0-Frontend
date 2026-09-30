@@ -17,7 +17,7 @@ export default function DailyBriefing({ dark = false }: { dark?: boolean }) {
 
   const muted = dark ? 'text-white/50' : 'text-ink-soft'
   const card  = dark ? 'bg-white/8' : ''
-  const cardStyle = dark ? undefined : { background: 'rgba(58,44,30,0.05)', border: '1px solid rgba(58,44,30,0.08)' }
+  const cardStyle = dark ? undefined : { background: 'rgba(15,23,42,0.05)', border: '1px solid rgba(15,23,42,0.08)' }
   const label = dark ? 'text-sticker-gold' : 'text-forest'
 
   return (

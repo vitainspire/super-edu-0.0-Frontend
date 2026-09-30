@@ -58,7 +58,7 @@ export default function TeacherAcademicCalendarPage() {
       <div className="px-4 pt-2 space-y-4 relative z-10">
         {loading ? (
           <div className="paper-card p-8 text-center">
-            <div className="w-8 h-8 border-4 rounded-full animate-spin mx-auto mb-3" style={{ borderColor: 'rgba(58,44,30,0.15)', borderTopColor: 'var(--ink)' }} />
+            <div className="w-8 h-8 border-4 rounded-full animate-spin mx-auto mb-3" style={{ borderColor: 'rgba(15,23,42,0.15)', borderTopColor: 'var(--ink)' }} />
             <p className="text-sm text-ink-soft">Loading calendar…</p>
           </div>
         ) : events.length === 0 ? (
@@ -102,7 +102,7 @@ export default function TeacherAcademicCalendarPage() {
                                 {meta.label}
                               </span>
                               {a.category === 'holiday' && a.holidaySubtype && (
-                                <span className="text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full text-ink-soft" style={{ background: 'rgba(58,44,30,0.06)' }}>
+                                <span className="text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full text-ink-soft" style={{ background: 'rgba(15,23,42,0.06)' }}>
                                   {HOLIDAY_SUBTYPE_META[a.holidaySubtype].label}
                                 </span>
                               )}

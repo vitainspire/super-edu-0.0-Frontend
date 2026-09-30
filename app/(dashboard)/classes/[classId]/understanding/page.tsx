@@ -78,7 +78,7 @@ export default function UnderstandingPage() {
 
         {loading && (
           <div className="paper-card p-8 text-center">
-            <div className="w-8 h-8 border-4 rounded-full animate-spin mx-auto" style={{ borderColor: 'rgba(58,44,30,0.15)', borderTopColor: 'var(--ink)' }} />
+            <div className="w-8 h-8 border-4 rounded-full animate-spin mx-auto" style={{ borderColor: 'rgba(15,23,42,0.15)', borderTopColor: 'var(--ink)' }} />
           </div>
         )}
 
@@ -134,7 +134,7 @@ export default function UnderstandingPage() {
                       <span className="flex items-center gap-1 text-[11px] font-bold text-ink-soft w-20 shrink-0">
                         <Icon size={12} style={{ color: bar }} /> {label}
                       </span>
-                      <div className="flex-1 h-5 rounded-full overflow-hidden" style={{ background: 'rgba(58,44,30,0.06)' }}>
+                      <div className="flex-1 h-5 rounded-full overflow-hidden" style={{ background: 'rgba(15,23,42,0.06)' }}>
                         <div className="h-full rounded-full transition-all duration-500"
                           style={{ width: `${(c[key] / safeTotal) * 100}%`, background: bar }} />
                       </div>
@@ -149,7 +149,7 @@ export default function UnderstandingPage() {
                   )}
                 </div>
               ) : (
-                <div className="rounded-2xl border border-dashed py-3 px-4 text-center" style={{ background: 'rgba(58,44,30,0.03)', borderColor: 'rgba(58,44,30,0.15)' }}>
+                <div className="rounded-2xl border border-dashed py-3 px-4 text-center" style={{ background: 'rgba(15,23,42,0.03)', borderColor: 'rgba(15,23,42,0.15)' }}>
                   <p className="text-xs text-ink-soft font-medium">No student responses yet for this topic</p>
                 </div>
               )}

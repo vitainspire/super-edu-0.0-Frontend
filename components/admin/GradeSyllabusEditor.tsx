@@ -159,7 +159,7 @@ export default function GradeSyllabusEditor({ schoolId, grade }: Props) {
 
   if (subjects.length === 0) {
     return (
-      <div className="text-center py-8 rounded-2xl" style={{ background: 'rgba(58,44,30,0.04)', border: '1.5px solid rgba(58,44,30,0.12)' }}>
+      <div className="admin-card text-center py-8">
         <BookOpen className="w-8 h-8 text-ink-faint mx-auto mb-2" />
         <p className="text-sm text-ink-soft font-semibold">Add subjects for Grade {grade} above first</p>
         <p className="text-xs text-ink-faint mt-1">Syllabus topics are organized by subject</p>
@@ -178,7 +178,7 @@ export default function GradeSyllabusEditor({ schoolId, grade }: Props) {
             className="px-3.5 py-1.5 rounded-xl text-sm font-bold transition-colors"
             style={selectedSubject === s.subject
               ? { background: 'var(--ink)', color: 'var(--paper-soft)' }
-              : { background: 'rgba(58,44,30,0.06)', color: 'var(--ink-soft)' }}
+              : { background: 'rgba(15,23,42,0.06)', color: 'var(--ink-soft)' }}
           >
             {s.subject}
           </button>
@@ -187,7 +187,7 @@ export default function GradeSyllabusEditor({ schoolId, grade }: Props) {
 
       {selectedSubject && (
         <div className="flex items-center justify-between gap-3 rounded-2xl px-4 py-3 flex-wrap"
-          style={{ background: 'rgba(58,44,30,0.04)', border: '1.5px solid rgba(58,44,30,0.12)' }}>
+          style={{ background: 'rgba(15,23,42,0.04)', border: '1.5px solid rgba(15,23,42,0.12)' }}>
           <div className="min-w-0">
             <p className="text-xs font-bold text-ink">Prep Material generation</p>
             <p className="text-[11px] text-ink-faint mt-0.5">
@@ -201,7 +201,7 @@ export default function GradeSyllabusEditor({ schoolId, grade }: Props) {
               )}
             </p>
           </div>
-          <div className="flex rounded-xl overflow-hidden shrink-0" style={{ border: '1.5px solid rgba(58,44,30,0.18)' }}>
+          <div className="flex rounded-xl overflow-hidden shrink-0" style={{ border: '1.5px solid rgba(15,23,42,0.18)' }}>
             <button
               type="button"
               onClick={() => setGenerationMode('opt_in')}
@@ -237,12 +237,12 @@ export default function GradeSyllabusEditor({ schoolId, grade }: Props) {
       {loading ? (
         <div className="flex items-center justify-center py-8"><Loader2 className="w-5 h-5 animate-spin text-ink-soft" /></div>
       ) : topics.length === 0 ? (
-        <div className="text-center py-8 rounded-2xl" style={{ background: 'rgba(58,44,30,0.04)', border: '1.5px solid rgba(58,44,30,0.12)' }}>
+        <div className="admin-card text-center py-8">
           <BookOpen className="w-8 h-8 text-ink-faint mx-auto mb-2" />
           <p className="text-sm text-ink-soft font-semibold">No {selectedSubject} topics yet for Grade {grade}</p>
         </div>
       ) : (
-        <div className="rounded-2xl bg-white/70 divide-y divide-[rgba(58,44,30,0.1)] overflow-hidden" style={{ border: '1.5px solid rgba(58,44,30,0.14)' }}>
+        <div className="rounded-2xl bg-white/70 divide-y divide-[rgba(15,23,42,0.1)] overflow-hidden" style={{ border: '1.5px solid rgba(15,23,42,0.14)' }}>
           {topics.map((t, idx) => (
             <div key={t.definitionId} className="flex items-start gap-3 px-4 py-3 group">
               <span className="text-[10px] font-mono text-ink-faint w-5 shrink-0 mt-0.5">{idx + 1}</span>
@@ -268,22 +268,20 @@ export default function GradeSyllabusEditor({ schoolId, grade }: Props) {
       )}
 
       {adding ? (
-        <form onSubmit={addTopic} className="rounded-2xl p-4 space-y-3" style={{ background: 'rgba(58,44,30,0.04)', border: '1.5px solid rgba(58,44,30,0.14)' }}>
+        <form onSubmit={addTopic} className="rounded-2xl p-4 space-y-3" style={{ background: 'rgba(15,23,42,0.04)', border: '1.5px solid rgba(15,23,42,0.14)' }}>
           <input
             autoFocus
             value={newTopic}
             onChange={e => setNewTopic(e.target.value)}
             placeholder={`${selectedSubject} topic e.g. Photosynthesis`}
             required
-            className="w-full px-3 py-2 rounded-xl border text-sm bg-white focus:outline-none focus:ring-2"
-            style={{ borderColor: 'rgba(58,44,30,0.18)' }}
+            className="admin-input w-full px-3 py-2 rounded-xl text-sm"
           />
           <input
             value={newDesc}
             onChange={e => setNewDesc(e.target.value)}
             placeholder="Description (optional)"
-            className="w-full px-3 py-2 rounded-xl border text-sm bg-white focus:outline-none focus:ring-2"
-            style={{ borderColor: 'rgba(58,44,30,0.18)' }}
+            className="admin-input w-full px-3 py-2 rounded-xl text-sm"
           />
           <input
             type="number"
@@ -291,15 +289,14 @@ export default function GradeSyllabusEditor({ schoolId, grade }: Props) {
             value={newWeek}
             onChange={e => setNewWeek(e.target.value)}
             placeholder="Week number (optional)"
-            className="w-32 px-3 py-2 rounded-xl border text-sm bg-white focus:outline-none focus:ring-2"
-            style={{ borderColor: 'rgba(58,44,30,0.18)' }}
+            className="admin-input w-32 px-3 py-2 rounded-xl text-sm"
           />
           <div className="flex gap-2">
             <button
               type="button"
               onClick={() => { setAdding(false); setError(null) }}
               className="flex-1 py-2 rounded-xl border text-sm font-bold text-ink-soft bg-white"
-              style={{ borderColor: 'rgba(58,44,30,0.18)' }}
+              style={{ borderColor: 'rgba(15,23,42,0.18)' }}
             >
               Cancel
             </button>

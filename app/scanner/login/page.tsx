@@ -86,7 +86,7 @@ export default function ScannerLoginPage() {
             </div>
           )}
 
-          <div className="flex items-start gap-3 rounded-2xl px-4 py-3" style={{ background: 'rgba(58,44,30,0.06)' }}>
+          <div className="flex items-start gap-3 rounded-2xl px-4 py-3" style={{ background: 'rgba(15,23,42,0.06)' }}>
             <UserCheck size={18} style={{ color: TONE.ink }} className="shrink-0 mt-0.5" />
             <p className="text-xs font-medium text-ink-soft">Your account is created by your school admin. Use the credentials they gave you.</p>
           </div>

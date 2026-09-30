@@ -125,12 +125,12 @@ export default function ClassesPage() {
       <PageHeader
         title="Classes"
         back={false}
+        variant="admin"
         subtitle={`${gradeGroups.length} grade${gradeGroups.length !== 1 ? 's' : ''} · ${classes.length} section${classes.length !== 1 ? 's' : ''} in ${school?.name ?? 'your school'}`}
         action={
           <button
             onClick={() => setShowCreate(true)}
-            className="flex items-center gap-1.5 font-bold px-4 py-2.5 rounded-2xl text-xs active:scale-95 transition-transform"
-            style={{ background: 'var(--ink)', color: 'var(--paper-soft)' }}
+            className="admin-btn-primary flex items-center gap-1.5 font-bold px-4 py-2.5 rounded-xl text-xs text-white active:scale-95 transition-transform"
           >
             <Plus size={14} strokeWidth={2.5} /> Create Classes
           </button>
@@ -206,7 +206,7 @@ export default function ClassesPage() {
                       className="py-2 rounded-xl text-sm font-bold transition-colors"
                       style={grades.includes(g)
                         ? { background: 'var(--ink)', color: 'var(--paper-soft)' }
-                        : { background: 'rgba(58,44,30,0.06)', color: 'var(--ink-soft)' }}
+                        : { background: 'rgba(15,23,42,0.06)', color: 'var(--ink-soft)' }}
                     >
                       {g}
                     </button>
@@ -226,7 +226,7 @@ export default function ClassesPage() {
                       className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-sm font-bold transition-colors"
                       style={sections.includes(s)
                         ? { background: 'var(--ink)', color: 'var(--paper-soft)' }
-                        : { background: 'rgba(58,44,30,0.06)', color: 'var(--ink-soft)' }}
+                        : { background: 'rgba(15,23,42,0.06)', color: 'var(--ink-soft)' }}
                     >
                       {s}
                       {customSections.includes(s) && (
@@ -242,15 +242,14 @@ export default function ClassesPage() {
                     onChange={e => setCustomInput(e.target.value)}
                     onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), addCustomSection())}
                     placeholder="Custom section e.g. Blue, Ganga…"
-                    className="flex-1 px-4 py-2 rounded-xl border text-sm bg-white focus:outline-none focus:ring-2"
-                    style={{ borderColor: 'rgba(58,44,30,0.18)' }}
+                    className="admin-input flex-1 px-4 py-2 rounded-xl text-sm"
                   />
                   <button
                     type="button"
                     onClick={addCustomSection}
                     disabled={!customInput.trim()}
                     className="px-3 rounded-xl disabled:opacity-40"
-                    style={{ background: 'rgba(58,44,30,0.06)', color: 'var(--ink-soft)' }}
+                    style={{ background: 'rgba(15,23,42,0.06)', color: 'var(--ink-soft)' }}
                   >
                     <Plus className="w-4 h-4" />
                   </button>
@@ -264,8 +263,7 @@ export default function ClassesPage() {
                   value={academicYear}
                   onChange={e => setAcademicYear(e.target.value)}
                   placeholder="2025"
-                  className="w-full px-4 py-2.5 rounded-xl border text-sm bg-white focus:outline-none focus:ring-2"
-                  style={{ borderColor: 'rgba(58,44,30,0.18)' }}
+                  className="admin-input w-full px-4 py-2.5 rounded-xl text-sm"
                 />
               </div>
 
@@ -287,13 +285,13 @@ export default function ClassesPage() {
 
               {/* Preview */}
               {combos.length > 0 && (
-                <div className="rounded-2xl p-3" style={{ background: 'rgba(58,44,30,0.05)', border: '1.5px solid rgba(58,44,30,0.14)' }}>
+                <div className="rounded-2xl p-3" style={{ background: 'rgba(15,23,42,0.05)', border: '1.5px solid rgba(15,23,42,0.14)' }}>
                   <p className="text-sm font-bold text-ink mb-2">
                     Will create {combos.length} class{combos.length !== 1 ? 'es' : ''}
                   </p>
                   <div className="flex flex-wrap gap-1.5 max-h-24 overflow-y-auto">
                     {combos.map(c => (
-                      <span key={c.name} className="text-xs font-bold text-ink-soft bg-white px-2 py-1 rounded-full" style={{ border: '1.5px solid rgba(58,44,30,0.12)' }}>
+                      <span key={c.name} className="text-xs font-bold text-ink-soft bg-white px-2 py-1 rounded-full" style={{ border: '1.5px solid rgba(15,23,42,0.12)' }}>
                         {c.name}
                       </span>
                     ))}
@@ -314,16 +312,14 @@ export default function ClassesPage() {
                 <button
                   type="button"
                   onClick={() => { setShowCreate(false); resetForm() }}
-                  className="flex-1 py-2.5 rounded-xl border text-sm font-bold text-ink-soft"
-                  style={{ borderColor: 'rgba(58,44,30,0.18)' }}
+                  className="admin-btn-secondary flex-1 py-2.5 rounded-xl text-sm font-bold text-ink-soft"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={saving || combos.length === 0}
-                  className="flex-1 py-2.5 rounded-xl text-sm font-bold flex items-center justify-center gap-2 disabled:opacity-60"
-                  style={{ background: 'var(--ink)', color: 'var(--paper-soft)' }}
+                  className="admin-btn-primary flex-1 py-2.5 rounded-xl text-sm font-bold text-white flex items-center justify-center gap-2 disabled:opacity-60"
                 >
                   {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : combos.length > 1 ? `Create ${combos.length} Classes` : 'Create Class'}
                 </button>

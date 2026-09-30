@@ -234,7 +234,7 @@ export default function ClassPulsePage() {
               {proficient  > 0 && <div className="bg-emerald-500 transition-all" style={{ flex: proficient }} />}
               {developing  > 0 && <div className="bg-amber-400  transition-all" style={{ flex: developing }} />}
               {struggling  > 0 && <div className="bg-red-500    transition-all" style={{ flex: struggling }} />}
-              {notAssessed > 0 && <div className="transition-all" style={{ flex: notAssessed, background: 'rgba(58,44,30,0.15)' }} />}
+              {notAssessed > 0 && <div className="transition-all" style={{ flex: notAssessed, background: 'rgba(15,23,42,0.15)' }} />}
             </div>
             <div className="grid grid-cols-4 gap-1 text-center">
               {[
@@ -403,7 +403,7 @@ export default function ClassPulsePage() {
         </button>
 
         {insightsOpen && (
-          <div className="border-t px-5 py-4 space-y-3" style={{ borderColor: 'rgba(58,44,30,0.1)' }}>
+          <div className="border-t px-5 py-4 space-y-3" style={{ borderColor: 'rgba(15,23,42,0.1)' }}>
             {pulseLoading && (
               <div className="space-y-2">
                 {[1,2,3,4].map(i => (

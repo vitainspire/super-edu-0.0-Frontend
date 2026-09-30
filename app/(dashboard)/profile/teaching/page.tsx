@@ -117,7 +117,7 @@ function Chip({ label, sub, selected, disabled, onClick }: { label: string; sub?
       )}
       style={selected
         ? { background: 'var(--ink)', color: 'var(--paper-soft)' }
-        : { background: 'rgba(58,44,30,0.06)', color: 'var(--ink-soft)' }}
+        : { background: 'rgba(15,23,42,0.06)', color: 'var(--ink-soft)' }}
     >
       <span className="text-sm font-bold block">{label}</span>
       {sub && <span className="text-[10px] block mt-0.5" style={{ color: selected ? 'rgba(255,255,255,0.7)' : 'var(--ink-faint)' }}>{sub}</span>}
@@ -220,7 +220,7 @@ export default function TeachingProfilePage() {
           <div className="flex items-center gap-1 ml-auto flex-wrap justify-end">
             {STEPS.map((s, i) => (
               <span key={s} className="h-1.5 rounded-full transition-all"
-                style={{ width: i === stepIndex ? 18 : 6, background: i <= stepIndex ? 'var(--ink)' : 'rgba(58,44,30,0.15)' }} />
+                style={{ width: i === stepIndex ? 18 : 6, background: i <= stepIndex ? 'var(--ink)' : 'rgba(15,23,42,0.15)' }} />
             ))}
           </div>
         </div>
@@ -246,7 +246,7 @@ export default function TeachingProfilePage() {
                   placeholder="Other language…" className="input-field flex-1"
                   style={{ background: '#fff', border: '2px solid var(--card-border)' }} />
                 <button type="button" onClick={addCustomLanguage} disabled={!customLanguage.trim()}
-                  className="px-3 py-2 rounded-xl disabled:opacity-40" style={{ background: 'rgba(58,44,30,0.06)', color: 'var(--ink-soft)' }}>
+                  className="px-3 py-2 rounded-xl disabled:opacity-40" style={{ background: 'rgba(15,23,42,0.06)', color: 'var(--ink-soft)' }}>
                   <Plus className="w-4 h-4" />
                 </button>
               </div>
@@ -261,9 +261,9 @@ export default function TeachingProfilePage() {
                   <button key={opt.value} type="button"
                     onClick={() => { setClassroom('classSize', opt.value); setTimeout(next, 200) }}
                     className="flex items-center gap-3 px-4 py-2.5 rounded-2xl text-left transition-colors"
-                    style={{ background: profile.classroom.classSize === opt.value ? 'rgba(58,44,30,0.06)' : 'transparent', border: '2px solid var(--card-border)' }}>
+                    style={{ background: profile.classroom.classSize === opt.value ? 'rgba(15,23,42,0.06)' : 'transparent', border: '2px solid var(--card-border)' }}>
                     <span className="w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0"
-                      style={{ borderColor: profile.classroom.classSize === opt.value ? 'var(--ink)' : 'rgba(58,44,30,0.3)' }}>
+                      style={{ borderColor: profile.classroom.classSize === opt.value ? 'var(--ink)' : 'rgba(15,23,42,0.3)' }}>
                       {profile.classroom.classSize === opt.value && <span className="w-2 h-2 rounded-full" style={{ background: 'var(--ink)' }} />}
                     </span>
                     <span className="text-sm font-semibold text-ink">{opt.label}</span>
@@ -292,7 +292,7 @@ export default function TeachingProfilePage() {
                   placeholder="Add anything else you have (e.g. Dienes blocks, seed packets)…" className="input-field flex-1"
                   style={{ background: '#fff', border: '2px solid var(--card-border)' }} />
                 <button type="button" onClick={addCustomResource} disabled={!customResource.trim()}
-                  className="px-3 py-2 rounded-xl disabled:opacity-40" style={{ background: 'rgba(58,44,30,0.06)', color: 'var(--ink-soft)' }}>
+                  className="px-3 py-2 rounded-xl disabled:opacity-40" style={{ background: 'rgba(15,23,42,0.06)', color: 'var(--ink-soft)' }}>
                   <Plus className="w-4 h-4" />
                 </button>
               </div>
@@ -371,7 +371,7 @@ export default function TeachingProfilePage() {
                             className="py-2 rounded-xl text-[11px] font-bold text-center transition-colors"
                             style={selected
                               ? { background: 'var(--ink)', color: 'var(--paper-soft)' }
-                              : { background: 'rgba(58,44,30,0.06)', color: 'var(--ink-soft)' }}
+                              : { background: 'rgba(15,23,42,0.06)', color: 'var(--ink-soft)' }}
                           >
                             {FREQUENCY_LABELS[freq]}
                           </button>

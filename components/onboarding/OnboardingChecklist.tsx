@@ -176,7 +176,7 @@ export default function OnboardingChecklist({
       </div>
 
       {/* ── STEPS ──────────────────────────────────────── */}
-      <div style={{ borderTop: '1px solid rgba(58,44,30,0.08)' }}>
+      <div style={{ borderTop: '1px solid rgba(15,23,42,0.08)' }}>
         {steps.map((step, idx) => {
           const { Icon } = step
           const isDone   = step.done
@@ -189,7 +189,7 @@ export default function OnboardingChecklist({
               className="flex items-start gap-3.5 px-5 py-4 transition-colors"
               style={{
                 background: isActive ? 'rgba(31,61,44,0.08)' : 'transparent',
-                borderBottom: idx < steps.length - 1 ? '1px solid rgba(58,44,30,0.08)' : 'none',
+                borderBottom: idx < steps.length - 1 ? '1px solid rgba(15,23,42,0.08)' : 'none',
               }}
             >
               {/* Status icon */}
@@ -206,7 +206,7 @@ export default function OnboardingChecklist({
                   </div>
                 ) : (
                   <div className="w-9 h-9 rounded-full flex items-center justify-center"
-                    style={{ background: 'rgba(58,44,30,0.05)' }}>
+                    style={{ background: 'rgba(15,23,42,0.05)' }}>
                     <Icon size={18} className="text-ink-faint" />
                   </div>
                 )}
@@ -254,7 +254,7 @@ export default function OnboardingChecklist({
               {/* Step number for pending */}
               {isPending && (
                 <span className="shrink-0 mt-1 w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold text-ink-faint"
-                  style={{ background: 'rgba(58,44,30,0.06)' }}>
+                  style={{ background: 'rgba(15,23,42,0.06)' }}>
                   {idx + 1}
                 </span>
               )}
@@ -264,7 +264,7 @@ export default function OnboardingChecklist({
       </div>
 
       {/* ── FOOTER NOTE ────────────────────────────────── */}
-      <div className="px-5 py-3" style={{ borderTop: '1px solid rgba(58,44,30,0.08)', background: 'rgba(58,44,30,0.02)' }}>
+      <div className="px-5 py-3" style={{ borderTop: '1px solid rgba(15,23,42,0.08)', background: 'rgba(15,23,42,0.02)' }}>
         <p className="text-[11px] text-ink-faint leading-relaxed">
           Complete these steps to unlock the full EduTeach experience — daily AI briefings, lesson prep, early warnings, and catch-up plans.
         </p>

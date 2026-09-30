@@ -325,6 +325,7 @@ export default function ClassTimetablePage() {
     <div className="pb-10">
 
       <PageHeader
+        variant="admin"
         title={`${classInfo?.name ?? 'Class'} — Timetable`}
         subtitle={`Grade ${classInfo?.grade} · Section ${classInfo?.section} · ${assignedCount} of ${totalSlots} slots filled`}
         action={
@@ -337,7 +338,7 @@ export default function ClassTimetablePage() {
             <button
               onClick={publish}
               disabled={publishing || periods.length === 0}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-2xl text-white text-sm font-bold active:scale-95 transition-transform disabled:opacity-60 whitespace-nowrap"
+              className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-white text-sm font-bold active:scale-95 transition-transform disabled:opacity-60 whitespace-nowrap"
               style={{ background: '#059669' }}
             >
               {publishing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
@@ -351,7 +352,7 @@ export default function ClassTimetablePage() {
 
         {/* ── Subjects legend ── */}
         {assignments.length > 0 && (
-          <div className="paper-card p-4">
+          <div className="admin-card p-4">
             <div className="flex items-center justify-between mb-2">
               <p className="text-xs font-bold text-ink-soft uppercase tracking-widest">Subjects in this class</p>
               <p className="text-xs text-ink-faint">Click a period number to fill all days at once</p>
@@ -373,23 +374,23 @@ export default function ClassTimetablePage() {
         )}
 
         {/* ── Timetable grid ── */}
-        <div className="paper-card overflow-hidden">
+        <div className="admin-card overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full border-collapse" style={{ minWidth: 720 }}>
               <thead>
                 {/* Row 1: Day names */}
                 <tr>
                   <th
-                    className="w-28 px-4 py-3 text-left border-b border-r border-[rgba(58,44,30,0.12)]"
-                    style={{ background: 'rgba(58,44,30,0.04)' }}
+                    className="w-28 px-4 py-3 text-left border-b border-r border-[rgba(15,23,42,0.12)]"
+                    style={{ background: 'rgba(15,23,42,0.04)' }}
                   >
                     <p className="text-xs font-bold text-ink-soft uppercase tracking-widest">Period</p>
                   </th>
                   {DAYS.map((day, i) => (
                     <th
                       key={day}
-                      className="px-3 py-3 text-center border-b border-r border-[rgba(58,44,30,0.12)] last:border-r-0"
-                      style={{ background: 'rgba(58,44,30,0.04)' }}
+                      className="px-3 py-3 text-center border-b border-r border-[rgba(15,23,42,0.12)] last:border-r-0"
+                      style={{ background: 'rgba(15,23,42,0.04)' }}
                     >
                       <p className="text-xs font-bold text-ink">{DAY_SHORT[i]}</p>
                       <p className="text-[10px] text-ink-faint font-medium">{day}</p>
@@ -464,15 +465,15 @@ export default function ClassTimetablePage() {
 
                       {/* Period label — click to fill ALL days */}
                       <td
-                        className="px-4 py-3 border-b border-r border-[rgba(58,44,30,0.12)] align-middle group/period cursor-pointer"
-                        style={{ background: 'rgba(58,44,30,0.04)' }}
+                        className="px-4 py-3 border-b border-r border-[rgba(15,23,42,0.12)] align-middle group/period cursor-pointer"
+                        style={{ background: 'rgba(15,23,42,0.04)' }}
                         onClick={() => openModal(slot, 1, true)}
                         title="Click to assign this period across all days at once"
                       >
                         <div className="flex items-center gap-2">
                           <span
-                            className="w-7 h-7 rounded-lg flex items-center justify-center text-[11px] font-bold flex-shrink-0 transition-colors group-hover/period:bg-[rgba(58,44,30,0.16)]"
-                            style={{ background: 'rgba(58,44,30,0.08)', color: 'var(--ink)' }}
+                            className="w-7 h-7 rounded-lg flex items-center justify-center text-[11px] font-bold flex-shrink-0 transition-colors group-hover/period:bg-[rgba(15,23,42,0.16)]"
+                            style={{ background: 'rgba(15,23,42,0.08)', color: 'var(--ink)' }}
                           >
                             {slot.periodNumber}
                           </span>
@@ -499,7 +500,7 @@ export default function ClassTimetablePage() {
                         return (
                           <td
                             key={day}
-                            className="px-2 py-2 border-b border-r border-[rgba(58,44,30,0.12)] last:border-r-0 align-middle"
+                            className="px-2 py-2 border-b border-r border-[rgba(15,23,42,0.12)] last:border-r-0 align-middle"
                             style={{ minWidth: 115 }}
                           >
                             {period ? (
@@ -520,7 +521,7 @@ export default function ClassTimetablePage() {
                                 <div className="absolute inset-0 rounded-xl bg-white/95 flex items-center justify-center gap-1.5 opacity-0 group-hover/cell:opacity-100 transition-opacity">
                                   <button
                                     onClick={() => openModal(slot, day)}
-                                    className="p-1.5 rounded-lg text-ink hover:bg-[rgba(58,44,30,0.08)]"
+                                    className="p-1.5 rounded-lg text-ink hover:bg-[rgba(15,23,42,0.08)]"
                                     title="Edit"
                                   >
                                     <Edit2 className="w-3.5 h-3.5" />
@@ -540,8 +541,8 @@ export default function ClassTimetablePage() {
                             ) : (
                               <button
                                 onClick={() => openModal(slot, day)}
-                                className="w-full h-12 rounded-xl border-2 border-dashed border-[rgba(58,44,30,0.18)] text-ink-faint
-                                  hover:border-[rgba(58,44,30,0.35)] hover:text-ink-soft hover:bg-[rgba(58,44,30,0.05)] transition-all
+                                className="w-full h-12 rounded-xl border-2 border-dashed border-[rgba(15,23,42,0.18)] text-ink-faint
+                                  hover:border-[rgba(15,23,42,0.35)] hover:text-ink-soft hover:bg-[rgba(15,23,42,0.05)] transition-all
                                   flex items-center justify-center"
                               >
                                 <Plus className="w-3.5 h-3.5" />
@@ -562,7 +563,7 @@ export default function ClassTimetablePage() {
       {/* ── Assignment modal ── */}
       {modal && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-3xl w-full max-w-sm p-6" style={{ border: '1.5px solid rgba(58,44,30,0.16)' }}>
+          <div className="bg-white rounded-3xl w-full max-w-sm p-6" style={{ border: '1px solid rgba(15,23,42,0.06)', boxShadow: 'var(--admin-shadow-md)' }}>
 
             <div className="flex items-start justify-between mb-1">
               <div>
@@ -579,12 +580,12 @@ export default function ClassTimetablePage() {
             {/* Apply to all days toggle */}
             <div
               className="flex items-center gap-3 rounded-2xl px-4 py-3 mb-4 mt-3"
-              style={{ background: 'rgba(58,44,30,0.05)', border: '1.5px solid rgba(58,44,30,0.12)' }}
+              style={{ background: 'rgba(15,23,42,0.05)', border: '1.5px solid rgba(15,23,42,0.12)' }}
             >
               <button
                 onClick={() => setApplyToAllDays(v => !v)}
                 className="relative w-10 h-5 rounded-full flex-shrink-0 transition-colors"
-                style={{ background: applyToAllDays ? 'var(--ink)' : 'rgba(58,44,30,0.18)' }}
+                style={{ background: applyToAllDays ? 'var(--ink)' : 'rgba(15,23,42,0.18)' }}
               >
                 <span
                   className="absolute top-0.5 w-4 h-4 bg-white rounded-full transition-all"
@@ -615,13 +616,13 @@ export default function ClassTimetablePage() {
                     onClick={() => { setSelectedAssignmentIdx(i); setConflictErrors([]) }}
                     className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl border-2 text-left transition-all"
                     style={{
-                      borderColor: selected ? color.text : 'rgba(58,44,30,0.14)',
+                      borderColor: selected ? color.text : 'rgba(15,23,42,0.14)',
                       background:  selected ? color.bg   : 'white',
                     }}
                   >
                     <div
                       className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0"
-                      style={{ background: selected ? color.text : 'rgba(58,44,30,0.06)' }}
+                      style={{ background: selected ? color.text : 'rgba(15,23,42,0.06)' }}
                     >
                       <span className="text-xs font-bold" style={{ color: selected ? 'white' : 'var(--ink-soft)' }}>
                         {(a.subject ?? 'S')[0].toUpperCase()}
@@ -640,7 +641,7 @@ export default function ClassTimetablePage() {
             {/* Add a new subject & teacher right here — no need to visit Classes → Assign first */}
             <div
               className="rounded-2xl p-3.5 mt-3"
-              style={{ background: 'rgba(58,44,30,0.04)', border: '1.5px dashed rgba(58,44,30,0.18)' }}
+              style={{ background: 'rgba(15,23,42,0.04)', border: '1.5px dashed rgba(15,23,42,0.18)' }}
             >
               <p className="flex items-center gap-1.5 text-xs font-bold text-ink-soft mb-2.5">
                 <UserPlus className="w-3.5 h-3.5" /> Add a subject &amp; teacher
@@ -649,7 +650,7 @@ export default function ClassTimetablePage() {
                 <select
                   value={newTeacherId}
                   onChange={e => setNewTeacherId(e.target.value)}
-                  className="w-full px-3 py-2.5 rounded-xl border-[1.5px] border-[rgba(58,44,30,0.16)] text-sm text-ink focus:outline-none bg-white"
+                  className="w-full px-3 py-2.5 admin-input rounded-xl text-sm text-ink"
                 >
                   <option value="">Select teacher…</option>
                   {teachers.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
@@ -657,7 +658,7 @@ export default function ClassTimetablePage() {
                 <select
                   value={subjectChoice}
                   onChange={e => setSubjectChoice(e.target.value)}
-                  className="w-full px-3 py-2.5 rounded-xl border-[1.5px] border-[rgba(58,44,30,0.16)] text-sm text-ink focus:outline-none bg-white"
+                  className="w-full px-3 py-2.5 admin-input rounded-xl text-sm text-ink"
                 >
                   <option value="">Select subject…</option>
                   {availableGradeSubjects.map(gs => (
@@ -674,7 +675,7 @@ export default function ClassTimetablePage() {
                       onChange={e => setCustomSubject(e.target.value)}
                       onKeyDown={e => { if (e.key === 'Enter') void addAssignment() }}
                       placeholder="Custom subject name"
-                      className="flex-1 px-3 py-2.5 rounded-xl border-[1.5px] border-[rgba(58,44,30,0.16)] text-sm text-ink focus:outline-none bg-white"
+                      className="flex-1 px-3 py-2.5 admin-input rounded-xl text-sm text-ink"
                       autoFocus
                     />
                   )}
@@ -714,7 +715,7 @@ export default function ClassTimetablePage() {
             <div className="flex gap-3 mt-5">
               <button
                 onClick={() => { setModal(null); setConflictErrors([]) }}
-                className="flex-1 py-2.5 rounded-2xl border border-[rgba(58,44,30,0.15)] text-sm font-bold text-ink-soft"
+                className="flex-1 py-2.5 rounded-xl admin-btn-secondary text-sm font-bold text-ink-soft"
               >
                 Cancel
               </button>

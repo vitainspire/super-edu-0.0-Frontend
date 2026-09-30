@@ -53,7 +53,7 @@ export default function ScoreChart({ points, height = 160 }: Props) {
           return (
             <g key={v}>
               <line x1={PAD_L} y1={y} x2={W - PAD_R} y2={y}
-                stroke="rgba(58,44,30,0.14)" strokeWidth={1} strokeDasharray={v === 1 ? '0' : '4 3'} />
+                stroke="rgba(15,23,42,0.14)" strokeWidth={1} strokeDasharray={v === 1 ? '0' : '4 3'} />
               <text x={PAD_L - 4} y={y + 4} textAnchor="end"
                 fontSize={8} fill="#A8977F" fontWeight="600">
                 {Math.round(v * 100)}

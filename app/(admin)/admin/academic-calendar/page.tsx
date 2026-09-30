@@ -321,6 +321,7 @@ export default function AcademicCalendarPage() {
       <PageHeader
         title="Academic Calendar"
         back={false}
+        variant="admin"
         subtitle="Holidays, exam blocks, and term dates for your school"
         action={
           <button
@@ -424,7 +425,7 @@ export default function AcademicCalendarPage() {
                 <Clock className="w-4 h-4 text-ink-soft" />
                 <p className="text-xs font-black text-ink-soft uppercase tracking-widest">Working Capacity — {capacityRange.label}</p>
               </div>
-              <div className="flex rounded-xl overflow-hidden" style={{ border: '1.5px solid rgba(58,44,30,0.16)' }}>
+              <div className="admin-card flex overflow-hidden">
                 {[{ label: '6-Day Week', value: true }, { label: '5-Day Week', value: false }].map(opt => (
                   <button
                     key={opt.label}
@@ -444,15 +445,15 @@ export default function AcademicCalendarPage() {
               <p className="text-sm text-ink-soft">Set up your school schedule (Timetable page) to see working-day capacity here.</p>
             ) : capacity ? (
               <div className="grid grid-cols-3 gap-3">
-                <div className="rounded-2xl px-4 py-3 text-center" style={{ background: 'rgba(58,44,30,0.05)' }}>
+                <div className="admin-card px-4 py-3 text-center">
                   <p className="text-2xl font-black text-ink">{capacity.workingDays}</p>
                   <p className="text-[10px] font-bold text-ink-soft mt-0.5 uppercase tracking-wide">Working Days</p>
                 </div>
-                <div className="rounded-2xl px-4 py-3 text-center" style={{ background: 'rgba(58,44,30,0.05)' }}>
+                <div className="admin-card px-4 py-3 text-center">
                   <p className="text-2xl font-black text-ink">{capacity.workingHours}</p>
                   <p className="text-[10px] font-bold text-ink-soft mt-0.5 uppercase tracking-wide">Working Hours</p>
                 </div>
-                <div className="rounded-2xl px-4 py-3 text-center" style={{ background: 'rgba(58,44,30,0.05)' }}>
+                <div className="admin-card px-4 py-3 text-center">
                   <p className="text-2xl font-black text-ink">{capacity.nonWorkingDays}</p>
                   <p className="text-[10px] font-bold text-ink-soft mt-0.5 uppercase tracking-wide">Non-Working Days</p>
                 </div>
@@ -481,7 +482,7 @@ export default function AcademicCalendarPage() {
                 type="number"
                 value={seedYear}
                 onChange={e => setSeedYear(Number(e.target.value))}
-                className="w-24 px-3 py-2.5 rounded-xl border-[1.5px] border-[rgba(58,44,30,0.16)] text-sm text-ink focus:outline-none bg-white/70"
+                className="admin-input w-24 px-3 py-2.5 text-sm text-ink"
               />
             )}
             <button
@@ -533,7 +534,7 @@ export default function AcademicCalendarPage() {
         {/* ── Events — list / calendar toggle ── */}
         {!loading && displayEvents.length > 0 && (
           <div className="flex items-center justify-end">
-            <div className="flex rounded-xl overflow-hidden" style={{ border: '1.5px solid rgba(58,44,30,0.16)' }}>
+            <div className="admin-card flex overflow-hidden">
               {([
                 { mode: 'calendar' as const, label: 'Calendar', icon: LayoutGrid },
                 { mode: 'list' as const, label: 'List', icon: Rows3 },
@@ -596,7 +597,7 @@ export default function AcademicCalendarPage() {
                           {meta.label}
                         </span>
                         {a.category === 'holiday' && a.holidaySubtype && (
-                          <span className="text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full text-ink-soft" style={{ background: 'rgba(58,44,30,0.06)' }}>
+                          <span className="text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full text-ink-soft" style={{ background: 'rgba(15,23,42,0.06)' }}>
                             {HOLIDAY_SUBTYPE_META[a.holidaySubtype].label}
                           </span>
                         )}
@@ -638,9 +639,9 @@ export default function AcademicCalendarPage() {
       </div>
 
       {/* Create Event Modal */}
-      <Modal open={showModal} onClose={closeModal} title={editingId ? 'Edit Calendar Event' : 'New Calendar Event'}>
+      <Modal open={showModal} onClose={closeModal} title={editingId ? 'Edit Calendar Event' : 'New Calendar Event'} variant="admin">
         <form onSubmit={handleCreate} className="space-y-4">
-          <div className="rounded-2xl px-4 py-3 flex items-center gap-2.5" style={{ background: 'rgba(58,44,30,0.05)', border: '1px solid rgba(58,44,30,0.12)' }}>
+          <div className="admin-card px-4 py-3 flex items-center gap-2.5">
             <CalendarDays className="w-4 h-4 flex-shrink-0" style={{ color: 'var(--ink-soft)' }} />
             <span className="text-sm font-bold" style={{ color: 'var(--ink)' }}>
               {formatDayHeader(form.startDate, form.endDate)}
@@ -668,7 +669,7 @@ export default function AcademicCalendarPage() {
                     className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold border transition-colors"
                     style={active
                       ? { background: meta.bg, color: meta.color, borderColor: meta.color }
-                      : { background: 'transparent', borderColor: 'rgba(58,44,30,0.16)', color: 'var(--ink-soft)' }}
+                      : { background: 'transparent', borderColor: 'rgba(15,23,42,0.16)', color: 'var(--ink-soft)' }}
                   >
                     <Icon className="w-3.5 h-3.5" /> {meta.label}
                   </button>
@@ -678,7 +679,7 @@ export default function AcademicCalendarPage() {
           </div>
 
           {form.category === 'holiday' && (
-            <div className="rounded-2xl p-3.5" style={{ background: 'rgba(58,44,30,0.04)', border: '1.5px dashed rgba(58,44,30,0.18)' }}>
+            <div className="admin-card p-3.5">
               <label className="label">Holiday Type</label>
               <div className="flex gap-2 flex-wrap mb-3">
                 {(Object.keys(HOLIDAY_SUBTYPE_META) as NonNullable<AcademicEvent['holidaySubtype']>[]).map(st => {
@@ -691,7 +692,7 @@ export default function AcademicCalendarPage() {
                       className="px-3 py-1.5 rounded-xl text-xs font-bold border transition-colors"
                       style={active
                         ? { background: 'var(--ink)', color: 'var(--paper-soft)', borderColor: 'var(--ink)' }
-                        : { background: 'transparent', borderColor: 'rgba(58,44,30,0.16)', color: 'var(--ink-soft)' }}
+                        : { background: 'transparent', borderColor: 'rgba(15,23,42,0.16)', color: 'var(--ink-soft)' }}
                     >
                       {HOLIDAY_SUBTYPE_META[st].label}
                     </button>
@@ -763,7 +764,7 @@ export default function AcademicCalendarPage() {
               type="button"
               onClick={closeModal}
               className="flex-1 py-3 rounded-2xl text-ink-soft font-bold text-sm active:scale-95 transition-transform"
-              style={{ background: 'rgba(58,44,30,0.06)' }}
+              style={{ background: 'rgba(15,23,42,0.06)' }}
             >
               Cancel
             </button>

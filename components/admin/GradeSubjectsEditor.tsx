@@ -12,9 +12,9 @@ interface GradeSubjectRow {
   orderIndex: number
 }
 
-const CATEGORY_META: Record<'core' | 'special', { label: string; color: string; bg: string }> = {
-  core:    { label: 'Core',    color: '#1E3A55', bg: '#DCEBF8' },
-  special: { label: 'Special', color: '#5C2416', bg: '#F4D6C0' },
+const CATEGORY_META: Record<'core' | 'special', { label: string; color: string; badge: string }> = {
+  core:    { label: 'Core',    color: '#1E3A55', badge: 'badge-blue' },
+  special: { label: 'Special', color: '#5C2416', badge: 'badge-purple' },
 }
 
 interface Props {
@@ -119,12 +119,12 @@ export default function GradeSubjectsEditor({ schoolId, grade }: Props) {
       )}
 
       {subjects.length === 0 ? (
-        <div className="text-center py-8 rounded-2xl" style={{ background: 'rgba(58,44,30,0.04)', border: '1.5px solid rgba(58,44,30,0.12)' }}>
+        <div className="admin-card text-center py-8">
           <BookMarked className="w-8 h-8 text-ink-faint mx-auto mb-2" />
           <p className="text-sm text-ink-soft font-semibold">No subjects yet for Grade {grade}</p>
         </div>
       ) : (
-        <div className="rounded-2xl bg-white/70 divide-y divide-[rgba(58,44,30,0.1)] overflow-hidden" style={{ border: '1.5px solid rgba(58,44,30,0.14)' }}>
+        <div className="rounded-2xl bg-white/70 divide-y divide-[rgba(15,23,42,0.1)] overflow-hidden" style={{ border: '1.5px solid rgba(15,23,42,0.14)' }}>
           {subjects.map(s => (
             <div key={s.id} className="flex items-center gap-3 px-4 py-2.5">
               <span className="flex-1 text-sm font-bold text-ink truncate">{s.subject}</span>
@@ -132,8 +132,7 @@ export default function GradeSubjectsEditor({ schoolId, grade }: Props) {
                 type="button"
                 onClick={() => updateCategory(s, s.category === 'core' ? 'special' : 'core')}
                 title="Click to switch between Core and Special"
-                className="text-[10px] font-bold uppercase tracking-wide px-2 py-1 rounded-full shrink-0"
-                style={{ background: CATEGORY_META[s.category].bg, color: CATEGORY_META[s.category].color }}
+                className={`${CATEGORY_META[s.category].badge} uppercase tracking-wide shrink-0`}
               >
                 {CATEGORY_META[s.category].label}
               </button>
@@ -143,8 +142,7 @@ export default function GradeSubjectsEditor({ schoolId, grade }: Props) {
                 max={40}
                 value={s.periodsPerWeek}
                 onChange={e => updatePeriods(s, Math.max(0, Number(e.target.value) || 0))}
-                className="w-16 px-2 py-1.5 rounded-xl border text-sm text-center bg-white focus:outline-none focus:ring-2"
-                style={{ borderColor: 'rgba(58,44,30,0.18)' }}
+                className="admin-input w-16 px-2 py-1.5 rounded-xl text-sm text-center"
               />
               <span className="text-xs text-ink-faint w-16 shrink-0">/week</span>
               <button
@@ -170,10 +168,9 @@ export default function GradeSubjectsEditor({ schoolId, grade }: Props) {
           value={newSubject}
           onChange={e => setNewSubject(e.target.value)}
           placeholder="e.g. Mathematics, Sports, Library..."
-          className="flex-1 min-w-[140px] px-3 py-2 rounded-xl border text-sm bg-white focus:outline-none focus:ring-2"
-          style={{ borderColor: 'rgba(58,44,30,0.18)' }}
+          className="admin-input flex-1 min-w-[140px] px-3 py-2 rounded-xl text-sm"
         />
-        <div className="flex rounded-xl overflow-hidden shrink-0" style={{ border: '1.5px solid rgba(58,44,30,0.18)' }}>
+        <div className="flex rounded-xl overflow-hidden shrink-0" style={{ border: '1.5px solid rgba(15,23,42,0.18)' }}>
           {(['core', 'special'] as const).map(cat => (
             <button
               key={cat}
@@ -194,8 +191,7 @@ export default function GradeSubjectsEditor({ schoolId, grade }: Props) {
           max={40}
           value={newPeriods}
           onChange={e => setNewPeriods(e.target.value)}
-          className="w-16 px-2 py-2 rounded-xl border text-sm text-center bg-white focus:outline-none focus:ring-2"
-          style={{ borderColor: 'rgba(58,44,30,0.18)' }}
+          className="admin-input w-16 px-2 py-2 rounded-xl text-sm text-center"
         />
         <button
           type="submit"

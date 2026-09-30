@@ -226,6 +226,7 @@ export default function StudentsPage() {
         eyebrow={className || 'Class'}
         title="Students"
         subtitle={`${students.length} student${students.length !== 1 ? 's' : ''} enrolled`}
+        variant="admin"
       />
 
       <div className="px-5 pt-2 max-w-4xl mx-auto space-y-6 relative z-10">
@@ -246,7 +247,7 @@ export default function StudentsPage() {
 
         {/* Student list */}
         <div className="paper-card overflow-hidden">
-          <div className="flex items-center gap-2 px-5 py-4" style={{ borderBottom: '1.5px solid rgba(58,44,30,0.1)' }}>
+          <div className="flex items-center gap-2 px-5 py-4" style={{ borderBottom: '1.5px solid rgba(15,23,42,0.1)' }}>
             <Users className="w-4 h-4 text-ink-soft" />
             <h2 className="font-display font-bold text-ink">Student Roster</h2>
           </div>
@@ -266,7 +267,7 @@ export default function StudentsPage() {
                 <div
                   key={s.id}
                   className="flex items-center justify-between px-5 py-3 gap-3"
-                  style={{ borderTop: i > 0 ? '1px solid rgba(58,44,30,0.08)' : 'none' }}
+                  style={{ borderTop: i > 0 ? '1px solid rgba(15,23,42,0.08)' : 'none' }}
                 >
                   <button
                     type="button"
@@ -285,7 +286,7 @@ export default function StudentsPage() {
                   </button>
                   <div className="flex items-center gap-2 shrink-0">
                     {s.studentCode ? (
-                      <div className="flex items-center gap-1.5 rounded-xl px-2.5 py-1" style={{ background: 'rgba(58,44,30,0.06)' }}>
+                      <div className="flex items-center gap-1.5 rounded-xl px-2.5 py-1" style={{ background: 'rgba(15,23,42,0.06)' }}>
                         <span className="text-xs font-black text-ink tracking-widest">{s.studentCode}</span>
                         <button
                           onClick={() => copyCode(s.studentCode!, s.id)}
@@ -336,7 +337,7 @@ export default function StudentsPage() {
                 />
               </div>
               <button type="submit" disabled={importing}
-                className="paper-btn-primary w-full text-sm disabled:opacity-60">
+                className="admin-btn-primary w-full flex items-center justify-center gap-2 py-3 rounded-xl text-white text-sm font-bold disabled:opacity-60">
                 {importing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
                 Add Student
               </button>
@@ -504,7 +505,7 @@ export default function StudentsPage() {
             <button
               onClick={importStudents}
               disabled={importing || preview.length === 0}
-              className="paper-btn-primary w-full text-sm disabled:opacity-60 mt-3">
+              className="admin-btn-primary w-full flex items-center justify-center gap-2 py-3 rounded-xl text-white text-sm font-bold disabled:opacity-60 mt-3">
               {importing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
               Import {preview.length > 0 ? `${preview.length} Students` : 'Students'}
             </button>

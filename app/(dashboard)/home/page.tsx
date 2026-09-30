@@ -2,22 +2,18 @@
 import { useState, useEffect, useMemo } from 'react'
 import {
   Wifi, WifiOff, LogOut, Check,
-  Sparkles, Wand2, CalendarDays, PlayCircle,
+  Sparkles, Wand2, CalendarDays, PlayCircle, HelpCircle,
 } from '@/components/ui/icons'
 import { useRouter } from 'next/navigation'
 import { useApp } from '@/lib/context'
 import { backendFetch } from '@/lib/backend'
 import { resolveSchedule, timeToMins } from '@/lib/logic/schedule'
 import CreateClassModal from '@/components/classes/CreateClassModal'
-import DailyBriefing from '@/components/briefing/DailyBriefing'
-import { ErrorBoundary } from '@/components/ui/ErrorBoundary'
-import Modal from '@/components/ui/Modal'
 import OnboardingChecklist from '@/components/onboarding/OnboardingChecklist'
 import FeatureTour from '@/components/onboarding/FeatureTour'
 import SubstituteBanner from '@/components/timetable/SubstituteBanner'
 import CoveringPeriods from '@/components/timetable/CoveringPeriods'
 import NotificationBell from '@/components/home/NotificationBell'
-import AttendanceCircle from '@/components/home/AttendanceCircle'
 import WeekStrip from '@/components/home/WeekStrip'
 import AskAssistant from '@/components/home/AskAssistant'
 import ClassStatChips from '@/components/home/ClassStatChips'
@@ -26,12 +22,12 @@ import PrepMaterialPreviewModal from '@/components/timetable/PrepMaterialPreview
 import ClassroomModeModal from '@/components/timetable/ClassroomModeModal'
 import { countStudentsNeedingAttention, computeHomeAlerts } from '@/lib/logic/home-alerts'
 import { classSnapshot } from '@/lib/logic/class-snapshot'
-import { nextTopicFor, nextTopicLabel } from '@/lib/logic/nextTopic'
 import { entriesOn, occurrencesFrom, projectPlan, addDays, atMidnight, sameDay, weekProgress } from '@/lib/logic/weekPlan'
 // Shared with the week strip and the next-day card, so a subject keeps one colour.
 import { accentForSubject } from '@/lib/subject-accent'
 import { buildFreePeriodSuggestions, type FreeSlotSuggestion, type PendingDoubtsByClass } from '@/lib/logic/free-period-suggestions'
 import { fetchStudentDoubtsByClasses } from '@/lib/supabase-queries'
+import { titleCase } from '@/lib/text'
 import type { AcademicEvent, TimetableEntry, ScheduleSlot } from '@/lib/types'
 import clsx from 'clsx'
 
@@ -267,7 +263,6 @@ export default function HomePage() {
   const [showTour, setShowTour]         = useState(false)
   const [showGuideBtn, setShowGuideBtn] = useState(false)
   const [hasAdmin, setHasAdmin]         = useState(false)
-  const [briefingOpen, setBriefingOpen] = useState(false)
 
   const allSetupDone =
     classes.length > 0 &&
@@ -313,11 +308,30 @@ export default function HomePage() {
   const firstName = teacher?.name?.split(' ')[0] ?? 'Teacher'
   const periodsDone = todaysEntries.filter(e => nowMins >= timeToMins(e.endTime)).length
 
+  // Desktop sidebar — "Quick Prep Materials": the next period still ahead,
+  // so the shortcut always points at whatever needs prepping next rather
+  // than requiring a scroll down to the schedule list to find it.
+  const nextUpRow = visibleScheduleRows.find(
+    (r): r is Extract<ScheduleRow, { kind: 'entry' }> => r.kind === 'entry' && r.entry.coverage !== 'covered_away',
+  )
+
+  // Desktop sidebar — "Class Progress Tracker": syllabus completion per
+  // class, same underlying numbers as the overall Reminders percentage,
+  // just broken out so a teacher can see which class is falling behind.
+  const classProgress = myClasses
+    .map(cls => {
+      const topics = myTopics.filter(t => t.classId === cls.id)
+      const pct = topics.length ? Math.round(topics.filter(t => t.isCompleted).length / topics.length * 100) : null
+      return { id: cls.id, name: cls.name, pct }
+    })
+    .filter((c): c is { id: string; name: string; pct: number } => c.pct !== null)
+    .slice(0, 5)
+
   return (
     <div className="paper-page pb-28">
 
       {/* ── HEADER ──────────────────────────────────────────── */}
-      <header className="px-5 md:px-8 pt-6 md:pt-9 pb-1 w-full max-w-[1280px] mx-auto">
+      <header className="px-4 md:px-8 pt-4 md:pt-9 pb-1 w-full max-w-[1440px] mx-auto">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
             <h1 className="font-display font-extrabold text-ink leading-[1.05]" style={{ fontSize: 'clamp(26px, 4.5vw, 38px)', letterSpacing: '-0.02em' }}>
@@ -329,29 +343,34 @@ export default function HomePage() {
           </div>
           <div className="flex items-center gap-2 shrink-0">
             <span className={clsx(
-              'hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold',
+              'hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-slate-100',
               syncStatus === 'online' ? 'text-emerald-800' : syncStatus === 'offline' ? 'text-red-700' : 'text-ink-soft',
-            )} style={{ background: 'rgba(255,255,255,0.6)', border: '1.75px solid var(--card-border)' }}>
+            )}>
               {syncStatus === 'online' ? <Wifi size={11} /> : syncStatus === 'offline' ? <WifiOff size={11} /> :
                 <div className="w-2.5 h-2.5 border border-ink-faint border-t-transparent rounded-full animate-spin" />}
               <span className="capitalize">{syncStatus}</span>
             </span>
             <AskAssistant />
+            {showGuideBtn && (
+              <button onClick={() => setShowTour(true)} title="Help" aria-label="Help"
+                className="w-11 h-11 flex items-center justify-center rounded-full bg-slate-100 hover:bg-slate-200 active:scale-90 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50">
+                <HelpCircle size={17} className="text-slate-600" />
+              </button>
+            )}
             <NotificationBell />
-            <button onClick={handleLogout} title="Sign out"
-              className="w-10 h-10 flex items-center justify-center rounded-full active:scale-90 transition-transform"
-              style={{ background: 'rgba(255,255,255,0.6)', border: '1.75px solid var(--card-border)' }}>
-              <LogOut size={16} className="text-ink-soft" />
+            <button onClick={handleLogout} title="Sign out" aria-label="Sign out"
+              className="w-11 h-11 flex items-center justify-center rounded-full bg-slate-100 hover:bg-slate-200 active:scale-90 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50">
+              <LogOut size={16} className="text-slate-600" />
             </button>
           </div>
         </div>
       </header>
 
       {/* ── BODY: main column + desktop aside ───────────────── */}
-      <div className="px-5 md:px-8 mt-4 w-full max-w-[1280px] mx-auto lg:grid lg:grid-cols-[1fr_320px] lg:gap-6 lg:items-start">
+      <div className="px-4 py-4 md:p-8 md:pt-4 w-full max-w-[1440px] mx-auto md:grid md:grid-cols-12 md:gap-6 md:items-start">
 
         {/* MAIN */}
-        <main className="min-w-0 space-y-5">
+        <main className="min-w-0 space-y-5 md:col-span-7">
           {/* One week at a time, with the week's progress through the plan.
               Picking a day here drives the schedule below it — which is what
               makes any day other than today reachable on this page. */}
@@ -433,21 +452,20 @@ export default function HomePage() {
                       : 'Review'
                     const card = (
                       <div
-                        className="paper-card p-4 flex items-center justify-between gap-3 animate-fade-up"
-                        style={{ animationDelay: `${idx * 50}ms`, borderLeft: '5px solid var(--forest-soft)' }}
+                        className="rounded-xl bg-slate-50 p-4 flex items-center justify-between gap-3 animate-fade-up"
+                        style={{ animationDelay: `${idx * 50}ms`, borderLeft: '4px dashed #CBD5E1' }}
                       >
                         <div className="min-w-0">
-                          <p className="font-display font-bold text-ink text-[15px]">
+                          <p className="font-display font-bold text-ink-soft text-[15px]">
                             {slot.label}{slot.startTime && slot.endTime ? ` · ${slot.startTime}–${slot.endTime}` : ''}
                           </p>
-                          <p className="text-[12.5px] font-medium text-ink-soft mt-0.5">
+                          <p className="text-[12.5px] font-medium text-ink-faint mt-0.5">
                             {suggestion?.text ?? 'Free period.'}
                           </p>
                         </div>
                         {href && (
                           <span
-                            className="shrink-0 text-[10px] font-black uppercase tracking-wide px-2.5 py-1 rounded-full"
-                            style={{ background: 'var(--forest-soft)', color: 'var(--forest)' }}
+                            className="shrink-0 text-[10px] font-black uppercase tracking-wide px-2.5 py-1 rounded-md bg-blue-50 text-blue-700"
                           >
                             {badge}
                           </span>
@@ -493,10 +511,17 @@ export default function HomePage() {
                     >
                       <div className="flex-1 min-w-0 p-4 flex flex-col sm:flex-row sm:items-center gap-3">
                         <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2">
-                            <p className="font-display font-bold text-ink text-[15px] truncate">Period {entry.periodNumber}: {label}</p>
-                            {isNow && (
-                              <span className="text-[9px] font-black uppercase tracking-wide px-2 py-0.5 rounded-full text-white shrink-0" style={{ background: accent }}>Now</span>
+                          <div className="flex items-center justify-between gap-2">
+                            <div className="flex items-center gap-2 min-w-0">
+                              <p className="font-display font-bold text-ink text-[15px] truncate">Period {entry.periodNumber}: {titleCase(label)}</p>
+                              {isNow && (
+                                <span className="text-[9px] font-black uppercase tracking-wide px-2 py-0.5 rounded-full text-white shrink-0" style={{ background: accent }}>Now</span>
+                              )}
+                            </div>
+                            {!handedOver && gradeFor(entry.classId) && (
+                              <span className="shrink-0 text-[10px] font-bold px-2 py-1 rounded-md bg-blue-50 text-blue-700">
+                                Grade {gradeFor(entry.classId)}
+                              </span>
                             )}
                           </div>
                           <p className="text-[12.5px] font-medium text-ink-soft mt-0.5">
@@ -541,7 +566,7 @@ export default function HomePage() {
                                   className="text-[10px] font-bold px-1.5 py-0.5 rounded-md"
                                   style={overdue
                                     ? { background: 'rgba(196,107,84,0.14)', color: '#7A2E17' }
-                                    : { background: 'rgba(58,44,30,0.06)', color: 'var(--ink-soft)' }}
+                                    : { background: 'rgba(15,23,42,0.06)', color: 'var(--ink-soft)' }}
                                 >
                                   {planned.sessions > 1
                                     ? `Session ${planned.session} of ${planned.sessions}`
@@ -650,7 +675,7 @@ export default function HomePage() {
                         <Check size={16} className="text-ink-faint shrink-0" />
                         <div className="min-w-0">
                           <p className="font-display font-bold text-ink text-[15px] truncate">
-                            Period {entry.periodNumber}: {label}
+                            Period {entry.periodNumber}: {titleCase(label)}
                           </p>
                           <p className="text-[12.5px] font-medium text-ink-soft mt-0.5">
                             {entry.startTime}–{entry.endTime} · {classNameFor(entry.classId)}
@@ -690,13 +715,65 @@ export default function HomePage() {
 
         </main>
 
-        {/* DESKTOP ASIDE — reminders. The calendar used to sit here too; the
-            week strip now leads the main column instead, where the day it
-            selects is next to the schedule it changes. */}
-        <aside className="hidden lg:block space-y-4 sticky top-6">
+        {/* DESKTOP ASIDE — quick actions, AI companion, and progress. The
+            calendar used to sit here too; the week strip now leads the main
+            column instead, where the day it selects is next to the
+            schedule it changes. */}
+        <aside className="hidden md:flex md:flex-col md:col-span-3 md:h-[calc(100vh-4rem)] md:justify-between gap-4 sticky top-8 overflow-y-auto">
+          {/* Quick Prep Materials — shortcut to whatever's coming up next,
+              so prepping doesn't require scrolling down to find it. */}
+          {nextUpRow && (
+            <div className="paper-card p-5">
+              <p className="section-label mb-2">Quick Prep Materials</p>
+              <p className="text-sm font-bold text-ink truncate">{titleCase(nextUpRow.entry.label ?? classNameFor(nextUpRow.entry.classId))}</p>
+              <p className="text-[12px] text-ink-soft mt-0.5">
+                {nextUpRow.entry.startTime}–{nextUpRow.entry.endTime} · {classNameFor(nextUpRow.entry.classId)}
+              </p>
+              <button
+                type="button"
+                onClick={() => setPrepModal({
+                  classId: nextUpRow.entry.classId,
+                  subject: nextUpRow.entry.label ?? classNameFor(nextUpRow.entry.classId),
+                  grade: gradeFor(nextUpRow.entry.classId),
+                  mode: 'auto',
+                  topic: plannedFor(nextUpRow.entry, shownDay)?.topic.topic,
+                })}
+                className="mt-3 w-full flex items-center justify-center gap-1.5 h-10 rounded-lg text-xs font-bold text-white active:scale-[0.98] transition-all"
+                style={{ background: 'var(--forest)' }}
+              >
+                <Sparkles size={13} /> Prep This Class
+              </button>
+            </div>
+          )}
+
+          {/* AI Companion Chat interface — same ARIA assistant as the header
+              icon, just a discoverable entry point that doesn't require
+              knowing the icon is there. */}
+          <AskAssistant variant="card" />
+
+          {/* Class Progress Tracker — syllabus completion per class. */}
+          {classProgress.length > 0 && (
+            <div className="paper-card p-5">
+              <p className="section-label mb-3">Class Progress</p>
+              <div className="space-y-3">
+                {classProgress.map(cp => (
+                  <div key={cp.id}>
+                    <div className="flex items-center justify-between mb-1">
+                      <p className="text-[12.5px] font-semibold text-ink truncate">{cp.name}</p>
+                      <p className="text-[11px] font-bold text-ink-soft shrink-0 ml-2">{cp.pct}%</p>
+                    </div>
+                    <div className="h-1.5 rounded-full bg-slate-100 overflow-hidden">
+                      <div className="h-full rounded-full transition-all" style={{ width: `${cp.pct}%`, background: 'var(--forest)' }} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           <div className="paper-card p-5">
-            <p className="font-display font-bold text-ink text-sm mb-3">Reminders</p>
-            <div className="space-y-2.5">
+            <p className="section-label mb-3">Reminders</p>
+            <div className="space-y-3">
               <div className="flex items-start gap-2.5" style={{ borderLeft: '3px solid #3E7A57', paddingLeft: 10 }}>
                 <div>
                   <p className="text-[13px] font-semibold text-ink leading-snug">{todaysEntries.length} period{todaysEntries.length === 1 ? '' : 's'} scheduled today</p>
@@ -753,34 +830,6 @@ export default function HomePage() {
         grade={classroomModal?.grade ?? ''}
         endTime={classroomModal?.endTime ?? ''}
       />
-
-      {teacher && <AttendanceCircle />}
-
-      {teacher && (
-        <button
-          onClick={() => setBriefingOpen(true)}
-          className="fixed bottom-40 md:bottom-24 right-4 z-40 w-11 h-11 flex items-center justify-center rounded-full text-white active:scale-90 transition-transform"
-          style={{ background: 'var(--forest-soft)', border: '1.5px solid rgba(23,20,15,0.18)' }}
-          title="Morning Briefing"
-        >
-          <Sparkles size={17} />
-        </button>
-      )}
-
-      {showGuideBtn && teacher && (
-        <button
-          onClick={() => setShowTour(true)}
-          className="fixed bottom-24 md:bottom-8 right-4 z-40 w-11 h-11 flex items-center justify-center rounded-full font-black text-white text-base active:scale-90 transition-transform"
-          style={{ background: 'var(--forest)' }}
-          title="Open App Guide"
-        >
-          ?
-        </button>
-      )}
-
-      <Modal open={briefingOpen} onClose={() => setBriefingOpen(false)} title="Morning Briefing">
-        <ErrorBoundary label="daily briefing"><DailyBriefing /></ErrorBoundary>
-      </Modal>
 
       {teacher && (
         <FeatureTour

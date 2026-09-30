@@ -51,6 +51,7 @@ export default function GradeSectionsPage() {
         title={`Grade ${grade}`}
         subtitle={`${classes.length} section${classes.length !== 1 ? 's' : ''}`}
         back
+        variant="admin"
       />
 
       <div className="px-5 pt-3">

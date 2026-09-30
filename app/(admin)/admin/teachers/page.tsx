@@ -152,12 +152,12 @@ export default function TeachersPage() {
       <PageHeader
         title="Teachers"
         back={false}
+        variant="admin"
         subtitle={`${teachers.length} teacher${teachers.length !== 1 ? 's' : ''} in ${school?.name ?? 'your school'}`}
         action={
           <button
             onClick={() => { setShowModal(true); setCreateError('') }}
-            className="flex items-center gap-1.5 font-bold px-3.5 py-2.5 rounded-2xl text-xs active:scale-95 transition-transform"
-            style={{ background: 'var(--ink)', color: 'var(--paper-soft)' }}
+            className="admin-btn-primary flex items-center gap-1.5 font-bold px-3.5 py-2.5 rounded-xl text-xs text-white"
           >
             <UserPlus size={14} strokeWidth={2.5} /> Add Teacher
           </button>
@@ -183,7 +183,7 @@ export default function TeachersPage() {
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr style={{ borderBottom: '1.5px solid rgba(58,44,30,0.12)' }}>
+                  <tr style={{ borderBottom: '1.5px solid rgba(15,23,42,0.12)' }}>
                     <th className="text-left text-xs font-bold text-ink-soft uppercase tracking-wide px-5 py-3">Name</th>
                     <th className="text-left text-xs font-bold text-ink-soft uppercase tracking-wide px-5 py-3">Subject</th>
                     <th className="text-left text-xs font-bold text-ink-soft uppercase tracking-wide px-5 py-3">Workload Limit</th>
@@ -193,7 +193,7 @@ export default function TeachersPage() {
                 </thead>
                 <tbody>
                   {teachers.map((t, i) => (
-                    <tr key={t.id} style={i < teachers.length - 1 ? { borderBottom: '1px solid rgba(58,44,30,0.08)' } : undefined}>
+                    <tr key={t.id} style={i < teachers.length - 1 ? { borderBottom: '1px solid rgba(15,23,42,0.08)' } : undefined}>
                       <td className="px-5 py-3">
                         <div className="flex items-center gap-3">
                           <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold shrink-0" style={{ background: 'var(--ink)', color: 'var(--paper-soft)' }}>
@@ -246,7 +246,7 @@ export default function TeachersPage() {
       </div>
 
       {/* Create Teacher Modal */}
-      <Modal open={showModal} onClose={closeModal} title="Add Teacher">
+      <Modal open={showModal} onClose={closeModal} title="Add Teacher" variant="admin">
         <form onSubmit={handleCreate} className="space-y-4">
           {createError && (
             <div className="text-sm px-4 py-3 rounded-2xl" style={{ background: '#FEF2F2', color: '#B91C1C', border: '1px solid rgba(185,28,28,0.15)' }}>
@@ -306,8 +306,7 @@ export default function TeachersPage() {
             <button
               type="button"
               onClick={closeModal}
-              className="flex-1 py-3 rounded-2xl text-ink-soft font-bold text-sm active:scale-95 transition-transform"
-              style={{ background: 'rgba(58,44,30,0.06)' }}
+              className="admin-btn-secondary flex-1 py-3 rounded-xl text-ink-soft font-bold text-sm"
             >
               Cancel
             </button>
@@ -319,7 +318,7 @@ export default function TeachersPage() {
       </Modal>
 
       {/* Workload limits modal */}
-      <Modal open={!!limitsTeacher} onClose={() => setLimitsTeacher(null)} title="Workload Limit">
+      <Modal open={!!limitsTeacher} onClose={() => setLimitsTeacher(null)} title="Workload Limit" variant="admin">
         <p className="text-sm text-ink-soft mb-4">
           Optional caps on how many periods {limitsTeacher?.name} can be assigned per day/week — used when auto-assigning substitute coverage. Leave blank for no limit.
         </p>
@@ -350,8 +349,7 @@ export default function TeachersPage() {
             <button
               type="button"
               onClick={() => setLimitsTeacher(null)}
-              className="flex-1 py-3 rounded-2xl text-ink-soft font-bold text-sm active:scale-95 transition-transform"
-              style={{ background: 'rgba(58,44,30,0.06)' }}
+              className="admin-btn-secondary flex-1 py-3 rounded-xl text-ink-soft font-bold text-sm"
             >
               Cancel
             </button>
@@ -363,7 +361,7 @@ export default function TeachersPage() {
       </Modal>
 
       {/* Edit subjects modal */}
-      <Modal open={!!subjectsTeacher} onClose={() => setSubjectsTeacher(null)} title="Subjects">
+      <Modal open={!!subjectsTeacher} onClose={() => setSubjectsTeacher(null)} title="Subjects" variant="admin">
         <p className="text-sm text-ink-soft mb-4">
           Every subject {subjectsTeacher?.name} can teach — not just what they&apos;re currently assigned to a class for. Used when assigning teachers to classes and generating timetables.
         </p>
@@ -375,8 +373,7 @@ export default function TeachersPage() {
           <button
             type="button"
             onClick={() => setSubjectsTeacher(null)}
-            className="flex-1 py-3 rounded-2xl text-ink-soft font-bold text-sm active:scale-95 transition-transform"
-            style={{ background: 'rgba(58,44,30,0.06)' }}
+            className="admin-btn-secondary flex-1 py-3 rounded-xl text-ink-soft font-bold text-sm"
           >
             Cancel
           </button>

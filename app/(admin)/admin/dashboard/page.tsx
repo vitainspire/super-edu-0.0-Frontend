@@ -42,12 +42,13 @@ function RollingNumber({ target, delay = 0 }: { target: number; delay?: number }
   return <>{val}</>
 }
 
-// Same white+blue accent as the sidebar (components/admin/AdminSideNav.tsx)
-// -- the dashboard's stat tiles used to each be a different pastel hue
+// Same accent as the sidebar (components/admin/AdminSideNav.tsx) -- the
+// dashboard's stat tiles used to each be a different pastel hue
 // (blue/coral/green), which read as three unrelated widgets rather than one
 // page. One consistent accent, varied only by icon and number, is what makes
-// it read as one interface.
-const ACCENT = '#0000CD'
+// it read as one interface. --admin-accent is the app's existing indigo
+// (--primary), reused rather than introducing a second unrelated blue.
+const ACCENT = 'var(--admin-accent)'
 
 // ── Stat tile (bold-outline white card) ─────────────────────────────────────
 interface CardDef {
@@ -61,36 +62,39 @@ function StatTile({ card, visible }: { card: CardDef; visible: boolean }) {
     <button
       type="button"
       onClick={() => router.push(card.href)}
-      className="stat-card bg-white text-left w-full active:scale-[0.98] transition-transform"
+      className="admin-card-hover text-left w-full p-6"
       style={{
-        border: '2px solid var(--card-border)',
         opacity: visible ? 1 : 0,
         transform: visible ? 'translateY(0)' : 'translateY(16px)',
-        transition: `opacity 0.5s ease ${card.delay}ms, transform 0.5s ease ${card.delay}ms, transform 0.15s ease`,
+        transition: `opacity 0.5s ease ${card.delay}ms, transform 0.5s ease ${card.delay}ms, box-shadow 0.15s ease, transform 0.15s ease`,
       }}
     >
       <div className="flex items-center justify-between gap-2">
-        <span className="w-10 h-10 rounded-2xl flex items-center justify-center" style={{ background: 'rgba(0,0,205,0.08)' }}>
+        <span className="w-10 h-10 rounded-2xl flex items-center justify-center" style={{ background: 'var(--admin-accent-soft)' }}>
           <card.Icon size={19} style={{ color: ACCENT }} />
         </span>
         <span
           className="flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-full"
-          style={{ background: 'rgba(0,0,205,0.08)', color: ACCENT }}
+          style={{ background: 'var(--admin-accent-soft)', color: ACCENT }}
         >
           Go <ArrowRight size={11} />
         </span>
       </div>
 
+      {/* Bolder, larger primary stat -- the number is the thing being scanned
+          for, so it carries the most visual weight on the tile. */}
       <p
-        className="font-display font-black leading-none mt-4 text-ink"
-        style={{ fontSize: 44, fontVariantNumeric: 'tabular-nums' }}
+        className="font-display font-black leading-none mt-5"
+        style={{ fontSize: 48, fontVariantNumeric: 'tabular-nums', color: '#0F172A', letterSpacing: '-0.02em' }}
       >
         {visible ? <RollingNumber target={card.value} delay={card.delay} /> : '0'}
       </p>
-      <p className="text-xs font-bold uppercase tracking-widest mt-2 text-ink-soft">
+      {/* Secondary text muted to a medium gray -- establishes hierarchy
+          against the bold, near-black primary stat above it. */}
+      <p className="text-xs font-bold uppercase tracking-widest mt-2.5" style={{ color: '#64748B' }}>
         {card.label}
       </p>
-      <p className="text-xs font-semibold mt-0.5 text-ink-faint">
+      <p className="text-xs font-medium mt-0.5" style={{ color: '#94A3B8' }}>
         {card.sublabel}
       </p>
     </button>
@@ -159,7 +163,7 @@ export default function AdminDashboard() {
             type="button"
             onClick={() => setTourOpen(true)}
             className="flex items-center gap-1.5 px-3 h-9 rounded-xl text-xs font-bold text-ink bg-white active:scale-95 transition-transform whitespace-nowrap"
-            style={{ border: '2px solid var(--card-border)' }}
+            style={{ border: '1px solid var(--admin-border)', boxShadow: 'var(--admin-shadow-sm)' }}
           >
             <HelpCircle size={14} /> Guide
           </button>

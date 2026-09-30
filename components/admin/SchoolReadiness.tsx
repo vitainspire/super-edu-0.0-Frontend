@@ -70,17 +70,17 @@ export default function SchoolReadiness({
   const allSet = gaps.length === 0 && classCount > 0
 
   return (
-    <div className="paper-card p-5 mb-6">
+    <div className={gaps.length > 0 ? 'admin-alert-amber p-5 mb-6' : 'admin-card p-5 mb-6'}>
       <div className="flex items-center justify-between gap-3 mb-4">
-        <p className="text-[11px] font-bold text-ink-soft uppercase tracking-widest">
+        <p className="text-[11px] font-bold uppercase tracking-widest" style={{ color: gaps.length > 0 ? '#92400E' : 'var(--ink-soft)' }}>
           School Readiness
         </p>
         <span
           className="text-[10px] font-bold px-2 py-0.5 rounded-full whitespace-nowrap"
           style={
             allSet
-              ? { background: 'rgba(170,214,160,.25)', color: '#234A1D' }
-              : { background: 'rgba(224,122,95,.16)', color: '#7A2E17' }
+              ? { background: '#DCFCE7', color: '#166534' }
+              : { background: '#FEF3C7', color: '#92400E' }
           }
         >
           {allSet ? 'All set' : `${gaps.length} to fix`}
@@ -89,44 +89,45 @@ export default function SchoolReadiness({
 
       {allSet && (
         <div className="flex items-center gap-2.5">
-          <Check size={16} style={{ color: '#234A1D' }} />
-          <p className="text-sm text-ink-soft">
+          <Check size={16} style={{ color: '#16A34A' }} />
+          <p className="text-sm" style={{ color: '#64748B' }}>
             Every class has a teacher, students and a syllabus, and the timetable is fully staffed.
           </p>
         </div>
       )}
 
       {classCount === 0 && (
-        <p className="text-sm text-ink-soft">
+        <p className="text-sm" style={{ color: '#64748B' }}>
           No classes yet — create the first one and this will track what it still needs.
         </p>
       )}
 
       {gaps.length > 0 && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
           {gaps.map(gap => (
             <button
               key={gap.key}
               type="button"
               onClick={() => router.push(gap.href)}
-              className="flex flex-col text-left rounded-2xl p-4 h-full active:scale-[0.98] transition-transform"
-              style={{ background: 'rgba(58,44,30,0.05)', border: '1px solid rgba(58,44,30,0.1)' }}
+              // White insets on the amber panel -- the panel itself carries the
+              // "this needs attention" signal, so each tile inside stays neutral.
+              className="admin-card-hover flex flex-col text-left rounded-2xl p-4 h-full"
             >
               <span className="flex items-center gap-1.5">
-                <AlertTriangle size={13} className="shrink-0" style={{ color: '#C46B54' }} />
+                <AlertTriangle size={13} className="shrink-0" style={{ color: '#D97706' }} />
                 {/* The number carries the pane. It is the thing being scanned
                     for, and stacking four sentences made the panel a wall of
                     text where every row started with a digit. */}
                 <span
                   className="font-display font-extrabold leading-none"
-                  style={{ fontSize: 26, letterSpacing: '-0.02em', color: '#7A2E17' }}
+                  style={{ fontSize: 26, letterSpacing: '-0.02em', color: '#0F172A' }}
                 >
                   {gap.count}
                 </span>
               </span>
               <p className="text-[13px] font-bold text-ink mt-1.5 leading-snug">{gap.noun(gap.count)}</p>
-              <p className="text-[11px] text-ink-soft mt-1 leading-snug flex-1">{gap.hint}</p>
-              <span className="flex items-center gap-1 text-xs font-bold text-ink-soft mt-3">
+              <p className="text-[11px] mt-1 leading-snug flex-1" style={{ color: '#94A3B8' }}>{gap.hint}</p>
+              <span className="flex items-center gap-1 text-xs font-bold mt-3" style={{ color: 'var(--admin-accent)' }}>
                 {gap.action} <ArrowRight size={12} />
               </span>
             </button>

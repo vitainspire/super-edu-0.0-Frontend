@@ -82,6 +82,7 @@ export default function ScannersPage() {
         title="Scanner Staff"
         subtitle={`${scanners.length} scanner account${scanners.length !== 1 ? 's' : ''} in ${school?.name ?? 'your school'}`}
         back={false}
+        variant="admin"
         action={(
           <button
             onClick={() => { setShowModal(true); setCreateError('') }}
@@ -96,7 +97,7 @@ export default function ScannersPage() {
       <div className="px-5 pt-3 relative z-10 max-w-4xl mx-auto">
 
         {/* Info banner */}
-        <div className="paper-card flex items-start gap-3 px-5 py-4 mb-6">
+        <div className="admin-card flex items-start gap-3 px-5 py-4 mb-6">
           <Sticker tone="gold" size={36} radius={12} style={{ marginTop: 1 }}>
             <ScanLine size={18} className="text-ink" />
           </Sticker>
@@ -114,7 +115,7 @@ export default function ScannersPage() {
             <Loader2 className="w-6 h-6 animate-spin text-ink-soft" />
           </div>
         ) : scanners.length === 0 ? (
-          <div className="paper-card text-center py-16 px-6">
+          <div className="admin-card text-center py-16 px-6">
             <Sticker tone="cream" size={56} radius={18} style={{ margin: '0 auto 12px' }}>
               <ScanLine size={26} className="text-ink-soft" />
             </Sticker>
@@ -122,10 +123,10 @@ export default function ScannersPage() {
             <p className="text-sm text-ink-soft mt-1">Click &quot;Add Scanner&quot; to create an account for scanning staff</p>
           </div>
         ) : (
-          <div className="paper-card overflow-hidden">
+          <div className="admin-card overflow-hidden">
             <table className="w-full">
               <thead>
-                <tr style={{ borderBottom: '1.5px solid rgba(58,44,30,0.1)' }}>
+                <tr style={{ borderBottom: '1.5px solid rgba(15,23,42,0.1)' }}>
                   <th className="text-left text-xs font-bold text-ink-soft uppercase tracking-wide px-5 py-3">Name</th>
                   <th className="text-left text-xs font-bold text-ink-soft uppercase tracking-wide px-5 py-3">Email</th>
                   <th className="text-left text-xs font-bold text-ink-soft uppercase tracking-wide px-5 py-3">Added</th>
@@ -134,7 +135,7 @@ export default function ScannersPage() {
               </thead>
               <tbody>
                 {scanners.map(s => (
-                  <tr key={s.id} className="last:[&>td]:pb-4" style={{ borderBottom: '1px solid rgba(58,44,30,0.06)' }}>
+                  <tr key={s.id} className="last:[&>td]:pb-4" style={{ borderBottom: '1px solid rgba(15,23,42,0.06)' }}>
                     <td className="px-5 py-3">
                       <div className="flex items-center gap-3">
                         <div className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0"
@@ -170,7 +171,7 @@ export default function ScannersPage() {
       {/* Create Scanner Modal */}
       {showModal && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
-          <div className="paper-card w-full max-w-md p-6" style={{ background: 'var(--paper-soft)' }}>
+          <div className="admin-card w-full max-w-md p-6" style={{ background: 'var(--paper-soft)' }}>
             <div className="flex items-center justify-between mb-5">
               <h2 className="font-display text-lg font-bold text-ink">Add Scanner Account</h2>
               <button onClick={() => setShowModal(false)}
@@ -195,8 +196,7 @@ export default function ScannersPage() {
                   value={form.name}
                   onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
                   placeholder="e.g. Ramesh Kumar"
-                  className="w-full px-3 py-2.5 rounded-xl text-sm text-ink bg-white focus:outline-none focus:ring-2"
-                  style={{ border: '1.5px solid rgba(58,44,30,0.16)' }}
+                  className="admin-input w-full px-3 py-2.5 rounded-xl text-sm text-ink"
                 />
               </div>
 
@@ -208,8 +208,7 @@ export default function ScannersPage() {
                   value={form.email}
                   onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
                   placeholder="scanner@school.edu.in"
-                  className="w-full px-3 py-2.5 rounded-xl text-sm text-ink bg-white focus:outline-none focus:ring-2"
-                  style={{ border: '1.5px solid rgba(58,44,30,0.16)' }}
+                  className="admin-input w-full px-3 py-2.5 rounded-xl text-sm text-ink"
                 />
               </div>
 
@@ -222,8 +221,7 @@ export default function ScannersPage() {
                     value={form.password}
                     onChange={e => setForm(f => ({ ...f, password: e.target.value }))}
                     placeholder="Give this to the scanning staff"
-                    className="w-full px-3 py-2.5 pr-10 rounded-xl text-sm text-ink bg-white focus:outline-none focus:ring-2"
-                    style={{ border: '1.5px solid rgba(58,44,30,0.16)' }}
+                    className="admin-input w-full px-3 py-2.5 pr-10 rounded-xl text-sm text-ink"
                   />
                   <button type="button" onClick={() => setShowPw(p => !p)}
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-ink-faint">
@@ -235,12 +233,11 @@ export default function ScannersPage() {
 
               <div className="flex gap-3 pt-2">
                 <button type="button" onClick={() => setShowModal(false)}
-                  className="flex-1 py-2.5 rounded-xl text-sm font-bold text-ink-soft hover:bg-black/[0.04] transition-colors"
-                  style={{ border: '1.5px solid rgba(58,44,30,0.16)' }}>
+                  className="admin-btn-secondary flex-1 py-2.5 rounded-xl text-sm font-bold text-ink-soft">
                   Cancel
                 </button>
                 <button type="submit" disabled={creating}
-                  className="flex-1 paper-btn-primary py-2.5 disabled:opacity-60">
+                  className="admin-btn-primary flex-1 rounded-xl text-sm font-bold text-white py-2.5 disabled:opacity-60">
                   {creating ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Create Account'}
                 </button>
               </div>

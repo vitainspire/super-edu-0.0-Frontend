@@ -149,7 +149,7 @@ export default function ClassesPage() {
 
                     {totalTopics > 0 ? (
                       <div className="mt-4">
-                        <div className="w-full rounded-full h-2 overflow-hidden" style={{ background: 'rgba(27,24,15,0.08)' }}>
+                        <div className="w-full rounded-full h-2 overflow-hidden" style={{ background: 'rgba(15,23,42,0.08)' }}>
                           <div className="h-full rounded-full" style={{ width: `${pct}%`, background: 'var(--forest)' }} />
                         </div>
                         <div className="flex items-center justify-between mt-2">
@@ -242,7 +242,7 @@ export default function ClassesPage() {
               <button
                 onClick={() => setCreateOpen(true)}
                 className="w-full flex items-center justify-center gap-2 py-4 rounded-3xl border-2 border-dashed text-ink-soft font-bold text-sm active:scale-[0.98] transition-all"
-                style={{ borderColor: 'rgba(58,44,30,0.25)' }}
+                style={{ borderColor: 'rgba(15,23,42,0.25)' }}
               >
                 <Plus size={16} strokeWidth={2.5} /> Add Another Class
               </button>

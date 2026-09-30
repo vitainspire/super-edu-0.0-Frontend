@@ -38,7 +38,7 @@ const QUICK_WORKSHEET_DIST = [
   { type: 'long-answer', count: 1, marksEach: 2 },
 ]
 
-export default function AskAssistant() {
+export default function AskAssistant({ variant = 'icon' }: { variant?: 'icon' | 'card' }) {
   const router = useRouter()
   const {
     teacher, classes, students, assignments, attendance, mastery,
@@ -346,15 +346,33 @@ export default function AskAssistant() {
 
   return (
     <>
-      <button
-        type="button"
-        onClick={() => setOpen(true)}
-        title="ARIA"
-        className="w-10 h-10 flex items-center justify-center rounded-full active:scale-90 transition-transform"
-        style={{ background: 'rgba(255,255,255,0.6)', border: '1.75px solid var(--card-border)' }}
-      >
-        <MessageCircleQuestion size={17} className="text-ink-soft" />
-      </button>
+      {variant === 'icon' ? (
+        <button
+          type="button"
+          onClick={() => setOpen(true)}
+          title="Ask ARIA"
+          aria-label="Ask ARIA"
+          className="w-11 h-11 flex items-center justify-center rounded-full bg-slate-100 hover:bg-slate-200 active:scale-90 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
+        >
+          <MessageCircleQuestion size={17} className="text-slate-600" />
+        </button>
+      ) : (
+        <button
+          type="button"
+          onClick={() => setOpen(true)}
+          className="w-full text-left rounded-xl p-5 border border-slate-200 bg-white shadow-sm hover:shadow-md transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
+        >
+          <div className="flex items-center gap-2 mb-2">
+            <span className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 text-white" style={{ background: 'var(--forest)' }}>
+              <MessageCircleQuestion size={15} />
+            </span>
+            <p className="font-display font-bold text-ink text-sm">Ask ARIA</p>
+          </div>
+          <p className="text-[12.5px] text-ink-soft leading-snug">
+            &quot;What needs my attention today?&quot; — ask about a student, a class, or your schedule.
+          </p>
+        </button>
+      )}
 
       <Modal open={open} onClose={() => setOpen(false)} title="ARIA">
         <div className="space-y-4">
@@ -366,7 +384,7 @@ export default function AskAssistant() {
                 title={voiceOutputOn ? 'Voice replies on — tap to mute' : 'Voice replies off — tap to hear answers spoken'}
                 className="flex items-center gap-1.5 h-8 px-3 rounded-full text-[11px] font-bold active:scale-95 transition-all"
                 style={{
-                  background: voiceOutputOn ? 'var(--forest-soft)' : 'rgba(58,44,30,0.06)',
+                  background: voiceOutputOn ? 'var(--forest-soft)' : 'rgba(15,23,42,0.06)',
                   color: voiceOutputOn ? 'var(--forest)' : 'var(--ink-soft)',
                 }}
               >
@@ -393,7 +411,7 @@ export default function AskAssistant() {
           </div>
 
           {pending && (
-            <div className="p-3 rounded-2xl space-y-2.5" style={{ background: 'rgba(58,44,30,0.05)', border: '1.5px solid var(--card-border)' }}>
+            <div className="p-3 rounded-2xl space-y-2.5" style={{ background: 'rgba(15,23,42,0.05)', border: '1.5px solid var(--card-border)' }}>
               <p className="text-[13px] font-semibold text-ink">{pending.label} — go ahead?</p>
               <div className="flex items-center gap-2">
                 <button

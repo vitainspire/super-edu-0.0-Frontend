@@ -98,13 +98,16 @@ function splitProblems(chapters: ChapterSummary[]): Map<string, string> {
 }
 
 function Pill({ tone, children }: { tone: 'good' | 'warn' | 'plain'; children: React.ReactNode }) {
-  const styles = {
-    good: { background: 'rgba(170,214,160,.2)', color: '#234A1D' },
-    warn: { background: 'rgba(224,122,95,.16)', color: '#7A2E17' },
-    plain: { background: 'rgba(58,44,30,0.06)', color: 'var(--ink-soft)' },
-  }[tone]
+  // good/warn now reuse the shared badge palette instead of one-off rgba
+  // literals; 'plain' is a neutral chip with no equivalent badge class, so it
+  // keeps its own inline style.
+  if (tone === 'good') return <span className="badge-green whitespace-nowrap">{children}</span>
+  if (tone === 'warn') return <span className="badge-yellow whitespace-nowrap">{children}</span>
   return (
-    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full whitespace-nowrap" style={styles}>
+    <span
+      className="text-[10px] font-bold px-2 py-0.5 rounded-full whitespace-nowrap"
+      style={{ background: 'rgba(15,23,42,0.06)', color: 'var(--ink-soft)' }}
+    >
       {children}
     </span>
   )
@@ -300,6 +303,7 @@ export default function AdminTextbooksPage() {
     <div className="paper-page pb-16">
       <PageHeader
         title="Textbooks"
+        variant="admin"
         subtitle="Review each ingested book's chapter split, then publish it for the tutor"
       />
 
@@ -344,7 +348,7 @@ export default function AdminTextbooksPage() {
                       className="px-3 py-1.5 rounded-xl text-xs font-bold transition-all disabled:opacity-40 disabled:cursor-not-allowed"
                       style={scrapeBoard === b.code
                         ? { background: '#1E3A55', color: 'white' }
-                        : { background: 'rgba(58,44,30,0.06)', color: 'var(--ink-soft)' }}
+                        : { background: 'rgba(15,23,42,0.06)', color: 'var(--ink-soft)' }}
                     >
                       {b.label}{!b.enabled && ' · Coming soon'}
                     </button>
@@ -421,7 +425,7 @@ export default function AdminTextbooksPage() {
               </button>
 
               {scraping && (
-                <div className="h-1.5 w-full rounded-full overflow-hidden" style={{ background: 'rgba(58,44,30,0.08)' }}>
+                <div className="h-1.5 w-full rounded-full overflow-hidden" style={{ background: 'rgba(15,23,42,0.08)' }}>
                   <div
                     className="h-full transition-all duration-500"
                     style={{ width: `${Math.max(3, scrapeProgress)}%`, background: '#1E3A55' }}
@@ -437,12 +441,12 @@ export default function AdminTextbooksPage() {
               )}
 
               {scrapedFiles.length > 0 && (
-                <div className="rounded-xl overflow-hidden" style={{ border: '1.5px solid rgba(58,44,30,0.1)' }}>
+                <div className="rounded-xl overflow-hidden" style={{ border: '1.5px solid rgba(15,23,42,0.1)' }}>
                   {scrapedFiles.map((f, i) => (
                     <div
                       key={f.path}
                       className="flex items-start gap-2 px-3 py-2.5"
-                      style={{ background: i % 2 ? 'rgba(58,44,30,0.02)' : 'transparent' }}
+                      style={{ background: i % 2 ? 'rgba(15,23,42,0.02)' : 'transparent' }}
                     >
                       <FileText size={14} className="text-ink-faint shrink-0 mt-0.5" />
                       <div className="flex-1 min-w-0">
@@ -452,7 +456,7 @@ export default function AdminTextbooksPage() {
                       </div>
                     </div>
                   ))}
-                  <p className="text-[11px] text-ink-soft px-3 py-2.5" style={{ background: 'rgba(58,44,30,0.03)' }}>
+                  <p className="text-[11px] text-ink-soft px-3 py-2.5" style={{ background: 'rgba(15,23,42,0.03)' }}>
                     Feed these file(s) into the pdf pipeline, then run{' '}
                     <code className="font-mono">scripts.publish_textbook</code> to load the resulting
                     chapters here for review.
@@ -490,7 +494,7 @@ export default function AdminTextbooksPage() {
                 className="px-3 py-1.5 rounded-xl text-xs font-bold transition-all"
                 style={b.id === selectedBookId
                   ? { background: '#1E3A55', color: 'white' }
-                  : { background: 'rgba(58,44,30,0.06)', color: 'var(--ink-soft)' }}
+                  : { background: 'rgba(15,23,42,0.06)', color: 'var(--ink-soft)' }}
               >
                 Grade {b.grade} · {b.subject}
               </button>
@@ -529,8 +533,7 @@ export default function AdminTextbooksPage() {
                 type="button"
                 disabled={busy === book.id || publishedCount === book.chapterCount}
                 onClick={() => setBookPublished(true)}
-                className="flex items-center gap-1.5 text-xs font-bold text-white px-3 py-1.5 rounded-lg transition-colors disabled:opacity-40"
-                style={{ background: '#1E3A55' }}
+                className="admin-btn-primary flex items-center gap-1.5 text-xs font-bold text-white px-3 py-1.5 rounded-xl disabled:opacity-40"
               >
                 {busy === book.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Eye size={13} />}
                 Publish all
@@ -539,7 +542,7 @@ export default function AdminTextbooksPage() {
                 type="button"
                 disabled={busy === book.id || publishedCount === 0}
                 onClick={() => setBookPublished(false)}
-                className="flex items-center gap-1.5 text-xs font-bold text-ink-soft px-3 py-1.5 rounded-lg hover:bg-ink/5 transition-colors disabled:opacity-40"
+                className="admin-btn-secondary flex items-center gap-1.5 text-xs font-bold text-ink-soft px-3 py-1.5 rounded-xl disabled:opacity-40"
               >
                 <EyeOff size={13} />
                 Unpublish all
@@ -574,10 +577,10 @@ export default function AdminTextbooksPage() {
                   className="flex-1 flex items-center gap-3 text-left min-w-0"
                 >
                   <div
-                    className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 text-xs font-extrabold"
-                    style={chapter.published
-                      ? { background: 'rgba(170,214,160,.25)', color: '#234A1D' }
-                      : { background: 'rgba(58,44,30,0.06)', color: 'var(--ink-soft)' }}
+                    className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 text-xs font-extrabold ${
+                      chapter.published ? 'bg-emerald-50 text-emerald-700' : ''
+                    }`}
+                    style={chapter.published ? undefined : { background: 'rgba(15,23,42,0.06)', color: 'var(--ink-soft)' }}
                   >
                     {chapter.chapterNumber}
                   </div>
@@ -592,7 +595,7 @@ export default function AdminTextbooksPage() {
                       {chapter.published && <Pill tone="good">published</Pill>}
                     </div>
                     {problem && (
-                      <p className="flex items-start gap-1 text-[11px] mt-1.5" style={{ color: '#7A2E17' }}>
+                      <p className="flex items-start gap-1 text-[11px] mt-1.5 text-amber-700">
                         <AlertTriangle size={11} className="shrink-0 mt-0.5" />
                         {problem}
                       </p>
@@ -607,10 +610,10 @@ export default function AdminTextbooksPage() {
                   disabled={busy === chapter.id}
                   onClick={() => setChapterPublished(chapter.id, !chapter.published)}
                   title={chapter.published ? 'Unpublish' : 'Publish'}
-                  className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 transition-colors disabled:opacity-40"
-                  style={chapter.published
-                    ? { background: 'rgba(170,214,160,.25)', color: '#234A1D' }
-                    : { background: 'rgba(58,44,30,0.06)', color: 'var(--ink-faint)' }}
+                  className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 transition-colors disabled:opacity-40 ${
+                    chapter.published ? 'bg-emerald-50 text-emerald-700' : ''
+                  }`}
+                  style={chapter.published ? undefined : { background: 'rgba(15,23,42,0.06)', color: 'var(--ink-faint)' }}
                 >
                   {busy === chapter.id
                     ? <Loader2 className="w-4 h-4 animate-spin" />
@@ -632,13 +635,13 @@ export default function AdminTextbooksPage() {
                         <p className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-ink-soft mb-1.5">
                           <Layers size={11} /> Topic index
                         </p>
-                        <div className="rounded-xl overflow-hidden" style={{ border: '1.5px solid rgba(58,44,30,0.1)' }}>
+                        <div className="rounded-xl overflow-hidden" style={{ border: '1.5px solid rgba(15,23,42,0.1)' }}>
                           {detail.topics.map((topic, index) => (
                             <div
                               key={topic.id}
                               className="flex items-baseline gap-2 px-3 py-1.5 text-xs"
                               style={{
-                                background: index % 2 ? 'rgba(58,44,30,0.02)' : 'transparent',
+                                background: index % 2 ? 'rgba(15,23,42,0.02)' : 'transparent',
                                 paddingLeft: `${12 + (topic.level - 1) * 14}px`,
                               }}
                             >
@@ -665,7 +668,7 @@ export default function AdminTextbooksPage() {
                           </p>
                           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                             {detail.images.filter(i => !i.decorative).map(image => (
-                              <div key={image.imageId} className="rounded-xl overflow-hidden" style={{ border: '1.5px solid rgba(58,44,30,0.1)' }}>
+                              <div key={image.imageId} className="rounded-xl overflow-hidden" style={{ border: '1.5px solid rgba(15,23,42,0.1)' }}>
                                 {/* Signed URLs on the storage host, expiring in an hour. next/image
                                     would need that host allow-listed and would cache what is
                                     deliberately short-lived. */}
@@ -705,7 +708,7 @@ export default function AdminTextbooksPage() {
                         {showMarkdown && (
                           <pre
                             className="mt-2 p-3 rounded-xl text-[11px] leading-relaxed text-ink whitespace-pre-wrap max-h-96 overflow-y-auto"
-                            style={{ background: 'rgba(58,44,30,0.03)', border: '1.5px solid rgba(58,44,30,0.1)' }}
+                            style={{ background: 'rgba(15,23,42,0.03)', border: '1.5px solid rgba(15,23,42,0.1)' }}
                           >
                             {detail.contentMarkdown}
                           </pre>

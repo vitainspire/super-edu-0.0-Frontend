@@ -49,14 +49,14 @@ export default function SupportPage() {
             type="button"
             onClick={() => { setShowTour(false); setShowFlowGuide(true) }}
             className="w-full py-3 rounded-2xl font-bold text-sm text-ink active:scale-95 transition-transform"
-            style={{ background: 'rgba(58,44,30,0.06)' }}
+            style={{ background: 'rgba(15,23,42,0.06)' }}
           >
             How EduTeach Works — Flow Guide
           </button>
           <a
             href="mailto:support@eduteach.app"
             className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl font-bold text-sm text-ink active:scale-95 transition-transform"
-            style={{ background: 'rgba(58,44,30,0.06)' }}
+            style={{ background: 'rgba(15,23,42,0.06)' }}
           >
             <Mail size={15} /> Email support@eduteach.app
           </a>

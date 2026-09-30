@@ -71,11 +71,10 @@ export default function NotificationBell() {
       <button
         type="button"
         onClick={() => setOpen(v => !v)}
-        className="relative w-10 h-10 flex items-center justify-center rounded-xl active:scale-90 transition-transform"
-        style={{ background: 'rgba(58,44,30,0.06)' }}
+        className="relative w-11 h-11 flex items-center justify-center rounded-full bg-slate-100 hover:bg-slate-200 active:scale-90 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
         aria-label="Notifications"
       >
-        <Bell size={17} className="text-ink-soft" />
+        <Bell size={17} className="text-slate-600" />
         {unread.length > 0 && (
           <span
             className="absolute top-1.5 right-1.5 min-w-[15px] h-[15px] px-[3px] rounded-full text-[9px] font-black text-white flex items-center justify-center"
@@ -91,7 +90,7 @@ export default function NotificationBell() {
           className="absolute top-[110%] right-0 z-50 paper-card overflow-hidden"
           style={{ width: 320, maxHeight: 400 }}
         >
-          <div className="flex items-center justify-between px-4 py-3" style={{ borderBottom: '1.5px solid rgba(58,44,30,0.1)' }}>
+          <div className="flex items-center justify-between px-4 py-3" style={{ borderBottom: '1.5px solid rgba(15,23,42,0.1)' }}>
             <p className="text-xs font-bold text-ink-soft uppercase tracking-wide">Notifications</p>
             {unread.length > 0 && (
               <button
@@ -117,7 +116,7 @@ export default function NotificationBell() {
                   type="button"
                   onClick={() => !n.readAt && markOneRead(n.id)}
                   className="w-full text-left px-4 py-3 flex items-start gap-2.5 transition-colors hover:bg-black/[0.02]"
-                  style={{ borderBottom: '1px solid rgba(58,44,30,0.06)' }}
+                  style={{ borderBottom: '1px solid rgba(15,23,42,0.06)' }}
                 >
                   {!n.readAt && (
                     <span className="w-2 h-2 rounded-full mt-1.5 shrink-0" style={{ background: '#31215C' }} />

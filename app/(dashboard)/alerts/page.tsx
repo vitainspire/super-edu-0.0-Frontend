@@ -185,7 +185,7 @@ export default function AlertsPage() {
                   </div>
                 </div>
 
-                <div className="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-xl" style={{ background: 'rgba(58,44,30,0.06)' }}>
+                <div className="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-xl" style={{ background: 'rgba(15,23,42,0.06)' }}>
                   {isOpen
                     ? <ChevronUp size={16} className="text-ink-soft" />
                     : <ChevronDown size={16} className="text-ink-soft" />}
@@ -194,7 +194,7 @@ export default function AlertsPage() {
 
               {/* Expanded body */}
               {isOpen && (
-                <div className="border-t" style={{ borderColor: 'rgba(58,44,30,0.08)' }}>
+                <div className="border-t" style={{ borderColor: 'rgba(15,23,42,0.08)' }}>
 
                   {/* Absences section */}
                   {group.absenceCount > 0 && (
@@ -228,7 +228,7 @@ export default function AlertsPage() {
 
                   {/* Divider between sections */}
                   {group.absenceCount > 0 && group.lowMarkCount > 0 && (
-                    <div className="mx-4 border-t border-dashed my-1" style={{ borderColor: 'rgba(58,44,30,0.15)' }} />
+                    <div className="mx-4 border-t border-dashed my-1" style={{ borderColor: 'rgba(15,23,42,0.15)' }} />
                   )}
 
                   {/* Low marks section */}

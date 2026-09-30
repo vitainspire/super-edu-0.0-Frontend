@@ -167,7 +167,7 @@ export default function BrowseMyLibraryModal({ open, onClose }: { open: boolean;
           )}
 
           {lessonLoading && (
-            <div className="fixed inset-0 z-[70] flex items-center justify-center" style={{ background: 'rgba(27,24,15,0.45)' }}>
+            <div className="fixed inset-0 z-[70] flex items-center justify-center" style={{ background: 'rgba(15,23,42,0.45)' }}>
               <span className="w-7 h-7 border-2 rounded-full animate-spin" style={{ borderColor: '#fff', borderTopColor: 'transparent' }} />
             </div>
           )}

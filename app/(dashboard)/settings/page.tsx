@@ -91,7 +91,7 @@ export default function SettingsPage() {
             <div
               key={row.label}
               className="flex items-center justify-between py-2"
-              style={{ borderBottom: i < arr.length - 1 ? '1px solid rgba(58,44,30,0.08)' : 'none' }}
+              style={{ borderBottom: i < arr.length - 1 ? '1px solid rgba(15,23,42,0.08)' : 'none' }}
             >
               <span className="text-xs font-bold text-ink-soft uppercase tracking-wide">{row.label}</span>
               <span className="text-sm font-semibold text-ink">{row.value || '—'}</span>
@@ -122,8 +122,8 @@ export default function SettingsPage() {
                     {dayEntries.map(entry => {
                       const cls = classes.find(c => c.id === entry.classId)
                       return (
-                        <div key={entry.id} className="flex items-center gap-3 py-2 px-3 rounded-2xl mb-1" style={{ background: 'rgba(58,44,30,0.04)' }}>
-                          <span className="w-6 h-6 rounded-lg flex items-center justify-center text-xs font-black shrink-0" style={{ background: 'rgba(58,44,30,0.1)', color: 'var(--ink)' }}>
+                        <div key={entry.id} className="flex items-center gap-3 py-2 px-3 rounded-2xl mb-1" style={{ background: 'rgba(15,23,42,0.04)' }}>
+                          <span className="w-6 h-6 rounded-lg flex items-center justify-center text-xs font-black shrink-0" style={{ background: 'rgba(15,23,42,0.1)', color: 'var(--ink)' }}>
                             {entry.periodNumber}
                           </span>
                           <span className="text-xs text-ink-soft font-semibold shrink-0">
@@ -176,7 +176,7 @@ export default function SettingsPage() {
                   </p>
                   <div className="space-y-2">
                     {group.pairings.map(p => (
-                      <div key={p.id} className="flex items-center gap-3 py-2.5 px-3 rounded-2xl" style={{ background: 'rgba(58,44,30,0.04)' }}>
+                      <div key={p.id} className="flex items-center gap-3 py-2.5 px-3 rounded-2xl" style={{ background: 'rgba(15,23,42,0.04)' }}>
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-bold text-ink truncate">
                             {p.requesterName} ↔ {p.targetName}
@@ -239,7 +239,7 @@ export default function SettingsPage() {
             type="button"
             onClick={() => { setShowTour(false); setShowFlowGuide(true) }}
             className="w-full py-3 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 active:scale-95 transition-all text-ink"
-            style={{ background: 'rgba(58,44,30,0.06)' }}
+            style={{ background: 'rgba(15,23,42,0.06)' }}
           >
             <RefreshCw size={15} />
             How EduTeach Works — Flow Guide
@@ -257,7 +257,7 @@ export default function SettingsPage() {
               type="button"
               onClick={() => toggleGuideBtn(!showGuideBtn)}
               className="relative w-12 h-6 rounded-full transition-colors duration-200 shrink-0 ml-3"
-              style={{ background: showGuideBtn ? 'var(--ink)' : 'rgba(58,44,30,0.15)' }}
+              style={{ background: showGuideBtn ? 'var(--ink)' : 'rgba(15,23,42,0.15)' }}
             >
               <span
                 className="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform duration-200"

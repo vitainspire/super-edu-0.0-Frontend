@@ -61,9 +61,9 @@ export default function StudentFullRecordPage() {
   if (error || !record) {
     return (
       <div className="paper-page pb-16">
-        <PageHeader title="Student Record" />
+        <PageHeader title="Student Record" variant="admin" />
         <div className="px-5 pt-6 max-w-3xl mx-auto">
-          <div className="paper-card p-6 text-center">
+          <div className="admin-card p-6 text-center">
             <AlertTriangle className="w-8 h-8 text-red-500 mx-auto mb-3" />
             <p className="text-sm font-semibold text-ink">{error || 'Could not load this student.'}</p>
           </div>
@@ -82,28 +82,28 @@ export default function StudentFullRecordPage() {
 
   return (
     <div className="paper-page pb-16">
-      <PageHeader eyebrow={`Grade ${student.grade}${student.section ? ` · Sec ${student.section}` : ''}`} title={student.name} subtitle={`Roll No. ${student.rollNumber}${student.studentCode ? ` · Code ${student.studentCode}` : ''}`} />
+      <PageHeader eyebrow={`Grade ${student.grade}${student.section ? ` · Sec ${student.section}` : ''}`} title={student.name} subtitle={`Roll No. ${student.rollNumber}${student.studentCode ? ` · Code ${student.studentCode}` : ''}`} variant="admin" />
 
       <div className="px-5 pt-2 max-w-3xl mx-auto space-y-5 relative z-10">
 
         {/* ── Snapshot ── */}
         <div className="grid grid-cols-3 gap-3">
-          <div className="paper-card p-4 text-center">
+          <div className="admin-card p-4 text-center">
             <p className="text-2xl font-black" style={{ color: pctColor(overallAttendance) }}>{Math.round(overallAttendance * 100)}%</p>
             <p className="text-[11px] font-semibold text-ink-soft mt-1">Attendance</p>
           </div>
-          <div className="paper-card p-4 text-center">
+          <div className="admin-card p-4 text-center">
             <p className="text-2xl font-black" style={{ color: pctColor(overallScore) }}>{subjects.some(s => s.totalTests > 0) ? `${Math.round(overallScore * 100)}%` : '—'}</p>
             <p className="text-[11px] font-semibold text-ink-soft mt-1">Avg Score</p>
           </div>
-          <div className="paper-card p-4 text-center">
+          <div className="admin-card p-4 text-center">
             <p className="text-2xl font-black text-ink">{subjects.length}</p>
             <p className="text-[11px] font-semibold text-ink-soft mt-1">Subjects</p>
           </div>
         </div>
 
         {/* ── Per-subject breakdown ── */}
-        <div className="paper-card p-5">
+        <div className="admin-card p-5">
           <div className="flex items-center gap-2 mb-4">
             <BookOpen className="w-4 h-4 text-ink-soft" />
             <h2 className="font-display font-bold text-ink">By Subject</h2>
@@ -113,7 +113,7 @@ export default function StudentFullRecordPage() {
           ) : (
             <div className="space-y-5">
               {subjects.map(s => (
-                <div key={s.classId} className="rounded-2xl p-4" style={{ background: 'rgba(58,44,30,0.03)', border: '1.5px solid rgba(58,44,30,0.1)' }}>
+                <div key={s.classId} className="rounded-2xl p-4" style={{ background: 'rgba(15,23,42,0.03)', border: '1.5px solid rgba(15,23,42,0.1)' }}>
                   <div className="flex items-center justify-between mb-3">
                     <div>
                       <p className="font-bold text-ink text-sm">{s.subjectName}</p>
@@ -170,14 +170,14 @@ export default function StudentFullRecordPage() {
 
         {/* ── Doubts asked ── */}
         {doubts.length > 0 && (
-          <div className="paper-card p-5">
+          <div className="admin-card p-5">
             <div className="flex items-center gap-2 mb-3">
               <HelpCircle className="w-4 h-4 text-ink-soft" />
               <h2 className="font-display font-bold text-ink">Doubts Asked ({doubts.length})</h2>
             </div>
             <div className="space-y-2">
               {doubts.map((d, i) => (
-                <div key={i} className="rounded-xl px-3.5 py-2.5" style={{ background: 'rgba(58,44,30,0.03)' }}>
+                <div key={i} className="rounded-xl px-3.5 py-2.5" style={{ background: 'rgba(15,23,42,0.03)' }}>
                   <p className="text-sm font-semibold text-ink">{d.question}</p>
                   <div className="flex items-center gap-2 mt-1">
                     {d.subject && <span className="text-[10px] font-bold text-ink-soft bg-black/[0.05] px-2 py-0.5 rounded-full">{d.subject}</span>}
@@ -194,14 +194,14 @@ export default function StudentFullRecordPage() {
 
         {/* ── Teacher notes across all subjects ── */}
         {interventionNotes.length > 0 && (
-          <div className="paper-card p-5">
+          <div className="admin-card p-5">
             <div className="flex items-center gap-2 mb-3">
               <ClipboardList className="w-4 h-4 text-ink-soft" />
               <h2 className="font-display font-bold text-ink">Teacher Notes ({interventionNotes.length})</h2>
             </div>
             <div className="space-y-2">
               {interventionNotes.map((n, i) => (
-                <div key={i} className="rounded-xl px-3.5 py-2.5" style={{ background: 'rgba(58,44,30,0.03)' }}>
+                <div key={i} className="rounded-xl px-3.5 py-2.5" style={{ background: 'rgba(15,23,42,0.03)' }}>
                   <div className="flex items-center gap-2 mb-1">
                     <span className="text-[10px] font-bold text-ink-soft">{new Date(n.date + 'T00:00:00').toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
                     <span className="text-[10px] font-bold text-ink-faint">· {n.teacherName}</span>
@@ -215,14 +215,14 @@ export default function StudentFullRecordPage() {
 
         {/* ── Catch-up materials ── */}
         {catchupMaterials.length > 0 && (
-          <div className="paper-card p-5">
+          <div className="admin-card p-5">
             <div className="flex items-center gap-2 mb-3">
               <Hourglass className="w-4 h-4 text-ink-soft" />
               <h2 className="font-display font-bold text-ink">Catch-Up Materials ({catchupMaterials.length})</h2>
             </div>
             <div className="space-y-2">
               {catchupMaterials.map((c, i) => (
-                <div key={i} className="flex items-center justify-between text-sm rounded-xl px-3.5 py-2.5" style={{ background: 'rgba(58,44,30,0.03)' }}>
+                <div key={i} className="flex items-center justify-between text-sm rounded-xl px-3.5 py-2.5" style={{ background: 'rgba(15,23,42,0.03)' }}>
                   <div className="min-w-0">
                     <p className="font-semibold text-ink truncate">{c.topic}</p>
                     {c.subject && <p className="text-xs text-ink-soft">{c.subject}</p>}
@@ -237,7 +237,7 @@ export default function StudentFullRecordPage() {
         )}
 
         {subjects.length === 0 && doubts.length === 0 && interventionNotes.length === 0 && catchupMaterials.length === 0 && (
-          <div className="paper-card p-6 text-center">
+          <div className="admin-card p-6 text-center">
             <GraduationCap className="w-8 h-8 text-ink-faint mx-auto mb-3" />
             <p className="text-sm text-ink-soft">No activity recorded for this student yet.</p>
           </div>

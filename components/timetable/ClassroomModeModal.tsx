@@ -178,7 +178,7 @@ export default function ClassroomModeModal({ open, onClose, classId, subject, gr
             <p className="font-display font-bold text-ink truncate">{cls?.name ?? subject}{grade ? ` · Grade ${grade}` : ''}</p>
             {countdownLabel && (
               <span className="flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-full shrink-0"
-                style={{ background: 'rgba(58,44,30,0.06)', color: 'var(--ink-soft)' }}>
+                style={{ background: 'rgba(15,23,42,0.06)', color: 'var(--ink-soft)' }}>
                 <Clock size={10} /> {countdownLabel}
               </span>
             )}
@@ -194,7 +194,7 @@ export default function ClassroomModeModal({ open, onClose, classId, subject, gr
           {material ? (
             <>
               {(simUrl || boardUrl) && (
-                <div className="flex items-center gap-2 p-1 rounded-2xl" style={{ background: 'rgba(58,44,30,0.06)' }}>
+                <div className="flex items-center gap-2 p-1 rounded-2xl" style={{ background: 'rgba(15,23,42,0.06)' }}>
                   <button type="button" onClick={() => setView('sheet')}
                     className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-bold transition-all"
                     style={{ background: view === 'sheet' ? '#fff' : 'transparent', color: view === 'sheet' ? 'var(--forest)' : 'var(--ink-soft)' }}>
@@ -270,7 +270,7 @@ export default function ClassroomModeModal({ open, onClose, classId, subject, gr
                         onClick={() => setAnswers(prev => ({ ...prev, [q.key]: opt.value }))}
                         className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-xs font-bold transition-all active:scale-95"
                         style={{
-                          background: selected ? 'var(--ink)' : 'rgba(58,44,30,0.05)',
+                          background: selected ? 'var(--ink)' : 'rgba(15,23,42,0.05)',
                           color: selected ? '#fff' : 'var(--ink-soft)',
                         }}
                       >
@@ -289,7 +289,7 @@ export default function ClassroomModeModal({ open, onClose, classId, subject, gr
                   type="button"
                   onClick={listening ? stopListening : startListening}
                   className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-colors shrink-0"
-                  style={{ background: listening ? '#FEE2E2' : 'rgba(58,44,30,0.05)', color: listening ? '#B91C1C' : 'var(--ink-soft)' }}
+                  style={{ background: listening ? '#FEE2E2' : 'rgba(15,23,42,0.05)', color: listening ? '#B91C1C' : 'var(--ink-soft)' }}
                 >
                   {listening ? <MicOff size={13} /> : <Mic size={13} />}
                   {listening ? 'Stop' : 'Voice'}

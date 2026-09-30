@@ -247,7 +247,7 @@ export default function ClassMarksPage() {
                     'flex-1 py-2.5 rounded-xl font-semibold text-sm transition-colors',
                     totalMarks === n ? 'text-white' : 'text-ink-soft',
                   )}
-                  style={{ background: totalMarks === n ? 'var(--ink)' : 'rgba(58,44,30,0.06)' }}
+                  style={{ background: totalMarks === n ? 'var(--ink)' : 'rgba(15,23,42,0.06)' }}
                 >
                   {n}
                 </button>
@@ -478,7 +478,7 @@ export default function ClassMarksPage() {
             <label className="label">Exam Type</label>
 
             {/* Type toggle */}
-            <div className="flex gap-1 p-1 rounded-2xl" style={{ background: 'rgba(58,44,30,0.06)' }}>
+            <div className="flex gap-1 p-1 rounded-2xl" style={{ background: 'rgba(15,23,42,0.06)' }}>
               {(['unit', 'term'] as const).map(type => (
                 <button key={type} type="button"
                   onClick={() => setExamType(type)}
@@ -500,7 +500,7 @@ export default function ClassMarksPage() {
                       'flex-1 py-2.5 rounded-xl font-semibold text-sm transition-colors',
                       selectedTerm === t ? 'bg-[#1F3D2C] text-white' : 'text-ink-soft',
                     )}
-                    style={selectedTerm !== t ? { background: 'rgba(58,44,30,0.06)' } : undefined}>
+                    style={selectedTerm !== t ? { background: 'rgba(15,23,42,0.06)' } : undefined}>
                     {t}
                   </button>
                 ))}
@@ -713,7 +713,7 @@ export default function ClassMarksPage() {
             disabled={syncing || syncStatus === 'offline'}
             title="Refresh scores from cloud"
             className="flex items-center gap-1 text-xs font-semibold px-2 py-1 rounded-lg text-ink-soft disabled:opacity-40"
-            style={{ background: 'rgba(58,44,30,0.06)' }}
+            style={{ background: 'rgba(15,23,42,0.06)' }}
           >
             <RefreshCw size={11} className={syncing ? 'animate-spin' : ''} />
             {syncing ? 'Syncing…' : 'Refresh'}

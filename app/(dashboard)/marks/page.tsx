@@ -67,7 +67,7 @@ export default function MarksPage() {
               type="button"
               onClick={() => setStep('list')}
               className="w-9 h-9 flex items-center justify-center rounded-full active:scale-90 transition-transform"
-              style={{ background: 'rgba(58,44,30,0.08)' }}
+              style={{ background: 'rgba(15,23,42,0.08)' }}
             >
               <ArrowLeft size={18} className="text-ink" />
             </button>
@@ -83,7 +83,7 @@ export default function MarksPage() {
               onChange={(e) => setTopic(e.target.value)}
               placeholder="e.g. Fractions"
               className="w-full border-2 rounded-2xl px-4 py-3 text-sm font-medium text-ink placeholder-ink-faint bg-white min-h-[52px] transition-all focus:outline-none"
-              style={{ borderColor: 'rgba(58,44,30,0.15)' }}
+              style={{ borderColor: 'rgba(15,23,42,0.15)' }}
               autoFocus
             />
             {/* Quick topic chips */}
@@ -95,7 +95,7 @@ export default function MarksPage() {
                   className="px-3 py-1.5 rounded-full text-sm font-medium transition-colors"
                   style={topic === t
                     ? { background: 'var(--ink)', color: 'var(--paper-soft)' }
-                    : { background: 'rgba(58,44,30,0.06)', color: 'var(--ink-soft)' }}
+                    : { background: 'rgba(15,23,42,0.06)', color: 'var(--ink-soft)' }}
                 >
                   {t}
                 </button>
@@ -113,7 +113,7 @@ export default function MarksPage() {
                   className="flex-1 py-2.5 rounded-xl font-semibold text-sm transition-colors"
                   style={totalMarks === n
                     ? { background: 'var(--ink)', color: 'var(--paper-soft)' }
-                    : { background: 'rgba(58,44,30,0.06)', color: 'var(--ink-soft)' }}
+                    : { background: 'rgba(15,23,42,0.06)', color: 'var(--ink-soft)' }}
                 >
                   {n}
                 </button>
@@ -128,7 +128,7 @@ export default function MarksPage() {
               value={conductedOn}
               onChange={(e) => setConductedOn(e.target.value)}
               className="w-full border-2 rounded-2xl px-4 py-3 text-sm font-medium text-ink bg-white min-h-[52px] transition-all focus:outline-none"
-              style={{ borderColor: 'rgba(58,44,30,0.15)' }}
+              style={{ borderColor: 'rgba(15,23,42,0.15)' }}
             />
           </div>
 

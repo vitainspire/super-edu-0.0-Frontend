@@ -43,6 +43,7 @@ export default function GradeTimetablePage() {
   return (
     <div className="paper-page pb-16">
       <PageHeader
+        variant="admin"
         title={`Grade ${grade} Timetable`}
         subtitle={`${classes.length} section${classes.length !== 1 ? 's' : ''}`}
       />
@@ -53,7 +54,7 @@ export default function GradeTimetablePage() {
             <Loader2 className="w-6 h-6 animate-spin text-ink" />
           </div>
         ) : classes.length === 0 ? (
-          <div className="paper-card text-center py-16">
+          <div className="admin-card text-center py-16">
             <CalendarDays className="w-10 h-10 text-ink-faint mx-auto mb-3" />
             <p className="text-ink-soft font-bold">No sections yet for Grade {grade}</p>
           </div>

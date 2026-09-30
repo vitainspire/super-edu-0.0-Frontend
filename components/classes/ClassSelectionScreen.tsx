@@ -46,11 +46,11 @@ export default function ClassSelectionScreen({ schoolClasses }: Props) {
   return (
     <div
       className="fixed inset-0 z-50 flex items-end sm:items-center justify-center"
-      style={{ background: 'rgba(58,44,30,0.6)' }}
+      style={{ background: 'rgba(15,23,42,0.6)' }}
     >
       <div
         className="w-full sm:max-w-md rounded-t-3xl sm:rounded-3xl overflow-hidden flex flex-col"
-        style={{ maxHeight: '90vh', background: 'var(--paper-soft)', border: '1.5px solid rgba(58,44,30,0.18)' }}
+        style={{ maxHeight: '90vh', background: 'var(--paper-soft)', border: '1.5px solid rgba(15,23,42,0.18)' }}
       >
         {/* Header */}
         <div className="px-6 pt-7 pb-4" style={{ background: 'var(--ink)' }}>
@@ -81,7 +81,7 @@ export default function ClassSelectionScreen({ schoolClasses }: Props) {
                 onClick={() => toggle(cls.id)}
                 className="w-full flex items-center gap-3 p-3.5 rounded-2xl text-left transition-all active:scale-[0.98]"
                 style={{
-                  background: isSelected ? `${color}12` : 'rgba(58,44,30,0.03)',
+                  background: isSelected ? `${color}12` : 'rgba(15,23,42,0.03)',
                   border: `2px solid ${isSelected ? color : 'transparent'}`,
                 }}
               >
@@ -97,7 +97,7 @@ export default function ClassSelectionScreen({ schoolClasses }: Props) {
                   <div className="flex items-center gap-1.5">
                     <span className="font-black text-ink text-sm">{cls.name}</span>
                     {cls.section && (
-                      <span className="text-[11px] font-bold px-1.5 py-0.5 rounded-full" style={{ background: 'rgba(58,44,30,0.06)', color: 'var(--ink-soft)' }}>
+                      <span className="text-[11px] font-bold px-1.5 py-0.5 rounded-full" style={{ background: 'rgba(15,23,42,0.06)', color: 'var(--ink-soft)' }}>
                         {cls.section}
                       </span>
                     )}
@@ -116,7 +116,7 @@ export default function ClassSelectionScreen({ schoolClasses }: Props) {
         </div>
 
         {/* Footer */}
-        <div className="px-4 pb-6 pt-3" style={{ borderTop: '1px solid rgba(58,44,30,0.08)' }}>
+        <div className="px-4 pb-6 pt-3" style={{ borderTop: '1px solid rgba(15,23,42,0.08)' }}>
           {selected.size === 0 && (
             <p className="text-center text-xs text-ink-faint font-medium mb-3">
               Tick at least one class to continue

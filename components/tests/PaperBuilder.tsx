@@ -75,7 +75,7 @@ function PaletteItem({ meta, onAdd }: { meta: QTypeMeta; onAdd: () => void }) {
       className="flex items-center gap-2.5 px-3 py-2.5 rounded-2xl border-2 bg-white text-left transition-shadow active:scale-[0.98] touch-none"
       style={{ borderColor: 'var(--card-border)', opacity: isDragging ? 0.4 : 1, cursor: 'grab' }}
     >
-      <div className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0" style={{ background: 'rgba(58,44,30,0.06)' }}>
+      <div className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0" style={{ background: 'rgba(15,23,42,0.06)' }}>
         <Icon className="w-4 h-4 text-ink-soft" />
       </div>
       <div className="min-w-0">
@@ -173,7 +173,7 @@ function SortableBlock({
       </div>
 
       {/* Editable controls (kept subtle, off-paper feel) */}
-      <div className="mt-2.5 flex flex-wrap items-center gap-x-3 gap-y-2 rounded-xl px-3 py-2" style={{ background: 'rgba(58,44,30,0.05)', fontFamily: 'system-ui, sans-serif' }}>
+      <div className="mt-2.5 flex flex-wrap items-center gap-x-3 gap-y-2 rounded-xl px-3 py-2" style={{ background: 'rgba(15,23,42,0.05)', fontFamily: 'system-ui, sans-serif' }}>
         <label className="flex items-center gap-1.5 text-xs text-ink-soft">
           <span className="font-semibold">Qs</span>
           <input type="number" min={1} max={50} value={block.count}
@@ -240,7 +240,7 @@ function PaperSheet({
       <div ref={setNodeRef} style={{
         minHeight: 180, borderRadius: 8, padding: 4, transition: 'all .15s',
         outline: isOver ? '2px dashed var(--ink)' : '2px dashed transparent', outlineOffset: 2,
-        background: isOver ? 'rgba(58,44,30,0.04)' : 'transparent',
+        background: isOver ? 'rgba(15,23,42,0.04)' : 'transparent',
       }}>
         {empty ? (
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8, padding: '44px 0', textAlign: 'center', fontFamily: 'Arial, sans-serif' }}>
@@ -270,7 +270,7 @@ function StepHeader({ step, onBack }: { step: number; onBack?: () => void }) {
       <div className="flex items-center gap-1.5 ml-auto">
         {labels.map((_, i) => (
           <span key={i} className="h-1.5 rounded-full transition-all"
-            style={{ width: i === step ? 22 : 8, background: i <= step ? 'var(--ink)' : 'rgba(58,44,30,0.15)' }} />
+            style={{ width: i === step ? 22 : 8, background: i <= step ? 'var(--ink)' : 'rgba(15,23,42,0.15)' }} />
         ))}
       </div>
     </div>
@@ -449,7 +449,7 @@ export default function PaperBuilder({ classId, className, grade, subject }: Pro
                       className="paper-card p-4 flex items-center gap-3 text-left active:scale-[0.98] transition-transform"
                       style={examType === e.label ? { outline: '2px solid var(--ink)' } : undefined}
                     >
-                      <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style={{ background: 'rgba(58,44,30,0.06)' }}>
+                      <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style={{ background: 'rgba(15,23,42,0.06)' }}>
                         <Icon className="w-5 h-5 text-ink-soft" />
                       </div>
                       <div className="flex-1 min-w-0">
@@ -483,7 +483,7 @@ export default function PaperBuilder({ classId, className, grade, subject }: Pro
                   const selCount = subtopicSel[t.id]?.size ?? 0
                   return (
                     <div key={t.id} className="rounded-2xl overflow-hidden border-2 transition-colors"
-                      style={{ borderColor: selected ? 'var(--ink)' : 'var(--card-border)', background: selected ? 'rgba(58,44,30,0.05)' : '#fff' }}>
+                      style={{ borderColor: selected ? 'var(--ink)' : 'var(--card-border)', background: selected ? 'rgba(15,23,42,0.05)' : '#fff' }}>
                       <div className="flex items-center gap-2.5 px-3.5 py-2.5">
                         <button type="button" onClick={() => toggleTopic(t.id)} className="flex items-center gap-2.5 flex-1 min-w-0 text-left">
                           <span className="w-5 h-5 rounded-md flex items-center justify-center shrink-0 border-2"
@@ -515,7 +515,7 @@ export default function PaperBuilder({ classId, className, grade, subject }: Pro
                                     ? { background: 'var(--ink)', color: 'var(--paper-soft)' }
                                     : taught
                                       ? { background: '#DFF0DA', color: '#234A1D' }
-                                      : { background: 'rgba(58,44,30,0.07)', color: 'var(--ink-soft)' }
+                                      : { background: 'rgba(15,23,42,0.07)', color: 'var(--ink-soft)' }
                                 }>
                                 {taught && <Check className="w-3 h-3" strokeWidth={3} />}
                                 {s.name}
@@ -529,7 +529,7 @@ export default function PaperBuilder({ classId, className, grade, subject }: Pro
                 })}
 
                 {customTopics.map((t, i) => (
-                  <div key={`custom-${i}`} className="flex items-center gap-2.5 px-3.5 py-2.5 rounded-2xl border-2" style={{ borderColor: 'var(--ink)', background: 'rgba(58,44,30,0.05)' }}>
+                  <div key={`custom-${i}`} className="flex items-center gap-2.5 px-3.5 py-2.5 rounded-2xl border-2" style={{ borderColor: 'var(--ink)', background: 'rgba(15,23,42,0.05)' }}>
                     <span className="w-5 h-5 rounded-md flex items-center justify-center shrink-0" style={{ background: 'var(--ink)' }}>
                       <CheckSquare className="w-3 h-3 text-white" strokeWidth={3} />
                     </span>

@@ -56,7 +56,7 @@ export default function ClassLayout({ children }: { children: React.ReactNode })
         </div>
 
         {/* Scrollable tab bar */}
-        <div className="flex overflow-x-auto no-scrollbar px-2" style={{ borderTop: '1.5px solid rgba(27,24,15,0.1)' }}>
+        <div className="flex overflow-x-auto no-scrollbar px-2" style={{ borderTop: '1.5px solid rgba(15,23,42,0.1)' }}>
           {TABS.map(tab => {
             const tabPath = `/classes/${classId}/${tab.path}`
             const active  = pathname === tabPath || pathname.startsWith(tabPath + '/')

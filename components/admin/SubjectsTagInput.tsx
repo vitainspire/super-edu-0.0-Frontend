@@ -72,8 +72,7 @@ export default function SubjectsTagInput({ value, onChange }: Props) {
           {value.map(s => (
             <span
               key={s}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold"
-              style={{ background: 'rgba(58,44,30,0.06)', color: 'var(--ink)' }}
+              className="badge-gray inline-flex items-center gap-1.5"
             >
               {s}
               <button type="button" onClick={() => remove(s)} className="text-ink-faint hover:text-red-500">
@@ -111,8 +110,7 @@ export default function SubjectsTagInput({ value, onChange }: Props) {
             type="button"
             onClick={add}
             disabled={!customName.trim()}
-            className="w-11 h-11 flex items-center justify-center rounded-2xl disabled:opacity-50 shrink-0"
-            style={{ background: 'var(--ink)', color: 'var(--paper-soft)' }}
+            className="admin-btn-primary w-11 h-11 flex items-center justify-center rounded-xl text-white disabled:opacity-50 shrink-0"
           >
             <Plus size={16} />
           </button>

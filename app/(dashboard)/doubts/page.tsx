@@ -86,7 +86,7 @@ export default function DoubtsPage() {
 
         {loading && (
           <div className="paper-card p-8 text-center">
-            <div className="w-8 h-8 border-4 rounded-full animate-spin mx-auto mb-3" style={{ borderColor: 'rgba(58,44,30,0.15)', borderTopColor: 'var(--ink)' }} />
+            <div className="w-8 h-8 border-4 rounded-full animate-spin mx-auto mb-3" style={{ borderColor: 'rgba(15,23,42,0.15)', borderTopColor: 'var(--ink)' }} />
             <p className="text-sm text-ink-soft">Loading questions…</p>
           </div>
         )}
@@ -124,17 +124,17 @@ export default function DoubtsPage() {
               </button>
 
               {isOpen && (
-                <div className="border-t divide-y" style={{ borderColor: 'rgba(58,44,30,0.08)' }}>
+                <div className="border-t divide-y" style={{ borderColor: 'rgba(15,23,42,0.08)' }}>
                   {group.doubts.map(doubt => (
-                    <div key={doubt.id} className="px-5 py-4 space-y-3" style={{ borderColor: 'rgba(58,44,30,0.06)' }}>
+                    <div key={doubt.id} className="px-5 py-4 space-y-3" style={{ borderColor: 'rgba(15,23,42,0.06)' }}>
                       <div className="flex items-start gap-3">
-                        <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0" style={{ background: 'rgba(58,44,30,0.06)' }}>
+                        <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0" style={{ background: 'rgba(15,23,42,0.06)' }}>
                           <span className="text-xs font-black text-ink-soft">?</span>
                         </div>
                         <div className="flex-1">
                           <div className="flex items-center gap-2 flex-wrap">
-                            <span className="text-[10px] font-bold text-ink-soft px-2 py-0.5 rounded-full" style={{ background: 'rgba(58,44,30,0.06)' }}>Anonymous</span>
-                            <span className="text-[10px] font-semibold text-ink-soft px-2 py-0.5 rounded-full" style={{ background: 'rgba(58,44,30,0.06)' }}>{doubt.subject}</span>
+                            <span className="text-[10px] font-bold text-ink-soft px-2 py-0.5 rounded-full" style={{ background: 'rgba(15,23,42,0.06)' }}>Anonymous</span>
+                            <span className="text-[10px] font-semibold text-ink-soft px-2 py-0.5 rounded-full" style={{ background: 'rgba(15,23,42,0.06)' }}>{doubt.subject}</span>
                             <span className="text-[10px] text-ink-faint">{new Date(doubt.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}</span>
                           </div>
                           <p className="text-sm text-ink mt-1 leading-relaxed">{doubt.question}</p>

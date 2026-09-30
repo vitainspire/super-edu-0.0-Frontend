@@ -16,10 +16,16 @@ interface CreateForm {
 
 const EMPTY_FORM: CreateForm = { title: '', body: '', category: 'general' }
 
-const CATEGORY_META: Record<Announcement['category'], { label: string; icon: typeof Megaphone; color: string; bg: string }> = {
-  general: { label: 'General', icon: Megaphone,     color: '#3A2C1E', bg: '#F4E9D4' },
-  exam:    { label: 'Exam',    icon: ClipboardList, color: '#b45309', bg: '#fffbeb' },
-  urgent:  { label: 'Urgent',  icon: AlertTriangle, color: '#b91c1c', bg: '#fef2f2' },
+// badgeClass, where present, is the shared status-pill class for this
+// category's label chip (globals.css) — general/exam/urgent map cleanly onto
+// the neutral/yellow/red badges. Holiday's teal isn't one of the six shared
+// hues (closest is blue/indigo, too far off to read as the same color), so
+// it keeps its own literal instead of a forced mismatch. color/bg still
+// drive the icon avatar square, which isn't a badge/pill.
+const CATEGORY_META: Record<Announcement['category'], { label: string; icon: typeof Megaphone; color: string; bg: string; badgeClass?: string }> = {
+  general: { label: 'General', icon: Megaphone,     color: '#475569', bg: '#F1F5F9', badgeClass: 'badge-gray' },
+  exam:    { label: 'Exam',    icon: ClipboardList, color: '#b45309', bg: '#fffbeb', badgeClass: 'badge-yellow' },
+  urgent:  { label: 'Urgent',  icon: AlertTriangle, color: '#dc2626', bg: '#fef2f2', badgeClass: 'badge-red' },
   holiday: { label: 'Holiday', icon: PartyPopper,   color: '#0f766e', bg: '#f0fdfa' },
 }
 
@@ -99,6 +105,7 @@ export default function AnnouncementsPage() {
       <PageHeader
         title="Announcements"
         back={false}
+        variant="admin"
         subtitle={`Posted to every teacher in ${school?.name ?? 'your school'}`}
         action={
           <button
@@ -138,9 +145,13 @@ export default function AnnouncementsPage() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
                       <h3 className="text-sm font-bold text-ink">{a.title}</h3>
-                      <span className="text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full" style={{ background: meta.bg, color: meta.color }}>
-                        {meta.label}
-                      </span>
+                      {meta.badgeClass ? (
+                        <span className={`${meta.badgeClass} uppercase tracking-wide`}>{meta.label}</span>
+                      ) : (
+                        <span className="text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full" style={{ background: meta.bg, color: meta.color }}>
+                          {meta.label}
+                        </span>
+                      )}
                     </div>
                     <p className="text-sm text-ink-soft mt-1.5 leading-relaxed whitespace-pre-wrap">{a.body}</p>
                     <p className="text-xs text-ink-faint mt-2">{a.adminName} · {timeAgo(a.createdAt)}</p>
@@ -160,7 +171,7 @@ export default function AnnouncementsPage() {
       </div>
 
       {/* Create Announcement Modal */}
-      <Modal open={showModal} onClose={closeModal} title="New Announcement">
+      <Modal open={showModal} onClose={closeModal} title="New Announcement" variant="admin">
         <form onSubmit={handleCreate} className="space-y-4">
           {createError && (
             <div className="text-sm px-4 py-3 rounded-2xl" style={{ background: '#FEF2F2', color: '#B91C1C', border: '1px solid rgba(185,28,28,0.15)' }}>
@@ -183,7 +194,7 @@ export default function AnnouncementsPage() {
                     className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold border transition-colors"
                     style={active
                       ? { background: meta.bg, color: meta.color, borderColor: meta.color }
-                      : { background: 'transparent', borderColor: 'rgba(58,44,30,0.16)', color: 'var(--ink-soft)' }}
+                      : { background: 'transparent', borderColor: 'rgba(15,23,42,0.16)', color: 'var(--ink-soft)' }}
                   >
                     <Icon className="w-3.5 h-3.5" /> {meta.label}
                   </button>
@@ -222,7 +233,7 @@ export default function AnnouncementsPage() {
               type="button"
               onClick={closeModal}
               className="flex-1 py-3 rounded-2xl text-ink-soft font-bold text-sm active:scale-95 transition-transform"
-              style={{ background: 'rgba(58,44,30,0.06)' }}
+              style={{ background: 'rgba(15,23,42,0.06)' }}
             >
               Cancel
             </button>

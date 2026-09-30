@@ -172,7 +172,7 @@ export default function FeatureTour({ teacherId, open, onClose }: Props) {
     <div
       className="fixed inset-0 z-50 flex items-end md:items-center justify-center"
       style={{
-        background: `rgba(58,44,30,${animateIn ? '0.6' : '0'})`,
+        background: `rgba(15,23,42,${animateIn ? '0.6' : '0'})`,
         transition: 'background 0.28s ease',
       }}
       onClick={e => { if (e.target === e.currentTarget) handleClose() }}
@@ -221,7 +221,7 @@ export default function FeatureTour({ teacherId, open, onClose }: Props) {
               className="h-1.5 rounded-full transition-all duration-300"
               style={{
                 width: i === current ? '22px' : '6px',
-                background: i === current ? card.accentColor : 'rgba(58,44,30,0.14)',
+                background: i === current ? card.accentColor : 'rgba(15,23,42,0.14)',
               }}
             />
           ))}
@@ -268,12 +268,12 @@ export default function FeatureTour({ teacherId, open, onClose }: Props) {
         </div>
 
         {/* ── NAVIGATION ─────────────────────────── */}
-        <div className="px-5 pt-4 pb-8 flex items-center gap-3 shrink-0" style={{ borderTop: '1px solid rgba(58,44,30,0.1)' }}>
+        <div className="px-5 pt-4 pb-8 flex items-center gap-3 shrink-0" style={{ borderTop: '1px solid rgba(15,23,42,0.1)' }}>
           <button
             onClick={handlePrev}
             disabled={current === 0}
             className="w-11 h-11 flex items-center justify-center rounded-2xl disabled:opacity-25 active:scale-90 transition-all"
-            style={{ background: 'rgba(58,44,30,0.06)' }}
+            style={{ background: 'rgba(15,23,42,0.06)' }}
           >
             <ChevronLeft size={18} className="text-ink-soft" />
           </button>

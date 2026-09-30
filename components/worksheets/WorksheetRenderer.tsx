@@ -172,7 +172,7 @@ export default function WorksheetRenderer({
         }
       `}</style>
 
-      <div id="ws-print-root" style={{ position: 'fixed', inset: 0, zIndex: 9999, display: 'flex', flexDirection: 'column', background: 'rgba(58,44,30,.6)' }}>
+      <div id="ws-print-root" style={{ position: 'fixed', inset: 0, zIndex: 9999, display: 'flex', flexDirection: 'column', background: 'rgba(15,23,42,.6)' }}>
 
         {/* ── Top toolbar ── */}
         <div className="ws-no-print" style={{ background: 'var(--ink)', borderBottom: '1px solid rgba(255,255,255,.08)', padding: '12px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexShrink: 0 }}>

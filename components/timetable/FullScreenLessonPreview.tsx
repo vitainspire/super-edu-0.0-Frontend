@@ -19,7 +19,7 @@ export default function FullScreenLessonPreview({
         <p className="flex-1 min-w-0 truncate text-sm font-bold text-ink">
           {topic}{subtopic ? ` — ${subtopic}` : ''}
         </p>
-        <button type="button" onClick={onClose} className="w-9 h-9 flex items-center justify-center rounded-full shrink-0 ml-2" style={{ background: 'rgba(27,24,15,0.05)' }}>
+        <button type="button" onClick={onClose} className="w-9 h-9 flex items-center justify-center rounded-full shrink-0 ml-2" style={{ background: 'rgba(15,23,42,0.05)' }}>
           <X size={16} className="text-ink-soft" />
         </button>
       </div>

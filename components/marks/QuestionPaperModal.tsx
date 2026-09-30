@@ -40,7 +40,7 @@ export default function QuestionPaperModal({
   let qNum = 0
 
   return (
-    <div style={{ position: 'fixed', inset: 0, zIndex: 1200, background: 'rgba(58,44,30,.55)', display: 'flex', alignItems: 'flex-start', justifyContent: 'center', overflowY: 'auto', padding: '40px 16px' }}>
+    <div style={{ position: 'fixed', inset: 0, zIndex: 1200, background: 'rgba(15,23,42,.55)', display: 'flex', alignItems: 'flex-start', justifyContent: 'center', overflowY: 'auto', padding: '40px 16px' }}>
       <style>{`
         @media print {
           body * { visibility: hidden; }
@@ -50,16 +50,16 @@ export default function QuestionPaperModal({
         }
       `}</style>
 
-      <div className="qp-paper" style={{ background: '#fff', width: '100%', maxWidth: 760, borderRadius: 6, border: '1px solid rgba(58,44,30,.18)', fontFamily: 'Georgia, "Times New Roman", serif', color: '#111' }}>
-        <div className="qp-toolbar" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 20px', borderBottom: '1px solid rgba(58,44,30,0.08)', background: 'var(--paper-soft)', borderRadius: '6px 6px 0 0' }}>
+      <div className="qp-paper" style={{ background: '#fff', width: '100%', maxWidth: 760, borderRadius: 6, border: '1px solid rgba(15,23,42,.18)', fontFamily: 'Georgia, "Times New Roman", serif', color: '#111' }}>
+        <div className="qp-toolbar" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 20px', borderBottom: '1px solid rgba(15,23,42,0.08)', background: 'var(--paper-soft)', borderRadius: '6px 6px 0 0' }}>
           <span style={{ fontFamily: 'var(--font-jakarta), system-ui, sans-serif', fontWeight: 700, fontSize: 13, color: 'var(--ink-soft)' }}>Question Paper</span>
           <div style={{ display: 'flex', gap: 8 }}>
             <button onClick={() => window.print()}
-              style={{ display: 'flex', alignItems: 'center', gap: 6, fontFamily: 'var(--font-jakarta), system-ui, sans-serif', fontSize: 12, fontWeight: 700, color: 'var(--ink)', background: 'rgba(58,44,30,0.08)', border: 'none', padding: '7px 16px', borderRadius: 8, cursor: 'pointer' }}>
+              style={{ display: 'flex', alignItems: 'center', gap: 6, fontFamily: 'var(--font-jakarta), system-ui, sans-serif', fontSize: 12, fontWeight: 700, color: 'var(--ink)', background: 'rgba(15,23,42,0.08)', border: 'none', padding: '7px 16px', borderRadius: 8, cursor: 'pointer' }}>
               <Printer size={13} /> Print
             </button>
             <button onClick={onClose}
-              style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 32, height: 32, borderRadius: 8, border: 'none', background: 'rgba(58,44,30,0.08)', cursor: 'pointer' }}>
+              style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 32, height: 32, borderRadius: 8, border: 'none', background: 'rgba(15,23,42,0.08)', cursor: 'pointer' }}>
               <X size={15} className="text-ink-soft" />
             </button>
           </div>

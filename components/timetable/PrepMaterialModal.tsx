@@ -469,7 +469,7 @@ export default function PrepMaterialModal({ open, onClose, classId, subject, gra
                 className="text-[10px] font-bold px-1.5 py-0.5 rounded-md"
                 style={planned.reason === 'overdue'
                   ? { background: 'rgba(196,107,84,0.14)', color: '#7A2E17' }
-                  : { background: 'rgba(58,44,30,0.06)', color: 'var(--ink-soft)' }}
+                  : { background: 'rgba(15,23,42,0.06)', color: 'var(--ink-soft)' }}
               >
                 {nextTopicLabel(planned)}
               </span>
@@ -478,7 +478,7 @@ export default function PrepMaterialModal({ open, onClose, classId, subject, gra
               // than silently letting the class drift off it.
               <span
                 className="text-[10px] font-bold px-1.5 py-0.5 rounded-md truncate max-w-[180px]"
-                style={{ background: 'rgba(58,44,30,0.06)', color: 'var(--ink-soft)' }}
+                style={{ background: 'rgba(15,23,42,0.06)', color: 'var(--ink-soft)' }}
                 title={`The plan for this class is "${plannedTopic}"`}
               >
                 Plan: {plannedTopic}

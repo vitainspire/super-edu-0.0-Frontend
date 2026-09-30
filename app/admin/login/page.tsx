@@ -97,7 +97,7 @@ export default function AdminLoginPage() {
         {/* Card */}
         <div className="paper-card p-5">
           {/* Tab switcher */}
-          <div className="flex rounded-2xl overflow-hidden mb-5" style={{ border: '1.5px solid rgba(58,44,30,0.16)' }}>
+          <div className="flex rounded-2xl overflow-hidden mb-5" style={{ border: '1.5px solid rgba(15,23,42,0.16)' }}>
             {(['signin', 'register'] as Mode[]).map(m => (
               <button
                 key={m}

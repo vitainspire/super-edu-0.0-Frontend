@@ -324,7 +324,7 @@ export default function StudentDetailPage() {
           <button
             onClick={() => router.back()}
             className="w-9 h-9 flex items-center justify-center rounded-full active:scale-90 transition-transform"
-            style={{ background: 'rgba(58,44,30,0.08)' }}
+            style={{ background: 'rgba(15,23,42,0.08)' }}
           >
             <ArrowLeft size={18} className="text-ink" />
           </button>
@@ -470,7 +470,7 @@ export default function StudentDetailPage() {
         {activeTab === 'allsubjects' && (
           <div className="space-y-3">
             <div className="flex items-center gap-2 mb-1">
-              <div className="w-8 h-8 rounded-xl flex items-center justify-center" style={{ background: 'rgba(58,44,30,0.08)' }}>
+              <div className="w-8 h-8 rounded-xl flex items-center justify-center" style={{ background: 'rgba(15,23,42,0.08)' }}>
                 <LayoutGrid size={15} className="text-ink" />
               </div>
               <div>
@@ -514,19 +514,19 @@ export default function StudentDetailPage() {
 
                   {/* Stats row */}
                   <div className="grid grid-cols-3 gap-2">
-                    <div className="rounded-xl px-3 py-2.5 text-center" style={{ background: 'rgba(58,44,30,0.06)' }}>
+                    <div className="rounded-xl px-3 py-2.5 text-center" style={{ background: 'rgba(15,23,42,0.06)' }}>
                       <p className={`text-lg font-black ${attColor}`}>
                         {s.totalSessions > 0 ? `${Math.round(s.attendanceRate * 100)}%` : '—'}
                       </p>
                       <p className="text-[10px] font-semibold text-ink-soft mt-0.5">Attendance</p>
                     </div>
-                    <div className="rounded-xl px-3 py-2.5 text-center" style={{ background: 'rgba(58,44,30,0.06)' }}>
+                    <div className="rounded-xl px-3 py-2.5 text-center" style={{ background: 'rgba(15,23,42,0.06)' }}>
                       <p className={`text-lg font-black ${s.totalTests > 0 ? scoreColor : 'text-ink-faint'}`}>
                         {s.totalTests > 0 ? `${Math.round(s.avgScore * 100)}%` : '—'}
                       </p>
                       <p className="text-[10px] font-semibold text-ink-soft mt-0.5">Avg Score</p>
                     </div>
-                    <div className="rounded-xl px-3 py-2.5 text-center" style={{ background: 'rgba(58,44,30,0.06)' }}>
+                    <div className="rounded-xl px-3 py-2.5 text-center" style={{ background: 'rgba(15,23,42,0.06)' }}>
                       <p className="text-lg font-black text-ink">{s.totalTests}</p>
                       <p className="text-[10px] font-semibold text-ink-soft mt-0.5">Tests</p>
                     </div>
@@ -543,7 +543,7 @@ export default function StudentDetailPage() {
                           <div key={mi} className="flex items-center gap-2">
                             <div className="flex-1 min-w-0">
                               <p className="text-xs font-semibold text-ink truncate">{m.topic}</p>
-                              <div className="h-1.5 rounded-full mt-1 overflow-hidden" style={{ background: 'rgba(58,44,30,0.08)' }}>
+                              <div className="h-1.5 rounded-full mt-1 overflow-hidden" style={{ background: 'rgba(15,23,42,0.08)' }}>
                                 <div className={`h-1.5 rounded-full ${bar}`} style={{ width: `${Math.round(pct * 100)}%` }} />
                               </div>
                             </div>
@@ -651,7 +651,7 @@ export default function StudentDetailPage() {
         {activeTab === 'log' && (
           <div className="space-y-3">
             <div className="flex items-center gap-2 mb-1">
-              <div className="w-8 h-8 rounded-xl flex items-center justify-center" style={{ background: 'rgba(58,44,30,0.08)' }}>
+              <div className="w-8 h-8 rounded-xl flex items-center justify-center" style={{ background: 'rgba(15,23,42,0.08)' }}>
                 <ClipboardList size={15} className="text-ink" />
               </div>
               <div>
@@ -682,7 +682,7 @@ export default function StudentDetailPage() {
                         ? 'bg-red-100 text-red-600 animate-pulse'
                         : 'text-ink-soft hover:text-ink'
                     }`}
-                    style={!isRecording ? { background: 'rgba(58,44,30,0.06)' } : undefined}
+                    style={!isRecording ? { background: 'rgba(15,23,42,0.06)' } : undefined}
                   >
                     {isRecording ? <MicOff size={12} /> : <Mic size={12} />}
                     {isRecording ? 'Stop' : 'Voice'}
@@ -803,7 +803,7 @@ export default function StudentDetailPage() {
                             {Math.round(pct * 100)}%
                           </span>
                         </div>
-                        <div className="h-2 rounded-full overflow-hidden" style={{ background: 'rgba(58,44,30,0.08)' }}>
+                        <div className="h-2 rounded-full overflow-hidden" style={{ background: 'rgba(15,23,42,0.08)' }}>
                           <div className={`h-2 rounded-full transition-all ${barColor}`} style={{ width: `${Math.round(pct * 100)}%` }} />
                         </div>
                         <p className="text-[10px] text-ink-soft mt-0.5">
