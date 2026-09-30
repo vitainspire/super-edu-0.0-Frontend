@@ -1,14 +1,17 @@
 'use client'
 import { useEffect, useMemo, useState } from 'react'
-import { ClipboardList, ChevronDown, ChevronUp, Loader2, BookOpen, CalendarDays, Sparkles, X, CheckCircle2, AlertCircle, ExternalLink } from 'lucide-react'
+import { ClipboardList, ChevronDown, Loader2, BookOpen, CalendarDays, Sparkles, X, CheckCircle2, AlertCircle, ExternalLink } from 'lucide-react'
 import { useAdmin } from '@/lib/admin-context'
 import { backendFetch } from '@/lib/backend'
 import PageHeader from '@/components/theme/PageHeader'
-import PrepSheetView from '@/components/timetable/PrepSheetView'
+import FullScreenLessonPreview from '@/components/timetable/FullScreenLessonPreview'
+import { ChapterSections, type SharedTopic, type ChapterGroup } from '@/components/timetable/TopicGrid'
 import type { SmartLesson } from '@/lib/types'
 
 interface AdminPrepMaterial {
   id: string
+  source: 'taught' | 'generated'
+  topicDefinitionId?: string
   teacherName: string
   className: string
   grade: string
@@ -31,11 +34,13 @@ export default function AdminPrepMaterialsPage() {
   const { school } = useAdmin()
   const [materials, setMaterials] = useState<AdminPrepMaterial[]>([])
   const [loading, setLoading] = useState(true)
-  const [expandedId, setExpandedId] = useState<string | null>(null)
+  const [previewing, setPreviewing] = useState<AdminPrepMaterial | null>(null)
+  const [previewError, setPreviewError] = useState<string | null>(null)
   const [showGenerate, setShowGenerate] = useState(false)
+  const [showBrowse, setShowBrowse] = useState(false)
   // The list endpoint deliberately omits each row's full generated lesson
   // (fetching all of them at once is what made this page time out) — each is
-  // fetched on demand the first time its row is expanded, then cached here.
+  // fetched on demand the first time its tile is opened, then cached here.
   const [lessons, setLessons] = useState<Record<string, SmartLesson>>({})
 
   const [classFilter, setClassFilter]   = useState(ALL)
@@ -58,15 +63,29 @@ export default function AdminPrepMaterialsPage() {
   const subjectOptions = useMemo(() => [...new Set(materials.map(m => m.subject).filter(Boolean))].sort(), [materials])
   const topicOptions   = useMemo(() => [...new Set(materials.map(m => m.topic))].sort(), [materials])
 
-  function toggleExpand(m: AdminPrepMaterial) {
-    const isOpen = expandedId === m.id
-    setExpandedId(isOpen ? null : m.id)
-    if (!isOpen && !lessons[m.id] && school) {
-      backendFetch(`/api/admin/schools/${school.id}/prep-materials/${m.id}`)
-        .then(r => r.json())
-        .then(d => { if (d.lesson) setLessons(prev => ({ ...prev, [m.id]: d.lesson })) })
-        .catch(() => {})
-    }
+  // Opens the tile's lesson full-screen (see FullScreenLessonPreview) rather
+  // than expanding it in place -- a tile grid has no natural "row" to expand
+  // into, and PrepSheetView is tall/rich enough that it needs real room
+  // regardless (same reasoning as Browse Shared/My Library). A failure sets
+  // a visible message instead of silently doing nothing.
+  function openPreview(m: AdminPrepMaterial) {
+    setPreviewing(m)
+    setPreviewError(null)
+    if (lessons[m.id] || !school) return
+    const url = m.source === 'generated'
+      ? `/api/admin/schools/${school.id}/prep-materials/shared-topics/${m.topicDefinitionId}?grade=${encodeURIComponent(m.grade)}&subject=${encodeURIComponent(m.subject)}`
+      : `/api/admin/schools/${school.id}/prep-materials/${m.id}`
+    backendFetch(url)
+      .then(r => {
+        if (r.status === 401) throw new Error('Your session has expired — refresh the page and try again.')
+        if (!r.ok) throw new Error("Couldn't load this material — try again.")
+        return r.json()
+      })
+      .then(d => {
+        if (d.lesson) setLessons(prev => ({ ...prev, [m.id]: d.lesson }))
+        else setPreviewError("This material wasn't found — try refreshing the page.")
+      })
+      .catch(e => setPreviewError(e.message || "Couldn't load this material — try again."))
   }
 
   const filtered = materials.filter(m =>
@@ -84,15 +103,26 @@ export default function AdminPrepMaterialsPage() {
         title="Prep Materials"
         subtitle="Browse what every teacher has generated and taught, by class and topic"
         action={
-          <button
-            type="button"
-            onClick={() => setShowGenerate(true)}
-            className="flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl text-white text-xs font-bold"
-            style={{ background: 'var(--forest)' }}
-          >
-            <Sparkles size={14} />
-            Generate from Textbook
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setShowBrowse(true)}
+              className="flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl text-xs font-bold"
+              style={{ background: 'rgba(27,24,15,0.05)', color: 'var(--ink)' }}
+            >
+              <BookOpen size={14} />
+              Browse Shared Library
+            </button>
+            <button
+              type="button"
+              onClick={() => setShowGenerate(true)}
+              className="flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl text-white text-xs font-bold"
+              style={{ background: 'var(--forest)' }}
+            >
+              <Sparkles size={14} />
+              Generate from Textbook
+            </button>
+          </div>
         }
       />
 
@@ -100,7 +130,11 @@ export default function AdminPrepMaterialsPage() {
         <GenerateFromBookModal schoolId={school.id} onClose={() => setShowGenerate(false)} />
       )}
 
-      <div className="px-5 pt-2 max-w-3xl mx-auto space-y-3 relative z-10">
+      {showBrowse && school && (
+        <BrowseSharedLibraryModal schoolId={school.id} onClose={() => setShowBrowse(false)} />
+      )}
+
+      <div className="px-5 pt-2 max-w-5xl mx-auto space-y-3 relative z-10">
         {!loading && materials.length > 0 && (
           <div className="paper-card p-3 flex flex-wrap gap-2">
             <div className="relative flex-1 min-w-[120px]">
@@ -147,58 +181,73 @@ export default function AdminPrepMaterialsPage() {
           </div>
         )}
 
-        {!loading && filtered.map(m => {
-          const isOpen = expandedId === m.id
-          return (
-            <div key={m.id} className="paper-card overflow-hidden">
+        {!loading && filtered.length > 0 && (
+          <div className="grid gap-3" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))' }}>
+            {filtered.map(m => (
               <button
+                key={m.id}
                 type="button"
-                onClick={() => toggleExpand(m)}
-                className="w-full flex items-center gap-3 px-4 py-3 text-left"
+                onClick={() => openPreview(m)}
+                className="flex flex-col items-start gap-2 p-3 rounded-2xl bg-white text-left"
+                style={{ border: '1.5px solid var(--card-border)' }}
               >
-                <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: '#DCEBF8' }}>
-                  <ClipboardList size={16} style={{ color: '#1E3A55' }} />
+                <div className="w-full aspect-square rounded-xl flex items-center justify-center" style={{ background: '#DCEBF8' }}>
+                  <ClipboardList size={28} style={{ color: '#1E3A55' }} />
                 </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-bold text-ink truncate">
+                <div className="w-full">
+                  <p className="text-xs font-bold text-ink leading-snug" style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
                     {m.topic}{m.subtopic ? ` — ${m.subtopic}` : ''}
                   </p>
-                  <p className="text-xs text-ink-soft mt-0.5">
-                    {m.teacherName} · {m.className}{m.grade ? ` · Grade ${m.grade}` : ''}{m.subject ? ` · ${m.subject}` : ''}
+                  <p className="text-[10px] text-ink-soft mt-1 truncate">
+                    {m.teacherName} · {m.className}
                   </p>
-                  <div className="flex items-center gap-2 mt-1">
-                    <span className="flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ background: 'rgba(58,44,30,0.06)', color: 'var(--ink-soft)' }}>
-                      <CalendarDays size={9} />
-                      {new Date(m.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+                  <div className="flex items-center gap-1 mt-1.5 flex-wrap">
+                    <span className="flex items-center gap-1 text-[9px] font-bold px-1.5 py-0.5 rounded-full" style={{ background: 'rgba(58,44,30,0.06)', color: 'var(--ink-soft)' }}>
+                      <CalendarDays size={8} />
+                      {new Date(m.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}
                     </span>
-                    <span
-                      className="text-[10px] font-bold px-2 py-0.5 rounded-full"
-                      style={m.sessionCount > 0
-                        ? { background: 'rgba(170,214,160,.2)', color: '#234A1D' }
-                        : { background: 'rgba(58,44,30,0.06)', color: 'var(--ink-faint)' }}
-                    >
-                      {m.sessionCount === 0 ? 'Not taught yet' : `Taught ${m.sessionCount} session${m.sessionCount !== 1 ? 's' : ''}`}
-                    </span>
+                    {m.source === 'generated' ? (
+                      <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full" style={{ background: 'rgba(0,0,205,0.08)', color: '#0000CD' }}>
+                        Shared library
+                      </span>
+                    ) : (
+                      <span
+                        className="text-[9px] font-bold px-1.5 py-0.5 rounded-full"
+                        style={m.sessionCount > 0
+                          ? { background: 'rgba(170,214,160,.2)', color: '#234A1D' }
+                          : { background: 'rgba(58,44,30,0.06)', color: 'var(--ink-faint)' }}
+                      >
+                        {m.sessionCount === 0 ? 'Not taught' : `Taught ${m.sessionCount}×`}
+                      </span>
+                    )}
                   </div>
                 </div>
-                {isOpen ? <ChevronUp size={16} className="text-ink-soft shrink-0" /> : <ChevronDown size={16} className="text-ink-soft shrink-0" />}
               </button>
+            ))}
+          </div>
+        )}
 
-              {isOpen && (
-                <div className="px-4 pb-4">
-                  {lessons[m.id]
-                    ? <PrepSheetView lesson={lessons[m.id]} topic={m.topic} subtopic={m.subtopic} fromCache />
-                    : (
-                      <div className="flex items-center justify-center py-8">
-                        <Loader2 className="w-5 h-5 animate-spin text-ink-faint" />
-                      </div>
-                    )}
-                </div>
-              )}
-            </div>
-          )
-        })}
+        {previewError && (
+          <p className="text-xs font-bold text-center py-2 px-3 rounded-xl" style={{ background: 'rgba(179,38,30,0.08)', color: '#B3261E' }}>
+            {previewError}
+          </p>
+        )}
       </div>
+
+      {previewing && (
+        lessons[previewing.id] ? (
+          <FullScreenLessonPreview
+            lesson={lessons[previewing.id]}
+            topic={previewing.topic}
+            subtopic={previewing.subtopic}
+            onClose={() => setPreviewing(null)}
+          />
+        ) : !previewError ? (
+          <div className="fixed inset-0 z-[60] flex items-center justify-center" style={{ background: 'rgba(27,24,15,0.45)' }}>
+            <Loader2 size={28} className="animate-spin text-white" />
+          </div>
+        ) : null
+      )}
     </div>
   )
 }
@@ -407,8 +456,6 @@ function GenerateFromBookModal({ schoolId, onClose }: { schoolId: string; onClos
                   <div className="flex items-center gap-2 text-xs text-ink-soft py-2"><Loader2 size={13} className="animate-spin" /> Loading catalog…</div>
                 ) : booksError ? (
                   <div className="space-y-2.5">
-                    <p className="text-xs" style={{ color: '#B3261E' }}>{booksError}</p>
-
                     <div className="rounded-xl p-3" style={{ background: 'rgba(58,44,30,0.04)', border: '1.5px solid rgba(58,44,30,0.1)' }}>
                       <label className="text-[11px] font-bold uppercase tracking-wide text-ink-soft mb-1.5 block">
                         Or paste a chapter link directly
@@ -523,6 +570,9 @@ function GenerateFromBookModal({ schoolId, onClose }: { schoolId: string; onClos
                   Teachers of this grade+subject will see it under their own Prep Materials — it won't show in this page's list above.
                 </p>
               </div>
+
+              <SharedTopicsPreview schoolId={schoolId} grade={job.result.grade} subject={job.result.subject} />
+
               <button type="button" onClick={onClose} className="mt-2 px-4 py-2 rounded-xl text-xs font-bold" style={{ background: 'rgba(27,24,15,0.05)', color: 'var(--ink)' }}>
                 Done
               </button>
@@ -546,3 +596,203 @@ function GenerateFromBookModal({ schoolId, onClose }: { schoolId: string; onClos
     </div>
   )
 }
+
+// Standalone entry point into SharedTopicsPreview below, independent of any
+// generation job -- GenerateFromBookModal only shows that preview attached to
+// a job that JUST finished in this same browser session (its localStorage
+// job id is cleared the moment status stops being 'running', so there is no
+// way back to that screen once you've moved on). An admin asking to see
+// material generated earlier -- yesterday, or by someone else -- has nothing
+// to attach a preview to without this: just a grade+subject, entered by hand,
+// same as picking a class+subject anywhere else in this admin.
+function BrowseSharedLibraryModal({ schoolId, onClose }: { schoolId: string; onClose: () => void }) {
+  const [combos, setCombos] = useState<{ grade: string; subject: string }[]>([])
+  const [combosLoading, setCombosLoading] = useState(true)
+  const [grade, setGrade] = useState('')
+  const [subject, setSubject] = useState('')
+  const [browsing, setBrowsing] = useState<{ grade: string; subject: string } | null>(null)
+
+  // Real combos this school actually has, not free text -- a typo used to
+  // mean "Browse" silently returning nothing with no way to tell why.
+  useEffect(() => {
+    backendFetch(`/api/admin/schools/${schoolId}/prep-materials/shared-grade-subjects`)
+      .then(r => r.json())
+      .then(d => setCombos(d.combos ?? []))
+      .catch(() => setCombos([]))
+      .finally(() => setCombosLoading(false))
+  }, [schoolId])
+
+  const gradeOptions = useMemo(() => [...new Set(combos.map(c => c.grade))].sort(), [combos])
+  const subjectOptions = useMemo(
+    () => [...new Set(combos.filter(c => !grade || c.grade === grade).map(c => c.subject))].sort(),
+    [combos, grade]
+  )
+
+  const selectClass = 'w-full appearance-none px-3 py-2.5 pr-8 rounded-xl text-sm font-semibold text-ink focus:outline-none'
+  const selectStyle = { border: '1.5px solid var(--card-border)' }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center" style={{ background: 'rgba(27,24,15,0.45)' }}>
+      <div className="w-full h-full sm:w-[92vw] sm:h-[92vh] sm:max-w-6xl bg-white sm:rounded-3xl overflow-hidden flex flex-col" style={{ border: '2px solid var(--card-border)' }}>
+        <div className="flex items-center justify-between px-5 py-4 shrink-0" style={{ borderBottom: '1.5px solid var(--card-border)' }}>
+          <div className="flex items-center gap-2">
+            <BookOpen size={16} style={{ color: 'var(--forest)' }} />
+            <p className="text-sm font-bold text-ink">Browse Shared Library</p>
+          </div>
+          <button type="button" onClick={onClose} className="w-8 h-8 flex items-center justify-center rounded-full" style={{ background: 'rgba(27,24,15,0.05)' }}>
+            <X size={14} className="text-ink-soft" />
+          </button>
+        </div>
+
+        <div className="p-5 space-y-4 flex-1 min-h-0 overflow-y-auto flex flex-col">
+          <p className="text-xs text-ink-soft leading-relaxed">
+            See what's already been generated and shared for a grade+subject — whether it came from
+            "Generate from Textbook" just now, earlier, or the automatic background top-up.
+          </p>
+
+          {combosLoading ? (
+            <div className="flex items-center gap-2 text-xs text-ink-soft py-2 shrink-0">
+              <Loader2 size={13} className="animate-spin" /> Loading what's available…
+            </div>
+          ) : combos.length === 0 ? (
+            <p className="text-xs text-ink-soft shrink-0">Nothing shared yet at this school.</p>
+          ) : (
+            <div className="flex gap-2 shrink-0">
+              <div className="relative w-28 shrink-0">
+                <select
+                  value={grade}
+                  onChange={e => { setGrade(e.target.value); setSubject('') }}
+                  className={selectClass} style={selectStyle}
+                >
+                  <option value="">Grade</option>
+                  {gradeOptions.map(g => <option key={g} value={g}>Grade {g}</option>)}
+                </select>
+                <ChevronDown size={12} className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-ink-faint" />
+              </div>
+              <div className="relative flex-1 min-w-0">
+                <select
+                  value={subject}
+                  onChange={e => setSubject(e.target.value)}
+                  disabled={!grade}
+                  className={selectClass} style={selectStyle}
+                >
+                  <option value="">{grade ? 'Subject' : 'Pick a grade first'}</option>
+                  {subjectOptions.map(s => <option key={s} value={s}>{s}</option>)}
+                </select>
+                <ChevronDown size={12} className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-ink-faint" />
+              </div>
+            </div>
+          )}
+
+          <button
+            type="button"
+            disabled={!grade || !subject}
+            onClick={() => setBrowsing({ grade, subject })}
+            className="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-white text-sm font-bold disabled:opacity-40 transition-opacity shrink-0"
+            style={{ background: 'var(--forest)' }}
+          >
+            <BookOpen size={15} />
+            Browse
+          </button>
+
+          {browsing && (
+            <div className="flex-1 min-h-0 flex flex-col">
+              <SharedTopicsPreview schoolId={schoolId} grade={browsing.grade} subject={browsing.subject} />
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// What this run actually produced, previewable right here instead of needing
+// a separate teacher login. Grouped by chapter and shown as a tile grid --
+// same ChapterSections/TopicGrid the teacher's "Browse My Library" uses, off
+// the same grouped shared-topics endpoint (admin_misc.py's version, scoped by
+// schoolId instead of derived from a teacher's own classes).
+function SharedTopicsPreview({ schoolId, grade, subject }: { schoolId: string; grade: string; subject: string }) {
+  const [chapters, setChapters] = useState<ChapterGroup[]>([])
+  const [loading, setLoading] = useState(true)
+  const [lessons, setLessons] = useState<Record<string, SmartLesson>>({})
+  const [previewing, setPreviewing] = useState<SharedTopic | null>(null)
+  const [previewError, setPreviewError] = useState<string | null>(null)
+
+  useEffect(() => {
+    setLoading(true)
+    const params = new URLSearchParams({ grade, subject })
+    backendFetch(`/api/admin/schools/${schoolId}/prep-materials/shared-topics?${params}`)
+      .then(r => r.json())
+      .then(d => setChapters(d.chapters ?? []))
+      .catch(() => setChapters([]))
+      .finally(() => setLoading(false))
+  }, [schoolId, grade, subject])
+
+  // Opens the full lesson full-screen (see FullScreenLessonPreview) instead of
+  // expanding it in place — PrepSheetView is a rich, tall component (banner
+  // cards, images, a deck view of its own); cramming it into an inline strip
+  // inside this already-small modal is exactly what made it look cut off and
+  // hid the image/Telugu toggle below the fold. A failure here now sets a
+  // visible message instead of silently doing nothing (see the teacher-side
+  // BrowseMyLibraryModal for why a silent failure reads as "the button is
+  // broken" and invites repeated clicking).
+  function openPreview(t: SharedTopic) {
+    setPreviewing(t)
+    setPreviewError(null)
+    if (lessons[t.topicDefinitionId]) return
+    const params = new URLSearchParams({ grade, subject })
+    backendFetch(`/api/admin/schools/${schoolId}/prep-materials/shared-topics/${t.topicDefinitionId}?${params}`)
+      .then(r => {
+        if (r.status === 401) throw new Error('Your session has expired — refresh the page and try again.')
+        if (!r.ok) throw new Error("Couldn't load this topic — try again.")
+        return r.json()
+      })
+      .then(d => {
+        if (d.lesson) setLessons(prev => ({ ...prev, [t.topicDefinitionId]: d.lesson }))
+        else setPreviewError("This topic's material wasn't found — try refreshing the page.")
+      })
+      .catch(e => setPreviewError(e.message || "Couldn't load this topic — try again."))
+  }
+
+  if (loading) {
+    return (
+      <div className="w-full flex items-center justify-center py-4">
+        <Loader2 size={16} className="animate-spin text-ink-faint" />
+      </div>
+    )
+  }
+  const topicCount = chapters.reduce((n, ch) => n + ch.topics.length, 0)
+  if (!topicCount) return null
+
+  return (
+    <div className="w-full text-left space-y-2 flex-1 min-h-0 flex flex-col">
+      <p className="text-[11px] font-bold uppercase tracking-wide text-ink-soft shrink-0">
+        Preview what was generated ({topicCount} topic{topicCount !== 1 ? 's' : ''})
+      </p>
+      {previewError && (
+        <p className="text-xs font-bold text-center py-2 px-3 rounded-xl shrink-0" style={{ background: 'rgba(179,38,30,0.08)', color: '#B3261E' }}>
+          {previewError}
+        </p>
+      )}
+      <div className="flex-1 min-h-0 overflow-y-auto">
+        <ChapterSections chapters={chapters} onOpenTopic={openPreview} />
+      </div>
+
+      {previewing && (
+        lessons[previewing.topicDefinitionId] ? (
+          <FullScreenLessonPreview
+            lesson={lessons[previewing.topicDefinitionId]}
+            topic={previewing.title}
+            subtopic={previewing.subtopic}
+            onClose={() => setPreviewing(null)}
+          />
+        ) : !previewError ? (
+          <div className="fixed inset-0 z-[60] flex items-center justify-center" style={{ background: 'rgba(27,24,15,0.45)' }}>
+            <Loader2 size={28} className="animate-spin text-white" />
+          </div>
+        ) : null
+      )}
+    </div>
+  )
+}
+

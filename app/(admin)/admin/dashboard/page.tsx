@@ -4,11 +4,9 @@ import { useAdmin } from '@/lib/admin-context'
 import { Loader2, ArrowRight, Users, BookOpen, GraduationCap, HelpCircle, type LucideIcon } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import PageHeader from '@/components/theme/PageHeader'
-import { Sticker } from '@/components/theme/StickerIcon'
 import SchoolReadiness, { type Readiness } from '@/components/admin/SchoolReadiness'
 import TodayAtSchool, { type Operations } from '@/components/admin/TodayAtSchool'
 import AdminTour from '@/components/admin/AdminTour'
-import clsx from 'clsx'
 import { backendFetch } from '@/lib/backend'
 
 interface Overview {
@@ -44,10 +42,17 @@ function RollingNumber({ target, delay = 0 }: { target: number; delay?: number }
   return <>{val}</>
 }
 
-// ── Stat tile (paper "sticker note" style) ──────────────────────────────────
+// Same white+blue accent as the sidebar (components/admin/AdminSideNav.tsx)
+// -- the dashboard's stat tiles used to each be a different pastel hue
+// (blue/coral/green), which read as three unrelated widgets rather than one
+// page. One consistent accent, varied only by icon and number, is what makes
+// it read as one interface.
+const ACCENT = '#0000CD'
+
+// ── Stat tile (bold-outline white card) ─────────────────────────────────────
 interface CardDef {
   label: string; sublabel: string; value: number; delay: number
-  stat: string; ink: string; href: string; Icon: LucideIcon
+  href: string; Icon: LucideIcon
 }
 
 function StatTile({ card, visible }: { card: CardDef; visible: boolean }) {
@@ -56,35 +61,36 @@ function StatTile({ card, visible }: { card: CardDef; visible: boolean }) {
     <button
       type="button"
       onClick={() => router.push(card.href)}
-      className={clsx('stat-card', card.stat, 'text-left w-full active:scale-[0.98] transition-transform')}
+      className="stat-card bg-white text-left w-full active:scale-[0.98] transition-transform"
       style={{
+        border: '2px solid var(--card-border)',
         opacity: visible ? 1 : 0,
         transform: visible ? 'translateY(0)' : 'translateY(16px)',
         transition: `opacity 0.5s ease ${card.delay}ms, transform 0.5s ease ${card.delay}ms, transform 0.15s ease`,
       }}
     >
       <div className="flex items-center justify-between gap-2">
-        <Sticker tone="cream" size={40} radius={14} style={{ background: 'rgba(255,255,255,0.55)' }}>
-          <card.Icon size={19} style={{ color: card.ink }} />
-        </Sticker>
+        <span className="w-10 h-10 rounded-2xl flex items-center justify-center" style={{ background: 'rgba(0,0,205,0.08)' }}>
+          <card.Icon size={19} style={{ color: ACCENT }} />
+        </span>
         <span
           className="flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-full"
-          style={{ background: 'rgba(255,255,255,0.45)', color: card.ink }}
+          style={{ background: 'rgba(0,0,205,0.08)', color: ACCENT }}
         >
           Go <ArrowRight size={11} />
         </span>
       </div>
 
       <p
-        className="font-display font-black leading-none mt-4"
-        style={{ fontSize: 44, color: card.ink, fontVariantNumeric: 'tabular-nums' }}
+        className="font-display font-black leading-none mt-4 text-ink"
+        style={{ fontSize: 44, fontVariantNumeric: 'tabular-nums' }}
       >
         {visible ? <RollingNumber target={card.value} delay={card.delay} /> : '0'}
       </p>
-      <p className="text-xs font-bold uppercase tracking-widest mt-2" style={{ color: card.ink, opacity: 0.75 }}>
+      <p className="text-xs font-bold uppercase tracking-widest mt-2 text-ink-soft">
         {card.label}
       </p>
-      <p className="text-xs font-semibold mt-0.5" style={{ color: card.ink, opacity: 0.6 }}>
+      <p className="text-xs font-semibold mt-0.5 text-ink-faint">
         {card.sublabel}
       </p>
     </button>
@@ -126,19 +132,16 @@ export default function AdminDashboard() {
     {
       label: 'Teachers', sublabel: 'on teaching staff',
       value: overview?.teacherCount ?? 0, delay: 0,
-      stat: 'stat-card-blue', ink: '#1E3A55',
       href: '/admin/teachers', Icon: Users,
     },
     {
       label: 'Classes', sublabel: 'active this year',
       value: overview?.classCount ?? 0, delay: 90,
-      stat: 'stat-card-coral', ink: '#5C2416',
       href: '/admin/classes', Icon: BookOpen,
     },
     {
       label: 'Students', sublabel: 'enrolled across all classes',
       value: overview?.studentCount ?? 0, delay: 180,
-      stat: 'stat-card-green', ink: '#234A1D',
       href: '/admin/classes', Icon: GraduationCap,
     },
   ]

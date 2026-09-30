@@ -3,9 +3,10 @@ import { useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useApp } from '@/lib/context'
 import { BookOpenCheck, Repeat } from 'lucide-react'
-import { CalendarDays, ClipboardList, Sparkles } from '@/components/ui/icons'
+import { CalendarDays, ClipboardList, Sparkles, BookOpen } from '@/components/ui/icons'
 import type { TimetableEntry } from '@/lib/types'
 import PrepMaterialModal from '@/components/timetable/PrepMaterialModal'
+import BrowseMyLibraryModal from '@/components/timetable/BrowseMyLibraryModal'
 import SubstituteBanner from '@/components/timetable/SubstituteBanner'
 import CoveringPeriods from '@/components/timetable/CoveringPeriods'
 import PageHeader from '@/components/theme/PageHeader'
@@ -131,6 +132,7 @@ export default function TimetablePage() {
   )
 
   const [selectedDay, setSelectedDay] = useState(todayN >= 1 && todayN <= days.length ? todayN : 1)
+  const [showBrowseLibrary, setShowBrowseLibrary] = useState(false)
 
   // Periods this teacher has handed to a substitute are out of the "today"
   // count and out of Up Next — they aren't turning up to them. They stay on the
@@ -224,7 +226,20 @@ export default function TimetablePage() {
       <PageHeader
         title="Weekly Timetable"
         subtitle={todayEntries.length > 0 ? `${todayEntries.length} class${todayEntries.length !== 1 ? 'es' : ''} today` : 'No classes scheduled today'}
+        action={
+          <button
+            type="button"
+            onClick={() => setShowBrowseLibrary(true)}
+            className="flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl text-xs font-bold bg-white"
+            style={{ border: '1.75px solid var(--card-border)' }}
+          >
+            <BookOpen size={14} />
+            Browse My Library
+          </button>
+        }
       />
+
+      <BrowseMyLibraryModal open={showBrowseLibrary} onClose={() => setShowBrowseLibrary(false)} />
 
       <div className="px-4 md:px-6 relative z-10 space-y-4">
 
