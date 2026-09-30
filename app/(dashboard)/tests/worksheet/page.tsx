@@ -117,7 +117,7 @@ export default function WorksheetPage() {
           <div style={{ display: 'flex', gap: 10 }}>
             <button onClick={() => setKeyStage('manual')}
               style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, padding: '14px 0', borderRadius: 14, border: '2px solid var(--card-border)', background: '#fff', color: 'var(--ink)', fontWeight: 700, fontSize: 13, cursor: 'pointer', fontFamily: 'inherit' }}>
-              <PenLine size={14} /> I'll enter answers myself
+              <PenLine size={14} /> I&apos;ll enter answers myself
             </button>
             <button onClick={generateAiKey}
               style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, padding: '14px 0', borderRadius: 14, border: '2px solid var(--card-border)', background: 'var(--forest)', color: '#fff', fontWeight: 700, fontSize: 13, cursor: 'pointer', fontFamily: 'inherit' }}>

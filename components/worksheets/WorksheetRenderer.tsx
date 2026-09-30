@@ -70,7 +70,7 @@ export default function WorksheetRenderer({
           <div style={{ display: 'flex', gap: 10 }}>
             <button onClick={() => { setKeyStage('manual') }}
               style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7, padding: '13px 0', borderRadius: 14, border: '2px solid rgba(255,255,255,.2)', background: 'rgba(255,255,255,.08)', color: '#fff', fontWeight: 700, fontSize: 13, cursor: 'pointer', fontFamily: 'inherit' }}>
-              <PenLine size={14} /> I'll enter answers myself
+              <PenLine size={14} /> I&apos;ll enter answers myself
             </button>
             <button onClick={generateAiKey}
               style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7, padding: '13px 0', borderRadius: 14, border: 'none', background: '#C7B7E8', color: '#31215C', fontWeight: 700, fontSize: 13, cursor: 'pointer', fontFamily: 'inherit' }}>

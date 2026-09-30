@@ -323,7 +323,7 @@ export default function AdminTextbooksPage() {
               </div>
               <div className="text-left">
                 <p className="text-sm font-bold text-ink">Fetch a textbook</p>
-                <p className="text-xs text-ink-soft">Download the source PDF from the board's e-textbooks site</p>
+                <p className="text-xs text-ink-soft">Download the source PDF from the board&apos;s e-textbooks site</p>
               </div>
             </div>
             {fetchOpen ? <ChevronUp size={16} className="text-ink-soft" /> : <ChevronDown size={16} className="text-ink-soft" />}

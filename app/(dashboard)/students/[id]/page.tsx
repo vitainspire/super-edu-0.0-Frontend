@@ -70,7 +70,6 @@ export default function StudentDetailPage() {
   const [noteDate, setNoteDate] = useState(new Date().toISOString().split('T')[0])
   const [savingNote, setSavingNote] = useState(false)
   const [isRecording, setIsRecording] = useState(false)
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const recognitionRef = useRef<any>(null)
   const [potentialSentence, setPotentialSentence] = useState('')
   const [loadingPotential, setLoadingPotential] = useState(false)
@@ -132,7 +131,6 @@ export default function StudentDetailPage() {
       recognitionRef.current?.stop()
       return
     }
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
     if (!SR) return
     const rec = new SR()

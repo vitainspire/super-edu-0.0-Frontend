@@ -436,7 +436,7 @@ function GenerateFromBookModal({ schoolId, onClose }: { schoolId: string; onClos
           {!job && (
             <>
               <p className="text-xs text-ink-soft leading-relaxed">
-                Pick a real published textbook chapter — it'll be run through the AI pipeline right now and saved for every teacher of that grade+subject to see.
+                Pick a real published textbook chapter — it&apos;ll be run through the AI pipeline right now and saved for every teacher of that grade+subject to see.
               </p>
 
               <a
@@ -447,7 +447,7 @@ function GenerateFromBookModal({ schoolId, onClose }: { schoolId: string; onClos
                 style={{ color: 'var(--forest)' }}
               >
                 <ExternalLink size={12} />
-                Don't see your textbook? Browse or add it in the shared library
+                Don&apos;t see your textbook? Browse or add it in the shared library
               </a>
 
               <div>
@@ -461,7 +461,7 @@ function GenerateFromBookModal({ schoolId, onClose }: { schoolId: string; onClos
                         Or paste a chapter link directly
                       </label>
                       <p className="text-[11px] text-ink-faint mb-2 leading-relaxed">
-                        Copy a chapter's own link from the shared library (the "Try it now" link, or
+                        Copy a chapter&apos;s own link from the shared library (the &quot;Try it now&quot; link, or
                         one you build by hand) — this skips the catalog list entirely.
                       </p>
                       <div className="flex gap-2">
@@ -567,7 +567,7 @@ function GenerateFromBookModal({ schoolId, onClose }: { schoolId: string; onClos
                   {job.result.createdTopics} new topic{job.result.createdTopics !== 1 ? 's' : ''} added to the syllabus, {job.result.matchedTopics} matched existing ones.
                 </p>
                 <p className="text-[11px] text-ink-faint mt-2">
-                  Teachers of this grade+subject will see it under their own Prep Materials — it won't show in this page's list above.
+                  Teachers of this grade+subject will see it under their own Prep Materials — it won&apos;t show in this page&apos;s list above.
                 </p>
               </div>
 
@@ -646,13 +646,13 @@ function BrowseSharedLibraryModal({ schoolId, onClose }: { schoolId: string; onC
 
         <div className="p-5 space-y-4 flex-1 min-h-0 overflow-y-auto flex flex-col">
           <p className="text-xs text-ink-soft leading-relaxed">
-            See what's already been generated and shared for a grade+subject — whether it came from
-            "Generate from Textbook" just now, earlier, or the automatic background top-up.
+            See what&apos;s already been generated and shared for a grade+subject — whether it came from
+            &quot;Generate from Textbook&quot; just now, earlier, or the automatic background top-up.
           </p>
 
           {combosLoading ? (
             <div className="flex items-center gap-2 text-xs text-ink-soft py-2 shrink-0">
-              <Loader2 size={13} className="animate-spin" /> Loading what's available…
+              <Loader2 size={13} className="animate-spin" /> Loading what&apos;s available…
             </div>
           ) : combos.length === 0 ? (
             <p className="text-xs text-ink-soft shrink-0">Nothing shared yet at this school.</p>

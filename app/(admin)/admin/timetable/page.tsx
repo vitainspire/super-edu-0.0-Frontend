@@ -530,7 +530,7 @@ export default function TimetablePage() {
                 <Shuffle className="w-4 h-4" style={{ color: '#1E3A55' }} /> Subject Lineup &amp; Shuffle
               </p>
               <p className="text-xs text-ink-faint mt-0.5">
-                Set periods/week per subject once for a grade, then auto-generate every section's timetable at once
+                Set periods/week per subject once for a grade, then auto-generate every section&apos;s timetable at once
               </p>
             </div>
             <select
@@ -636,7 +636,7 @@ export default function TimetablePage() {
                           href={`/admin/timetable/${activeShuffleTab}`}
                           className="mt-2 inline-flex items-center gap-1.5 text-xs font-black text-ink underline underline-offset-2"
                         >
-                          Edit this section's timetable <ArrowRight className="w-3 h-3" />
+                          Edit this section&apos;s timetable <ArrowRight className="w-3 h-3" />
                         </Link>
                       </div>
                     )

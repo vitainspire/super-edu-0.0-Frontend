@@ -446,7 +446,7 @@ export default function StudentsPage() {
             {importMode === 'excel' && (
               <div className="space-y-3">
                 <p className="text-xs text-ink-soft">
-                  Upload an Excel (.xlsx) or CSV file — a "Name" and "Roll Number" column are detected automatically.
+                  Upload an Excel (.xlsx) or CSV file — a &quot;Name&quot; and &quot;Roll Number&quot; column are detected automatically.
                 </p>
                 <input ref={excelInputRef} type="file" accept=".xlsx,.xls,.csv" onChange={handleExcelSelect} className="hidden" />
                 <button
