@@ -24,7 +24,14 @@ interface PrepSheetViewProps {
 // ClassroomModeModal) can build the exact same section list and reuse the
 // exact same "Watch For" strip, rather than re-deriving the bucket
 // order/shape a second time.
-export const ACCENT = '#1F3D2C'
+//
+// A hardcoded hex, not '#1F3D2C' (a dark green) -- this had drifted from the
+// rest of the app, which already moved its real primary color to blue (see
+// globals.css's own --forest comment: "== --primary: sidebar + primary
+// action buttons"). Referencing the variable instead of a second hardcoded
+// hex means this never drifts out of sync again if the app's primary color
+// changes.
+export const ACCENT = 'var(--forest)'
 export const BORDER = '2px solid var(--card-border)'
 
 export interface Section {
