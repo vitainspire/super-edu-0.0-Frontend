@@ -70,22 +70,37 @@ function isPublic(pathname: string): boolean {
 // backend can therefore cost a redirect, never a hang.
 const AUTH_TIMEOUT_MS = 2500
 
+// A real logged-in session hitting a merely-SLOW (not dead) Supabase call used
+// to be treated as logged out on the very first attempt -- no retry existed
+// here at all, unlike every other Supabase call in this app (see the
+// backend's retry_supabase / deps.py's _get_user, which hit the identical
+// connection drops and retry). Measured for real: a teacher's own session got
+// a blanket 401 across every /api/teacher/* endpoint from exactly this path.
+// Two attempts, each with its own bound, so the worst case is still a bounded
+// stall (~2x AUTH_TIMEOUT_MS), never the unbounded hang the timeout above
+// exists to prevent -- just one real second chance before failing closed.
+const AUTH_ATTEMPTS = 2
+
 type SupabaseClient = ReturnType<typeof createServerClient>
 
 async function getUserOrNull(supabase: SupabaseClient) {
-  try {
-    const result = await Promise.race([
-      supabase.auth.getUser(),
-      new Promise<null>(resolve => setTimeout(() => resolve(null), AUTH_TIMEOUT_MS)),
-    ])
-    if (!result) {
-      console.warn(`[middleware] Supabase auth.getUser() exceeded ${AUTH_TIMEOUT_MS}ms — treating as unauthenticated`)
-      return null
+  for (let attempt = 1; attempt <= AUTH_ATTEMPTS; attempt++) {
+    try {
+      const result = await Promise.race([
+        supabase.auth.getUser(),
+        new Promise<null>(resolve => setTimeout(() => resolve(null), AUTH_TIMEOUT_MS)),
+      ])
+      if (!result) {
+        console.warn(`[middleware] Supabase auth.getUser() exceeded ${AUTH_TIMEOUT_MS}ms (attempt ${attempt}/${AUTH_ATTEMPTS})`)
+        continue
+      }
+      return result.data.user
+    } catch (e) {
+      console.warn(`[middleware] Supabase auth.getUser() failed (attempt ${attempt}/${AUTH_ATTEMPTS}):`, e)
     }
-    return result.data.user
-  } catch {
-    return null
   }
+  console.warn('[middleware] Supabase auth.getUser() exhausted all attempts — treating as unauthenticated')
+  return null
 }
 
 export async function middleware(req: NextRequest) {
