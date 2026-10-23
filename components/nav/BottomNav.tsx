@@ -13,7 +13,8 @@ const NAV_ITEMS = [
   { href: '/tests',     label: 'Tests',     Icon: ClipboardList, match: (p: string) => p.startsWith('/tests') },
   { href: '/more',      label: 'More',      Icon: MoreHorizontal, match: (p: string) =>
       p.startsWith('/more') || p.startsWith('/settings') || p.startsWith('/profile') ||
-      p.startsWith('/support') || p.startsWith('/announcements') || p.startsWith('/alerts') },
+      p.startsWith('/support') || p.startsWith('/announcements') || p.startsWith('/alerts') ||
+      p.startsWith('/agent') },
 ]
 
 export default function BottomNav() {

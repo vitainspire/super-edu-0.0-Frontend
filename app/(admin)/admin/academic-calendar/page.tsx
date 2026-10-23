@@ -23,7 +23,13 @@ interface CreateForm {
   startDate: string
   endDate: string
   description: string
+  // Only meaningful when category === 'exam'. Empty = applies to every
+  // grade (sent as omitted, not [], so the backend's "every grade" default
+  // stays consistent whether this form touched it or not).
+  grades: string[]
 }
+
+const GRADES = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12']
 
 function todayStr() {
   return new Date().toISOString().split('T')[0]
@@ -36,7 +42,7 @@ function plusDays(dateStr: string, days: number) {
 function emptyForm(): CreateForm {
   return {
     title: '', category: 'holiday', holidaySubtype: 'public', countsAsNonWorking: true,
-    startDate: todayStr(), endDate: todayStr(), description: '',
+    startDate: todayStr(), endDate: todayStr(), description: '', grades: [],
   }
 }
 function timeToMins(t: string) {
@@ -183,14 +189,19 @@ export default function AcademicCalendarPage() {
     if (!school) return
     setCreateError('')
     setCreating(true)
+    const body = {
+      ...form,
+      grades: form.category === 'exam' && form.grades.length > 0 ? form.grades : undefined,
+      ...(editingId ? { id: editingId } : {}),
+    }
     const res = await backendFetch(`/api/admin/schools/${school.id}/academic-events`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(editingId ? { ...form, id: editingId } : form),
+      body: JSON.stringify(body),
     })
     const data = await res.json()
     setCreating(false)
-    if (!res.ok) { setCreateError(data.error ?? 'Failed to save event.'); return }
+    if (!res.ok) { setCreateError(data.error ?? data.detail ?? 'Failed to save event.'); return }
     closeModal()
     load()
   }
@@ -205,6 +216,7 @@ export default function AcademicCalendarPage() {
       startDate: a.startDate,
       endDate: a.endDate,
       description: a.description ?? '',
+      grades: a.grades ?? [],
     })
     setCreateError('')
     setShowModal(true)
@@ -225,7 +237,7 @@ export default function AcademicCalendarPage() {
     const res = await backendFetch(`/api/admin/schools/${school.id}/academic-events/publish`, { method: 'POST' })
     const data = await res.json()
     setPublishing(false)
-    if (!res.ok) { setPublishMsg(data.error ?? 'Failed to publish.'); return }
+    if (!res.ok) { setPublishMsg(data.error ?? data.detail ?? 'Failed to publish.'); return }
     setPublishMsg(data.publishedCount > 0 ? `Published ${data.publishedCount} event${data.publishedCount === 1 ? '' : 's'} to teachers.` : 'Everything was already published.')
     load()
   }
@@ -252,7 +264,7 @@ export default function AcademicCalendarPage() {
         body: JSON.stringify({ year }),
       })
       const data = await res.json()
-      if (!res.ok) { setSeeding(false); setSeedMsg(data.error ?? `Failed to seed holidays for ${year}.`); return }
+      if (!res.ok) { setSeeding(false); setSeedMsg(data.error ?? data.detail ?? `Failed to seed holidays for ${year}.`); return }
       totalCreated += data.created?.length ?? 0
       totalSkipped += data.skipped ?? 0
       allSuggested.push(...(data.suggested ?? []))
@@ -601,6 +613,13 @@ export default function AcademicCalendarPage() {
                             {HOLIDAY_SUBTYPE_META[a.holidaySubtype].label}
                           </span>
                         )}
+                        {a.category === 'exam' && (
+                          <span className="text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full" style={{ background: meta.bg, color: meta.color }}>
+                            {a.grades && a.grades.length > 0
+                              ? `Grade${a.grades.length > 1 ? 's' : ''} ${a.grades.join(', ')}`
+                              : 'All Grades'}
+                          </span>
+                        )}
                         {!a.countsAsNonWorking && (
                           <span className="text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full text-emerald-700" style={{ background: '#ecfdf5' }}>
                             Classes run as normal
@@ -708,6 +727,34 @@ export default function AcademicCalendarPage() {
                 />
                 Classes run as normal that day (doesn&apos;t block regular periods) — e.g. an Annual Day held alongside school
               </label>
+            </div>
+          )}
+
+          {form.category === 'exam' && (
+            <div className="admin-card p-3.5">
+              <label className="label">Applies to Grades</label>
+              <p className="text-xs text-ink-soft mb-2">Leave none selected to apply to every grade.</p>
+              <div className="grid grid-cols-6 gap-1.5">
+                {GRADES.map(g => {
+                  const active = form.grades.includes(g)
+                  return (
+                    <button
+                      key={g}
+                      type="button"
+                      onClick={() => setForm(f => ({
+                        ...f,
+                        grades: f.grades.includes(g) ? f.grades.filter(x => x !== g) : [...f.grades, g],
+                      }))}
+                      className="py-2 rounded-xl text-sm font-bold transition-colors"
+                      style={active
+                        ? { background: 'var(--ink)', color: 'var(--paper-soft)' }
+                        : { background: 'rgba(15,23,42,0.06)', color: 'var(--ink-soft)' }}
+                    >
+                      {g}
+                    </button>
+                  )
+                })}
+              </div>
             </div>
           )}
 

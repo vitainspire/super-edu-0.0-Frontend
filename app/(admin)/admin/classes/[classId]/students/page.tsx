@@ -4,13 +4,16 @@ import { useAdmin } from '@/lib/admin-context'
 import { backendFetch } from '@/lib/backend'
 import {
   GraduationCap, Upload, Loader2, Plus, X, Trash2, Users, Copy, Check,
-  FileText, Image as ImageIcon, FileSpreadsheet, Sparkles, AlertCircle,
+  FileText, Image as ImageIcon, FileSpreadsheet, Sparkles, AlertCircle, Send,
 } from 'lucide-react'
 import { useParams, useRouter } from 'next/navigation'
 import type { Student } from '@/lib/types'
 import PageHeader from '@/components/theme/PageHeader'
+import Modal from '@/components/ui/Modal'
 import { ADMIN_AVATAR_COLORS as AVATAR_COLORS } from '@/lib/admin-theme'
 import * as XLSX from 'xlsx'
+
+interface ReportLink { studentId: string; studentName: string; rollNumber: string; url: string }
 
 interface StudentRow { name: string; rollNumber: string }
 
@@ -70,6 +73,39 @@ export default function StudentsPage() {
   const [success, setSuccess] = useState('')
   const [error, setError] = useState('')
   const [copiedId, setCopiedId] = useState<string | null>(null)
+
+  // Bulk "send progress reports to parents" — one signed link per student,
+  // the admin forwards each on WhatsApp manually (no parent phone number
+  // exists anywhere in this app yet, so there's no real automated send).
+  const [showReportModal, setShowReportModal] = useState(false)
+  const [reportLinks, setReportLinks] = useState<ReportLink[] | null>(null)
+  const [reportLinksLoading, setReportLinksLoading] = useState(false)
+  const [reportLinksError, setReportLinksError] = useState('')
+  const [copiedLinkId, setCopiedLinkId] = useState<string | null>(null)
+
+  async function generateClassReportLinks() {
+    if (!school) return
+    setShowReportModal(true)
+    setReportLinksLoading(true)
+    setReportLinksError('')
+    try {
+      const res = await backendFetch(`/api/admin/schools/${school.id}/classes/${classId}/report-links`, { method: 'POST' })
+      if (!res.ok) throw new Error('Failed')
+      const data = await res.json()
+      setReportLinks(data.links ?? [])
+    } catch {
+      setReportLinksError('Could not generate report links. Please try again.')
+    } finally {
+      setReportLinksLoading(false)
+    }
+  }
+
+  function copyReportLink(link: ReportLink) {
+    navigator.clipboard.writeText(link.url).then(() => {
+      setCopiedLinkId(link.studentId)
+      setTimeout(() => setCopiedLinkId(null), 2000)
+    })
+  }
 
   const copyCode = (code: string, id: string) => {
     navigator.clipboard.writeText(code).then(() => {
@@ -135,7 +171,7 @@ export default function StudentsPage() {
         body: JSON.stringify({ image: imagePreview }),
       })
       const data = await res.json()
-      if (!res.ok) throw new Error(data.error ?? 'Extraction failed')
+      if (!res.ok) throw new Error(data.error ?? data.detail ?? 'Extraction failed')
       if (!data.students?.length) throw new Error('No students found in this photo.')
       setPreview(data.students)
     } catch (e: unknown) {
@@ -179,7 +215,7 @@ export default function StudentsPage() {
       body: JSON.stringify({ students: [{ name: singleName, rollNumber: singleRoll }] }),
     })
     const data = await res.json()
-    if (!res.ok) { setError(data.error ?? 'Add failed'); setImporting(false); return }
+    if (!res.ok) { setError(data.error ?? data.detail ?? 'Add failed'); setImporting(false); return }
     setSuccess(`${singleName} added successfully`)
     setSingleName('')
     setSingleRoll('')
@@ -197,7 +233,7 @@ export default function StudentsPage() {
       body: JSON.stringify({ students: preview }),
     })
     const data = await res.json()
-    if (!res.ok) { setError(data.error ?? 'Import failed'); setImporting(false); return }
+    if (!res.ok) { setError(data.error ?? data.detail ?? 'Import failed'); setImporting(false); return }
     setSuccess(`${data.inserted} students imported successfully`)
     setBulkText(''); setPreview([])
     setImagePreview(null); setExtractError('')
@@ -247,9 +283,21 @@ export default function StudentsPage() {
 
         {/* Student list */}
         <div className="paper-card overflow-hidden">
-          <div className="flex items-center gap-2 px-5 py-4" style={{ borderBottom: '1.5px solid rgba(15,23,42,0.1)' }}>
-            <Users className="w-4 h-4 text-ink-soft" />
-            <h2 className="font-display font-bold text-ink">Student Roster</h2>
+          <div className="flex items-center justify-between gap-2 px-5 py-4" style={{ borderBottom: '1.5px solid rgba(15,23,42,0.1)' }}>
+            <div className="flex items-center gap-2">
+              <Users className="w-4 h-4 text-ink-soft" />
+              <h2 className="font-display font-bold text-ink">Student Roster</h2>
+            </div>
+            {students.length > 0 && (
+              <button
+                type="button"
+                onClick={generateClassReportLinks}
+                className="flex items-center gap-1.5 text-xs font-bold px-3 py-2 rounded-xl text-white"
+                style={{ background: 'var(--ink)' }}
+              >
+                <Send className="w-3.5 h-3.5" /> Send Reports to Parents
+              </button>
+            )}
           </div>
 
           {loadingStudents ? (
@@ -512,6 +560,64 @@ export default function StudentsPage() {
           </div>
         </div>
       </div>
+
+      <Modal
+        open={showReportModal}
+        onClose={() => setShowReportModal(false)}
+        title="Send Reports to Parents"
+        variant="admin"
+      >
+        <p className="text-xs text-ink-soft mb-4">
+          A report link per student, valid for 30 days. Tap WhatsApp to open a chat and pick that
+          student&apos;s parent to send it to — there&apos;s no stored parent number yet, so each one is
+          sent manually.
+        </p>
+
+        {reportLinksLoading && (
+          <div className="flex items-center justify-center py-10">
+            <Loader2 className="w-5 h-5 animate-spin text-ink-soft" />
+          </div>
+        )}
+
+        {reportLinksError && (
+          <div className="flex items-center gap-2 bg-red-50 border border-red-200 rounded-xl px-3 py-2.5">
+            <AlertCircle className="w-3.5 h-3.5 text-red-500 shrink-0" />
+            <p className="text-sm text-red-700">{reportLinksError}</p>
+          </div>
+        )}
+
+        {!reportLinksLoading && reportLinks && (
+          <div className="space-y-2">
+            {reportLinks.map(link => (
+              <div key={link.studentId} className="flex items-center gap-2 rounded-xl px-3 py-2.5" style={{ background: 'rgba(15,23,42,0.03)' }}>
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-bold text-ink truncate">{link.studentName}</p>
+                  <p className="text-[11px] text-ink-soft">Roll No. {link.rollNumber}</p>
+                </div>
+                <button
+                  onClick={() => copyReportLink(link)}
+                  title="Copy link"
+                  className="p-2 rounded-lg text-ink-soft hover:text-ink hover:bg-black/[0.04] transition-colors shrink-0"
+                >
+                  {copiedLinkId === link.studentId ? <Check className="w-4 h-4 text-emerald-600" /> : <Copy className="w-4 h-4" />}
+                </button>
+                <a
+                  href={`https://wa.me/?text=${encodeURIComponent(`${link.studentName}'s progress report: ${link.url}`)}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-xs font-bold px-3 py-2 rounded-xl shrink-0"
+                  style={{ background: '#25D366', color: '#fff' }}
+                >
+                  WhatsApp
+                </a>
+              </div>
+            ))}
+            {reportLinks.length === 0 && (
+              <p className="text-sm text-ink-soft text-center py-6">No active students in this class.</p>
+            )}
+          </div>
+        )}
+      </Modal>
     </div>
   )
 }

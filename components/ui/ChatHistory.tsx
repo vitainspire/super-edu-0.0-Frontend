@@ -1,0 +1,188 @@
+'use client'
+import { useState } from 'react'
+import ConfirmCard from '@/components/ui/ConfirmCard'
+
+export interface TraceStep {
+  tool: string
+  args: Record<string, unknown>
+  ok: boolean
+}
+
+export interface PendingConfirmation {
+  tool: string
+  args: Record<string, unknown>
+  label: string
+}
+
+export interface ChatMessage {
+  id: string | null
+  sender: 'admin' | 'headmaster_agent' | 'admin_agent' | 'teacher' | 'teacher_agent'
+  content: string
+  trace: TraceStep[]
+  pendingConfirmation: PendingConfirmation | null
+  confirmedAt: string | null
+  createdAt: string | null
+}
+
+// This component is portal-agnostic (no useAdmin()/useApp() coupling) and is
+// reused as-is on both the admin portal (admin/headmaster_agent/admin_agent)
+// and the teacher portal (teacher/teacher_agent). Agent personas get their
+// own color so a reader can tell at a glance who's talking without reading
+// the label every time. --admin-accent and --forest resolve to the exact
+// same navy (see globals.css), so Admin Agent instead reuses the "green" ink
+// already established in the admin portal's own ADMIN_PALETTE
+// (lib/admin-theme.ts) for tone-coding — a real second color already in
+// this app's vocabulary, not a new one invented here.
+export const SENDER_META: Record<ChatMessage['sender'], { label: string; color: string; initial: string }> = {
+  admin: { label: 'You', color: 'var(--ink)', initial: 'Y' },
+  headmaster_agent: { label: 'Headmaster Agent', color: 'var(--admin-accent)', initial: 'H' },
+  admin_agent: { label: 'Admin Agent', color: '#234A1D', initial: 'A' },
+  teacher: { label: 'You', color: 'var(--ink)', initial: 'Y' },
+  teacher_agent: { label: 'My Agent', color: 'var(--forest)', initial: 'M' },
+}
+
+function summarizeArgs(args: Record<string, unknown>): string {
+  const entries = Object.entries(args).filter(([k]) => k !== 'tool')
+  if (!entries.length) return ''
+  return entries.map(([k, v]) => `${k}=${String(v)}`).join(', ')
+}
+
+function formatTime(iso: string | null): string {
+  if (!iso) return ''
+  try {
+    return new Date(iso).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+  } catch {
+    return ''
+  }
+}
+
+function Avatar({ sender }: { sender: ChatMessage['sender'] }) {
+  const meta = SENDER_META[sender]
+  return (
+    <div
+      className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 text-[12px] font-black text-white"
+      style={{ background: meta.color }}
+    >
+      {meta.initial}
+    </div>
+  )
+}
+
+// WhatsApp-style bubbles: your own messages right-aligned in a tinted
+// bubble, everyone else's left-aligned in a plain one, both with a slightly
+// squared-off corner on the "pointing" side instead of a literal tail graphic
+// (simpler to render, same read at a glance). `showSenderLabel` is on for
+// Group Chat (more than one possible sender replying) and off for a 1:1
+// Individual Messages thread, where who you're talking to is already the
+// whole point of being in that thread.
+export default function ChatHistory({
+  messages,
+  onConfirm,
+  onCancelConfirm,
+  confirmingId,
+  showSenderLabel = true,
+}: {
+  messages: ChatMessage[]
+  onConfirm: (message: ChatMessage) => void
+  onCancelConfirm: (message: ChatMessage) => void
+  confirmingId: string | null
+  showSenderLabel?: boolean
+}) {
+  const [expandedTraces, setExpandedTraces] = useState<Record<string, boolean>>({})
+
+  if (!messages.length) {
+    return (
+      <div className="h-full flex items-center justify-center">
+        <p className="text-sm text-ink-faint">No messages yet — say something below.</p>
+      </div>
+    )
+  }
+
+  return (
+    <div className="flex flex-col gap-3">
+      {messages.map((m, i) => {
+        const meta = SENDER_META[m.sender]
+        const key = m.id ?? `${m.sender}-${i}`
+        const showConfirm = m.pendingConfirmation && !m.confirmedAt
+        const outgoing = m.sender === 'admin' || m.sender === 'teacher'
+        const traceExpanded = !!expandedTraces[key]
+        const traceColor = outgoing ? 'rgba(255,255,255,0.75)' : 'var(--ink-faint)'
+
+        return (
+          <div key={key} className={`flex items-end gap-2 ${outgoing ? 'flex-row-reverse' : 'flex-row'}`}>
+            {!outgoing && <Avatar sender={m.sender} />}
+
+            <div className="flex flex-col max-w-[78%]" style={{ alignItems: outgoing ? 'flex-end' : 'flex-start' }}>
+              {showSenderLabel && !outgoing && (
+                <span className="text-[10px] font-black uppercase tracking-wide mb-0.5 ml-1" style={{ color: meta.color }}>
+                  {meta.label}
+                </span>
+              )}
+
+              <div
+                className="px-3.5 py-2.5 text-sm leading-snug whitespace-pre-wrap"
+                style={{
+                  background: outgoing ? 'var(--admin-accent)' : 'white',
+                  color: outgoing ? 'white' : 'var(--ink)',
+                  border: outgoing ? 'none' : '1px solid var(--admin-border)',
+                  borderRadius: 16,
+                  borderBottomRightRadius: outgoing ? 4 : 16,
+                  borderBottomLeftRadius: outgoing ? 16 : 4,
+                  boxShadow: 'var(--admin-shadow-sm)',
+                }}
+              >
+                {m.content}
+
+                {m.trace.length > 0 && (
+                  <div
+                    className="mt-2 pt-2"
+                    style={{ borderTop: `1px solid ${outgoing ? 'rgba(255,255,255,0.25)' : 'rgba(15,23,42,0.08)'}` }}
+                  >
+                    <button
+                      type="button"
+                      onClick={() => setExpandedTraces(prev => ({ ...prev, [key]: !prev[key] }))}
+                      className="text-[10.5px] font-mono flex items-center gap-1"
+                      style={{ color: traceColor }}
+                    >
+                      <span>{traceExpanded ? '▾' : '▸'}</span>
+                      🔧 {m.trace.length} tool call{m.trace.length > 1 ? 's' : ''}
+                    </button>
+                    {traceExpanded && (
+                      <div className="space-y-0.5 mt-1">
+                        {m.trace.map((step, si) => (
+                          <p key={si} className="text-[10.5px] font-mono" style={{ color: traceColor }}>
+                            🔧 {step.tool}
+                            {summarizeArgs(step.args) ? `(${summarizeArgs(step.args)})` : ''}
+                            {step.ok ? '' : ' — error'}
+                          </p>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {formatTime(m.createdAt) && (
+                <span className="text-[10px] text-ink-faint mt-0.5 mx-1">{formatTime(m.createdAt)}</span>
+              )}
+
+              {showConfirm && m.pendingConfirmation && (
+                <div className="mt-1 w-full">
+                  <ConfirmCard
+                    label={m.pendingConfirmation.label}
+                    busy={confirmingId === key}
+                    onConfirm={() => onConfirm(m)}
+                    onCancel={() => onCancelConfirm(m)}
+                  />
+                </div>
+              )}
+              {m.confirmedAt && (
+                <p className="text-[12px] font-semibold mt-1 mx-1" style={{ color: '#234A1D' }}>✅ Done</p>
+              )}
+            </div>
+          </div>
+        )
+      })}
+    </div>
+  )
+}

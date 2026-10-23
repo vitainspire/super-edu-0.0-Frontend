@@ -6,7 +6,28 @@ import {
   Target, AlertTriangle, Footprints, Translate,
   type LucideIcon,
 } from '@/components/ui/icons'
-import type { SmartLesson, ExpandableBullet } from '@/lib/types'
+import type { SmartLesson, ExpandableBullet, LessonImage } from '@/lib/types'
+
+// Every image relevant to this section, across all its bullets — zero, one,
+// or several, de-duplicated by url. A section can genuinely have more than
+// one real textbook image attached (see app/lib/prep_pipeline_bridge.py's
+// attach_figures), and the SAME image can be relevant to more than one
+// section, so this is computed per section rather than assumed to be "the
+// first bullet with an image, whole lesson."
+export function sectionImages(sec: Pick<Section, 'bullets'>): LessonImage[] {
+  const out: LessonImage[] = []
+  const seen = new Set<string>()
+  for (const b of sec.bullets) {
+    const list = b.images && b.images.length ? b.images : (b.image ? [b.image] : [])
+    for (const im of list) {
+      if (im?.url && !seen.has(im.url)) {
+        seen.add(im.url)
+        out.push(im)
+      }
+    }
+  }
+  return out
+}
 
 interface PrepSheetViewProps {
   lesson: SmartLesson
@@ -243,19 +264,23 @@ export default function PrepSheetView({ lesson, topic, subtopic, fromCache, head
                   ))}
                 </div>
 
-                {/* Section board sketch, if one was generated — shown right in the
-                    overview so the visual isn't buried behind a tap. */}
+                {/* Section images, if any were found/generated — shown right in the
+                    overview so the visual isn't buried behind a tap. Every
+                    relevant image renders, not just the first. */}
                 {(() => {
-                  const img = sec.bullets.find(b => b.image?.url)?.image?.url
-                  return img ? (
-                    <div style={{ padding: '0 14px 12px' }}>
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        src={img}
-                        alt={`${sec.title} illustration`}
-                        style={{ width: '100%', maxWidth: 260, borderRadius: 10, border: '1.5px solid var(--card-border)', background: '#fff', display: 'block' }}
-                      />
-                      <p style={{ fontSize: 9.5, color: 'var(--ink-faint)', marginTop: 3, fontWeight: 600 }}>Show this to explain the example</p>
+                  const images = sectionImages(sec)
+                  return images.length ? (
+                    <div style={{ padding: '0 14px 12px', display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                      {images.map((img, i) => (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          key={img.url + i}
+                          src={img.url}
+                          alt={`${sec.title} illustration ${i + 1}`}
+                          style={{ width: images.length > 1 ? 140 : '100%', maxWidth: 260, borderRadius: 10, border: '1.5px solid var(--card-border)', background: '#fff', display: 'block' }}
+                        />
+                      ))}
+                      <p style={{ width: '100%', fontSize: 9.5, color: 'var(--ink-faint)', marginTop: 3, fontWeight: 600 }}>Show this to explain the example</p>
                     </div>
                   ) : null
                 })()}
@@ -383,17 +408,25 @@ export default function PrepSheetView({ lesson, topic, subtopic, fromCache, head
               </div>
             )}
 
-            {current.image?.url && (
-              <div>
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={current.image.url}
-                  alt="Lesson illustration"
-                  style={{ width: '100%', maxWidth: 300, borderRadius: 10, border: BORDER, background: '#fff', display: 'block' }}
-                />
-                <p style={{ fontSize: 10, color: 'var(--ink-faint)', marginTop: 4, fontWeight: 600 }}>Show this to explain the example</p>
-              </div>
-            )}
+            {(() => {
+              const images = current.images && current.images.length
+                ? current.images
+                : (current.image ? [current.image] : [])
+              return images.length ? (
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                  {images.map((img, i) => (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      key={img.url + i}
+                      src={img.url}
+                      alt={`Lesson illustration ${i + 1}`}
+                      style={{ width: images.length > 1 ? 160 : '100%', maxWidth: 300, borderRadius: 10, border: BORDER, background: '#fff', display: 'block' }}
+                    />
+                  ))}
+                  <p style={{ width: '100%', fontSize: 10, color: 'var(--ink-faint)', marginTop: 4, fontWeight: 600 }}>Show this to explain the example</p>
+                </div>
+              ) : null
+            })()}
 
             {/* This section's Watch For — pinned to the last slide of the section */}
             {activeSection.watch?.text && safeIndex === deckBullets.length - 1 && (

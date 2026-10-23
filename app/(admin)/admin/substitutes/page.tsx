@@ -111,7 +111,7 @@ export default function SubstitutesPage() {
     backendFetch(`/api/admin/schools/${school.id}/substitutes?date=${d}`)
       .then(async r => {
         const data = await r.json()
-        if (!r.ok) { setError(data.error ?? 'Failed to load.'); return }
+        if (!r.ok) { setError(data.error ?? data.detail ?? 'Failed to load.'); return }
         setError('')
         setTeachers(data.teachers ?? [])
         setAvailability(data.availability ?? [])
@@ -159,7 +159,7 @@ export default function SubstitutesPage() {
         body: JSON.stringify({ date, teacherId, reason }),
       })
       const data = await res.json()
-      if (!res.ok) { setError(data.error ?? 'Failed to update status.'); return }
+      if (!res.ok) { setError(data.error ?? data.detail ?? 'Failed to update status.'); return }
       setError('')
       setAvailability(data.availability ?? [])
       setSubstitutions(data.substitutions ?? [])
@@ -180,7 +180,7 @@ export default function SubstitutesPage() {
         body: JSON.stringify({ substitutionId, substituteTeacherId, date }),
       })
       const data = await res.json()
-      if (!res.ok) { setError(data.error ?? 'Failed to reassign.'); return }
+      if (!res.ok) { setError(data.error ?? data.detail ?? 'Failed to reassign.'); return }
       setError('')
       setSubstitutions(data.substitutions ?? [])
     } catch {

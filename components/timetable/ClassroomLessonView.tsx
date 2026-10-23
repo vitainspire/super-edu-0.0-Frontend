@@ -2,7 +2,7 @@
 import { useState } from 'react'
 import { ArrowLeft, ArrowRight, Translate } from '@/components/ui/icons'
 import type { SmartLesson } from '@/lib/types'
-import { ACCENT, BORDER, buildSections, WatchStrip } from './PrepSheetView'
+import { ACCENT, BORDER, buildSections, sectionImages, WatchStrip } from './PrepSheetView'
 
 interface ClassroomLessonViewProps {
   lesson: SmartLesson
@@ -33,7 +33,7 @@ export default function ClassroomLessonView({ lesson, topic, subtopic }: Classro
   if (!section) return null
 
   const Icon = section.Icon
-  const image = section.bullets.find(b => b.image?.url)?.image?.url
+  const images = sectionImages(section)
   const isLast = index === sections.length - 1
 
   return (
@@ -95,14 +95,17 @@ export default function ClassroomLessonView({ lesson, topic, subtopic }: Classro
             )}
           </div>
 
-          {image && (
-            <div style={{ padding: '14px 16px 0' }}>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={image}
-                alt={`${section.title} illustration`}
-                style={{ width: '100%', maxWidth: 320, margin: '0 auto', display: 'block', borderRadius: 12, border: '1.5px solid var(--card-border)', background: '#fff' }}
-              />
+          {images.length > 0 && (
+            <div style={{ padding: '14px 16px 0', display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: 10 }}>
+              {images.map((img, i) => (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  key={img.url + i}
+                  src={img.url}
+                  alt={`${section.title} illustration ${i + 1}`}
+                  style={{ width: images.length > 1 ? 180 : '100%', maxWidth: 320, display: 'block', borderRadius: 12, border: '1.5px solid var(--card-border)', background: '#fff' }}
+                />
+              ))}
             </div>
           )}
 

@@ -425,6 +425,9 @@ export const AcademicEventSchema = z.object({
   startDate:          dateStr,
   endDate:            dateStr,
   description:        anyStr(LEN.text).optional(),
+  // Which grades an "exam" category event applies to. Omitted/undefined
+  // means every grade.
+  grades:             z.array(z.string()).optional(),
 }).refine(d => d.endDate >= d.startDate, { message: 'endDate must be on or after startDate', path: ['endDate'] })
 
 export const SeedHolidaysSchema = z.object({

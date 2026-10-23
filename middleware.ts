@@ -167,7 +167,14 @@ export async function middleware(req: NextRequest) {
     if (pathname.startsWith('/api/')) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
-    return NextResponse.redirect(new URL('/teacher/login', req.url))
+    // Route to the login page for whichever portal was actually being
+    // visited — this used to always redirect to /teacher/login, which sent
+    // an admin (or scanner) session that merely hit a slow/failed Supabase
+    // call out to the wrong portal's login page entirely.
+    const loginPath = pathname.startsWith('/admin') ? '/admin/login'
+      : pathname.startsWith('/scanner') ? '/scanner/login'
+      : '/teacher/login'
+    return NextResponse.redirect(new URL(loginPath, req.url))
   }
 
   // Scanner staff cannot access teacher or admin routes

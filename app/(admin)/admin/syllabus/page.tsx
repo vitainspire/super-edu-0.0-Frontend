@@ -307,7 +307,7 @@ export default function AdminSyllabusPage() {
       method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text: importText }),
     })
     const data = await res.json()
-    if (!res.ok || data.error) throw new Error(data.error ?? 'Extraction failed')
+    if (!res.ok || data.error) throw new Error(data.error ?? data.detail ?? 'Extraction failed')
     if (!data.topics?.length) throw new Error('No topics found in the input.')
     setExtracted(data.topics)
   }
@@ -530,7 +530,7 @@ export default function AdminSyllabusPage() {
         method: 'DELETE', body: JSON.stringify({ grade: targetGrade, subject: targetSubject }),
       })
       const data = await res.json().catch(() => ({}))
-      if (!res.ok || data.error) throw new Error(data.error ?? 'Failed to delete syllabus')
+      if (!res.ok || data.error) throw new Error(data.error ?? data.detail ?? 'Failed to delete syllabus')
 
       // Only clear the editor's list when it was showing what we just deleted —
       // the browse view can wipe a subject the editor isn't pointed at.
@@ -581,7 +581,7 @@ export default function AdminSyllabusPage() {
         }),
       })
       const data = await res.json()
-      if (!res.ok || data.error) throw new Error(data.error ?? 'Failed to generate estimate')
+      if (!res.ok || data.error) throw new Error(data.error ?? data.detail ?? 'Failed to generate estimate')
 
       for (const entry of data.plan ?? []) {
         const t = topics.find(t => t.id === entry.id)

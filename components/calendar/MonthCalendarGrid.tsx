@@ -126,15 +126,21 @@ export default function MonthCalendarGrid({
               {shown.map(ev => {
                 const meta = CATEGORY_META[ev.category]
                 const isDraft = showDraftBadge && !ev.published
+                // Only "exam" category events can be grade-scoped — undefined/empty
+                // means every grade, so there's nothing worth printing on the tile.
+                const gradeSuffix = ev.category === 'exam' && ev.grades && ev.grades.length > 0
+                  ? ` · G${ev.grades.join(',')}`
+                  : ''
+                const fullLabel = `${ev.title}${gradeSuffix}`
                 return (
                   <span
                     key={ev.id}
                     onClick={(e) => { e.stopPropagation(); onEventClick?.(ev) }}
                     className="text-[9px] font-bold px-1 py-0.5 rounded truncate leading-tight"
                     style={{ background: 'rgba(255,255,255,0.55)', color: meta.color, opacity: isDraft ? 0.55 : 1 }}
-                    title={isDraft ? `${ev.title} (draft — not published)` : ev.title}
+                    title={isDraft ? `${fullLabel} (draft — not published)` : fullLabel}
                   >
-                    {isDraft && '· '}{ev.title}
+                    {isDraft && '· '}{fullLabel}
                   </span>
                 )
               })}

@@ -3,7 +3,7 @@ import { useMemo } from 'react'
 import { usePathname } from 'next/navigation'
 import {
   Home, LayoutGrid, GraduationCap, LogOut, Settings2, ClipboardList,
-  CalendarDays, Megaphone, UserRound, HelpCircle,
+  CalendarDays, Megaphone, UserRound, HelpCircle, Sparkles,
 } from '@/components/ui/icons'
 import clsx from 'clsx'
 import { useApp } from '@/lib/context'
@@ -14,6 +14,7 @@ import { useRouter } from 'next/navigation'
 // permanent slot in a nav that's meant to stay short.
 const NAV_ITEMS = [
   { href: '/home',          label: 'Home',          Icon: Home },
+  { href: '/agent',         label: 'My Agent',      Icon: Sparkles },
   { href: '/classes',       label: 'Classes',       Icon: LayoutGrid },
   { href: '/timetable',     label: 'Timetable',     Icon: CalendarDays },
   { href: '/tests',         label: 'Tests',         Icon: ClipboardList },

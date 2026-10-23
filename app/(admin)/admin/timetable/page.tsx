@@ -179,7 +179,7 @@ export default function TimetablePage() {
         body: JSON.stringify({ sixDayWeek: genSixDayWeek }),
       })
       const data = await res.json()
-      if (!res.ok) { setGenerateError(data.error ?? 'Failed to generate timetable'); return }
+      if (!res.ok) { setGenerateError(data.error ?? data.detail ?? 'Failed to generate timetable'); return }
       setGenerateResult(data)
       load()
     } catch {
@@ -218,7 +218,7 @@ export default function TimetablePage() {
         body: JSON.stringify({ grade: selectedGrade }),
       })
       const data = await res.json()
-      if (!res.ok) { setShuffleError(data.error ?? 'Failed to shuffle'); return }
+      if (!res.ok) { setShuffleError(data.error ?? data.detail ?? 'Failed to shuffle'); return }
       const sections = data.sections ?? []
       setShuffleResult(sections)
       setActiveShuffleTab(sections[0]?.classId ?? null)

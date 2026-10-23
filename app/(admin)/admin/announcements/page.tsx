@@ -87,7 +87,7 @@ export default function AnnouncementsPage() {
     })
     const data = await res.json()
     setCreating(false)
-    if (!res.ok) { setCreateError(data.error ?? 'Failed to post announcement.'); return }
+    if (!res.ok) { setCreateError(data.error ?? data.detail ?? 'Failed to post announcement.'); return }
     setShowModal(false)
     setForm(EMPTY_FORM)
     load()

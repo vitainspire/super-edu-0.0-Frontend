@@ -75,7 +75,7 @@ export default function TeachersPage() {
     })
     const data = await res.json()
     setCreating(false)
-    if (!res.ok) { setCreateError(data.error ?? 'Failed to create teacher.'); return }
+    if (!res.ok) { setCreateError(data.error ?? data.detail ?? 'Failed to create teacher.'); return }
     setShowModal(false)
     setForm(EMPTY_FORM)
     load()

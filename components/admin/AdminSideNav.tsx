@@ -1,7 +1,7 @@
 'use client'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LayoutDashboard, Users, BookOpen, Library, CalendarDays, CalendarRange, LogOut, GraduationCap, ScanLine, Megaphone, Repeat, ClipboardList, BookMarked, School } from 'lucide-react'
+import { LayoutDashboard, Users, BookOpen, Library, CalendarDays, CalendarRange, LogOut, GraduationCap, ScanLine, Megaphone, Repeat, ClipboardList, BookMarked, School, MessagesSquare } from 'lucide-react'
 import clsx from 'clsx'
 import { useAdmin } from '@/lib/admin-context'
 import AdminNotificationBell from '@/components/admin/AdminNotificationBell'
@@ -29,9 +29,16 @@ const ACCENT = 'var(--admin-accent)'
 //   Textbooks          ingest and review; grounds prep material once published
 //   Scanners           optional, for answer-sheet scanning staff
 //
-// Then the pages used once the school is running.
+// Day-to-day pages (used continuously, once the school is running) come
+// right after Dashboard; one-time setup pages (built once, then rarely
+// revisited) follow below them.
 const NAV: { href: string; label: string; icon: typeof Users; group?: string }[] = [
   { href: '/admin/dashboard',         label: 'Dashboard',         icon: LayoutDashboard },
+
+  { href: '/admin/agents',            label: 'Agents',             icon: MessagesSquare, group: 'Day to day' },
+  { href: '/admin/substitutes',       label: 'Substitutes',       icon: Repeat },
+  { href: '/admin/prep-materials',    label: 'Prep Materials',    icon: ClipboardList },
+  { href: '/admin/announcements',     label: 'Announcements',     icon: Megaphone },
 
   { href: '/admin/academic-calendar', label: 'Academic Calendar', icon: CalendarRange, group: 'Set up' },
   { href: '/admin/teachers',          label: 'Teachers',          icon: Users },
@@ -40,10 +47,6 @@ const NAV: { href: string; label: string; icon: typeof Users; group?: string }[]
   { href: '/admin/syllabus',          label: 'Syllabus',          icon: Library },
   { href: '/admin/textbooks',         label: 'Textbooks',         icon: BookMarked },
   { href: '/admin/scanners',          label: 'Scanners',          icon: ScanLine },
-
-  { href: '/admin/substitutes',       label: 'Substitutes',       icon: Repeat, group: 'Day to day' },
-  { href: '/admin/prep-materials',    label: 'Prep Materials',    icon: ClipboardList },
-  { href: '/admin/announcements',     label: 'Announcements',     icon: Megaphone },
 ]
 
 export default function AdminSideNav() {

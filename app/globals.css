@@ -9,28 +9,33 @@
   --header-height: 64px;
   --radius-card: 12px;
   --radius-btn: 10px;
-  /* Soft-UI theme — depth comes from subtle shadows, borders are hairline */
-  --shadow-card: 0 1px 2px 0 rgba(15,23,42,0.04), 0 1px 3px 0 rgba(15,23,42,0.06);
-  --shadow-card-hover: 0 4px 6px -1px rgba(15,23,42,0.06), 0 2px 4px -2px rgba(15,23,42,0.05);
-  --shadow-btn: 0 1px 2px 0 rgba(15,23,42,0.05);
-  --primary: #2952E3;
-  --primary-hover: #4569E8;
-  --primary-light: #E5EAFB;
+  /* Soft-UI theme — re-skinned to match the admin portal's stronger,
+     more-defined shadow (was a barely-there hairline shadow before). */
+  --shadow-card: 0 2px 4px rgba(0,0,0,0.08);
+  --shadow-card-hover: 0 4px 8px rgba(0,0,0,0.12);
+  --shadow-btn: 0 2px 4px rgba(0,0,0,0.08);
+  --primary: #162D7C;
+  --primary-hover: #0F2160;
+  --primary-light: #E8ECFB;
   --navy: #162D7C;
 
-  /* ── Teacher dashboard design system (Linear/Vercel/Stripe-style SaaS) ── */
-  --paper-bg: #F4F6F9;    /* surface-bg — main dashboard background */
-  --paper-soft: #F4F6F9;  /* card surface tint */
+  /* ── Teacher dashboard design system ──
+     Re-skinned to match the admin portal's palette (same values as
+     --admin-accent/--admin-border/--admin-ink below) — requested as a
+     colors-and-design-only change, so the teacher portal now visually reads
+     as one family with admin rather than its own distinct blue brand. */
+  --paper-bg: #F3F4F6;    /* surface-bg — main dashboard background, == --admin-bg */
+  --paper-soft: #F3F4F6;  /* card surface tint */
   --card: #FFFFFF;        /* surface-card */
-  --card-border: #E2E8F0;             /* border-light — slate-200 hairline */
-  --card-border-soft: rgba(226, 232, 240, 0.7);
-  --ink: #0F172A;         /* slate-900 — headings, primary text */
-  --ink-soft: #64748B;    /* slate-500 — secondary text */
-  --forest: #2952E3;      /* == --primary: sidebar + primary action buttons */
-  --forest-soft: #4569E8; /* == --primary-hover */
-  --forest-bright: #E5EAFB; /* == --primary-light */
-  --shadow-paper: var(--shadow-card);
-  --shadow-paper-sm: 0 1px 2px 0 rgba(15,23,42,0.04);
+  --card-border: #E5E7EB;             /* == --admin-border — visible structural edge, not a barely-there hairline */
+  --card-border-soft: rgba(229, 231, 235, 0.7);
+  --ink: #111827;         /* == --admin-ink */
+  --ink-soft: #4B5563;    /* == --admin-ink-soft */
+  --forest: #162D7C;      /* == --admin-accent: sidebar + primary action buttons */
+  --forest-soft: #0F2160; /* == admin-btn-primary's hover navy */
+  --forest-bright: #E8ECFB; /* == --admin-accent-soft */
+  --shadow-paper: 0 2px 4px rgba(0,0,0,0.08);   /* == --admin-shadow-sm */
+  --shadow-paper-sm: 0 2px 4px rgba(0,0,0,0.08);
   /* Admin portal's main color is black — it reuses --ink/--ink-soft directly
      (see components/admin/AdminSideNav.tsx) rather than a dedicated token.
      Its component-level color-coding (grades/subjects/avatars) is a

@@ -633,13 +633,24 @@ export interface Worksheet {
 // a worked example, or the board sketch — lives behind the "+" (detail/image),
 // never in the always-visible line. A bullet shows a "+" iff it has a detail
 // or an image.
+export interface LessonImage {
+  url: string
+  caption?: string
+  aiGenerated?: boolean   // a board sketch, not a real textbook scan
+}
+
 export interface ExpandableBullet {
   text: string                     // brief but explanatory — readable on its own
   detail?: string                  // the deeper explanation, revealed by the "+"; omit if it'd just be padding
   detail_te?: string                // Telugu rendering of `detail` (generation/language_layer.py) — ALWAYS an
                                      // unreviewed draft; no native-speaker review pass exists yet, so any UI
                                      // showing this must say so alongside it, not present it as final copy
-  image?: { url: string } | null   // optional board sketch, shown inside the "+" expansion
+  images?: LessonImage[] | null    // every real/AI image relevant to this bullet's section — zero, one, or
+                                     // several; a section with no match for it is left empty on purpose, not
+                                     // forced to show something irrelevant
+  image?: { url: string; caption?: string; aiGenerated?: boolean } | null
+                                     // LEGACY singular shape — superseded by `images`, kept so a lesson
+                                     // persisted before the multi-image schema still renders its one picture
 }
 
 export interface PreviousTopicRefresher {
@@ -972,6 +983,9 @@ export interface AcademicEvent {
   startDate: string   // YYYY-MM-DD
   endDate: string      // YYYY-MM-DD
   description?: string
+  // Only meaningful when category === 'exam' — which grades this exam
+  // applies to. Undefined/omitted means every grade.
+  grades?: string[]
   createdAt: string
 }
 

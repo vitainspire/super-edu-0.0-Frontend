@@ -12,11 +12,10 @@ interface ModalProps {
   // strip of dashboard around the edges is just a distraction.
   fullscreen?: boolean
   children: React.ReactNode
-  // 'admin' opts into the admin portal's soft-UI (white panel, hairline
-  // border, soft shadow) instead of the bold 2px outline + warm paper
-  // background every other portal still uses by default — every existing
-  // call site (teacher portal included) is unaffected since this defaults
-  // to 'default'.
+  // 'admin' keeps the admin portal's white panel background; 'default'
+  // tints the panel to the calling portal's own canvas color instead. Border/
+  // shadow/ink are shared tokens now, so the two variants read as the same
+  // family either way — this only controls that one background difference.
   variant?: 'default' | 'admin'
 }
 
@@ -48,17 +47,15 @@ export default function Modal({ open, onClose, title, fullscreen = false, childr
           : 'relative w-full max-w-lg rounded-t-3xl sm:rounded-3xl max-h-[90dvh] overflow-y-auto'}
         style={{
           background: panelBg,
-          border: fullscreen ? 'none' : variant === 'admin'
-            ? '1px solid var(--admin-border)'
-            : '2px solid var(--card-border)',
-          boxShadow: !fullscreen && variant === 'admin' ? 'var(--admin-shadow-md)' : undefined,
+          border: fullscreen ? 'none' : '1px solid var(--card-border)',
+          boxShadow: !fullscreen ? 'var(--shadow-card-hover)' : undefined,
         }}
       >
         <div
           className={`sticky top-0 z-10 ${fullscreen ? '' : 'rounded-t-3xl'}`}
           style={{
             background: panelBg,
-            borderBottom: variant === 'admin' ? '1px solid var(--admin-border)' : '2px solid var(--card-border)',
+            borderBottom: '1px solid var(--card-border)',
             paddingTop: fullscreen ? 'env(safe-area-inset-top, 0px)' : undefined,
           }}
         >
@@ -69,9 +66,7 @@ export default function Modal({ open, onClose, title, fullscreen = false, childr
             <button
               onClick={onClose}
               className="w-10 h-10 flex items-center justify-center rounded-full transition-colors bg-white active:scale-90"
-              style={variant === 'admin'
-                ? { border: '1px solid var(--admin-border)', boxShadow: 'var(--admin-shadow-sm)' }
-                : { border: '1.75px solid var(--card-border)' }}
+              style={{ border: '1px solid var(--card-border)', boxShadow: 'var(--shadow-card)' }}
             >
               <X size={18} className="text-ink" />
             </button>

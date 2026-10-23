@@ -68,7 +68,7 @@ export default function ScannersPage() {
     })
     const data = await res.json()
     setCreating(false)
-    if (!res.ok) { setCreateError(data.error ?? 'Failed to create scanner account.'); return }
+    if (!res.ok) { setCreateError(data.error ?? data.detail ?? 'Failed to create scanner account.'); return }
     setShowModal(false)
     setForm(EMPTY_FORM)
     load()

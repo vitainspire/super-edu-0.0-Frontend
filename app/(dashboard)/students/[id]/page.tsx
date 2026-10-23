@@ -19,6 +19,7 @@ import { getMasteryColor, getMasteryLabel } from '@/lib/logic/mastery'
 import type { RecoveryAttempt, InterventionNote } from '@/lib/types'
 import * as sbq from '@/lib/supabase-queries'
 import { aiKey, getAiCache, setAiCache, TTL } from '@/lib/ai-cache'
+import { ADMIN_SUBJECT_COLORS } from '@/lib/admin-theme'
 
 interface StudentReport {
   summary: string
@@ -62,8 +63,21 @@ export default function StudentDetailPage() {
     totalTests: number
     recentMarks: Array<{ topic: string; score: number; totalMarks: number; date: string }>
   }
+  interface ExamScheduleEntry {
+    examTitle: string
+    startDate: string
+    endDate: string
+    subjects: Array<{
+      subjectName: string
+      teacherName: string
+      status: 'scheduled' | 'completed'
+      score?: number
+      totalMarks?: number
+    }>
+  }
   const [subjectOverview, setSubjectOverview] = useState<SubjectOverview[] | null>(null)
   const [subjectOverviewLoading, setSubjectOverviewLoading] = useState(false)
+  const [examSchedule, setExamSchedule] = useState<ExamScheduleEntry[]>([])
   const [recoveryAttempts, setRecoveryAttempts] = useState<RecoveryAttempt[]>([])
   const [interventionNotes, setInterventionNotes] = useState<InterventionNote[]>([])
   const [noteText, setNoteText] = useState('')
@@ -85,6 +99,14 @@ export default function StudentDetailPage() {
   const [report, setReport]               = useState<StudentReport | null>(null)
   const [reportLoading, setReportLoading] = useState(false)
   const [reportError, setReportError]     = useState('')
+
+  // Parent-facing progress report: PDF export + shareable link
+  const reportCaptureRef = useRef<HTMLDivElement>(null)
+  const [pdfGenerating, setPdfGenerating] = useState(false)
+  const [shareLink, setShareLink] = useState<string | null>(null)
+  const [shareLinkLoading, setShareLinkLoading] = useState(false)
+  const [shareLinkError, setShareLinkError] = useState('')
+  const [linkCopied, setLinkCopied] = useState(false)
 
   const student = students.find((s) => s.id === id)
 
@@ -220,6 +242,49 @@ export default function StudentDetailPage() {
 
   // AI insight only fetched on demand — report tab is data-driven by default
 
+  const downloadReportPdf = async () => {
+    const el = reportCaptureRef.current
+    if (!el || !student || pdfGenerating) return
+    setPdfGenerating(true)
+    try {
+      const html2canvas = (await import('html2canvas')).default
+      const { jsPDF } = await import('jspdf')
+      const canvas = await html2canvas(el, { scale: 2, backgroundColor: '#ffffff', useCORS: true })
+      const imgData = canvas.toDataURL('image/jpeg', 0.92)
+      const pdf = new jsPDF({ unit: 'px', format: [canvas.width, canvas.height] })
+      pdf.addImage(imgData, 'JPEG', 0, 0, canvas.width, canvas.height)
+      pdf.save(`${student.name.replace(/\s+/g, '-')}-progress-report.pdf`)
+    } catch (err) {
+      console.error('[progress-report] pdf generation failed:', err)
+    } finally {
+      setPdfGenerating(false)
+    }
+  }
+
+  const generateShareLink = async () => {
+    if (shareLinkLoading) return
+    setShareLinkLoading(true)
+    setShareLinkError('')
+    try {
+      const res = await backendFetch(`/api/teacher/student/${id}/report-link`, { method: 'POST' })
+      if (!res.ok) throw new Error('Failed')
+      const data = await res.json()
+      setShareLink(data.url)
+    } catch {
+      setShareLinkError('Could not create link. Please try again.')
+    } finally {
+      setShareLinkLoading(false)
+    }
+  }
+
+  const copyShareLink = () => {
+    if (!shareLink) return
+    navigator.clipboard.writeText(shareLink).then(() => {
+      setLinkCopied(true)
+      setTimeout(() => setLinkCopied(false), 2000)
+    })
+  }
+
   if (!student) {
     return (
       <div className="paper-page flex items-center justify-center">
@@ -288,6 +353,7 @@ export default function StudentDetailPage() {
       if (!res.ok) return
       const data = await res.json()
       setSubjectOverview(data.subjects ?? [])
+      setExamSchedule(data.examSchedule ?? [])
     } catch { /* no-op */ }
     finally { setSubjectOverviewLoading(false) }
   }
@@ -302,14 +368,10 @@ export default function StudentDetailPage() {
     { key: 'report',       label: 'Progress Report' },
   ] as const
 
-  const avatarGradients = [
-    '#5B87AD',
-    '#5C8F52',
-    '#C46B54',
-    '#AD8A2C',
-    '#8069B0',
-    '#BD6D8B',
-  ]
+  // Same blue/orange/yellow/green set the admin portal uses for avatar
+  // initials (ADMIN_SUBJECT_COLORS) — red is excluded here since it's
+  // reserved below for the critical-warning override.
+  const avatarGradients = ADMIN_SUBJECT_COLORS.slice(0, 4).map(c => c.border)
   let hash = 0
   for (let i = 0; i < student.name.length; i++) hash = student.name.charCodeAt(i) + ((hash << 5) - hash)
   const avatarBg = warnings.some(w => w.level === 'critical')
@@ -364,7 +426,7 @@ export default function StudentDetailPage() {
               key={t.key}
               onClick={() => {
                 setActiveTab(t.key)
-                if (t.key === 'allsubjects') loadSubjectOverview()
+                if (t.key === 'allsubjects' || t.key === 'report') loadSubjectOverview()
               }}
               className={`shrink-0 px-4 py-3 text-xs font-bold border-b-2 transition-all whitespace-nowrap ${
                 activeTab === t.key
@@ -744,6 +806,53 @@ export default function StudentDetailPage() {
         {activeTab === 'report' && (
           <div className="space-y-3">
 
+            {/* ── Share with parent — excluded from the PDF capture below ── */}
+            <div className="paper-card px-4 py-4 space-y-2.5">
+              <p className="text-xs font-black text-ink-soft uppercase tracking-wide">Share with Parent</p>
+              <div className="flex gap-2">
+                <button
+                  onClick={downloadReportPdf}
+                  disabled={pdfGenerating}
+                  className="flex-1 flex items-center justify-center gap-1.5 rounded-xl py-2.5 text-xs font-bold text-white active:scale-95 transition-transform disabled:opacity-60"
+                  style={{ background: 'var(--ink)' }}
+                >
+                  <FileText size={13} />
+                  {pdfGenerating ? 'Preparing…' : 'Download PDF'}
+                </button>
+                <button
+                  onClick={generateShareLink}
+                  disabled={shareLinkLoading}
+                  className="flex-1 flex items-center justify-center gap-1.5 rounded-xl py-2.5 text-xs font-bold active:scale-95 transition-transform disabled:opacity-60"
+                  style={{ background: 'rgba(15,23,42,0.08)', color: 'var(--ink)' }}
+                >
+                  {shareLinkLoading ? 'Creating…' : shareLink ? 'New Link' : 'Share Link'}
+                </button>
+              </div>
+              {shareLink && (
+                <div className="space-y-1.5">
+                  <div className="flex items-center gap-2 rounded-xl px-3 py-2" style={{ background: 'rgba(15,23,42,0.05)' }}>
+                    <p className="text-xs text-ink-soft truncate flex-1">{shareLink}</p>
+                    <button onClick={copyShareLink} className="shrink-0">
+                      {linkCopied ? <Check size={14} className="text-emerald-500" /> : <Copy size={14} className="text-ink-soft" />}
+                    </button>
+                  </div>
+                  <a
+                    href={`https://wa.me/?text=${encodeURIComponent(`${student.name}'s progress report: ${shareLink}`)}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="block text-center text-xs font-bold rounded-xl py-2"
+                    style={{ background: '#25D366', color: '#fff' }}
+                  >
+                    Send on WhatsApp
+                  </a>
+                  <p className="text-[10px] text-ink-soft">Link works for 30 days, no login needed.</p>
+                </div>
+              )}
+              {shareLinkError && <p className="text-xs text-red-500">{shareLinkError}</p>}
+            </div>
+
+            <div ref={reportCaptureRef} className="space-y-3 bg-white p-3 rounded-xl">
+
             {/* ── Snapshot stats ── */}
             <div className="grid grid-cols-2 gap-3">
               {/* Attendance */}
@@ -760,10 +869,11 @@ export default function StudentDetailPage() {
               {/* Avg Score */}
               <div className="paper-card px-4 py-4 text-center">
                 <p className={`text-4xl font-black ${
+                  marks.length === 0 ? 'text-ink-faint' :
                   avgMastery >= 0.75 ? 'text-emerald-600' :
                   avgMastery >= 0.5 ? 'text-amber-600' : 'text-red-600'
                 }`}>
-                  {Math.round(avgMastery * 100)}%
+                  {marks.length === 0 ? '—' : `${Math.round(avgMastery * 100)}%`}
                 </p>
                 <p className="text-xs font-semibold text-ink-soft mt-1">Avg Score</p>
               </div>
@@ -781,6 +891,97 @@ export default function StudentDetailPage() {
                 </p>
                 <p className="text-xs font-semibold text-ink-soft mt-1">Overall</p>
               </div>
+            </div>
+
+            {/* ── Scheduled exams — admin calendar placeholders, auto-fill once a teacher's test matches ── */}
+            {examSchedule.length > 0 && (
+              <div className="paper-card px-4 py-4">
+                <div className="flex items-center gap-1.5 mb-3">
+                  <Calendar size={13} className="text-ink-soft" />
+                  <p className="text-xs font-black text-ink-soft uppercase tracking-wide">Scheduled Exams</p>
+                </div>
+                <div className="space-y-4">
+                  {examSchedule.map((exam, idx) => {
+                    const total = exam.subjects.length
+                    const doneCount = exam.subjects.filter(s => s.status === 'completed').length
+                    const allDone = total > 0 && doneCount === total
+                    const sameDay = exam.startDate === exam.endDate
+                    const fmt = (d: string) => new Date(d + 'T00:00:00').toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })
+                    return (
+                      <div key={idx} className={idx > 0 ? 'pt-4' : ''} style={idx > 0 ? { borderTop: '1px solid rgba(15,23,42,0.08)' } : undefined}>
+                        <div className="flex items-start justify-between gap-2 mb-2">
+                          <div className="min-w-0">
+                            <p className="text-sm font-bold text-ink truncate">{exam.examTitle}</p>
+                            <p className="text-[10px] text-ink-soft">{sameDay ? fmt(exam.startDate) : `${fmt(exam.startDate)} – ${fmt(exam.endDate)}`}</p>
+                          </div>
+                          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0 ${allDone ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`}>
+                            {doneCount}/{total} done
+                          </span>
+                        </div>
+                        <div className="space-y-1.5">
+                          {exam.subjects.map((s, sIdx) => (
+                            <div key={sIdx} className="flex items-center justify-between gap-2">
+                              <div className="flex items-center gap-1.5 min-w-0">
+                                <span
+                                  className="w-1.5 h-1.5 rounded-full shrink-0"
+                                  style={{ background: s.status === 'completed' ? '#10b981' : 'rgba(15,23,42,0.2)' }}
+                                />
+                                <p className="text-xs text-ink truncate">{s.subjectName}</p>
+                              </div>
+                              {s.status === 'completed' ? (
+                                <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 shrink-0">
+                                  {s.score}/{s.totalMarks}
+                                </span>
+                              ) : (
+                                <span className="text-xs font-semibold px-2 py-0.5 rounded-full shrink-0" style={{ background: 'rgba(15,23,42,0.06)', color: 'var(--ink-soft)' }}>
+                                  Scheduled
+                                </span>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* ── Whole-child: every subject, not just this class ── */}
+            <div className="paper-card px-4 py-4">
+              <div className="flex items-center gap-1.5 mb-3">
+                <LayoutGrid size={13} className="text-ink-soft" />
+                <p className="text-xs font-black text-ink-soft uppercase tracking-wide">All Subjects</p>
+              </div>
+              {subjectOverviewLoading && (
+                <div className="h-10 rounded-xl animate-pulse" style={{ background: 'rgba(15,23,42,0.06)' }} />
+              )}
+              {!subjectOverviewLoading && subjectOverview && subjectOverview.length > 0 && (
+                <div className="space-y-3">
+                  {subjectOverview.map((s, idx) => {
+                    const pct = s.avgScore
+                    const badgeColor = pct >= 0.75
+                      ? 'bg-emerald-100 text-emerald-700'
+                      : pct >= 0.5 ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-700'
+                    return (
+                      <div key={idx} className="flex items-center justify-between gap-2">
+                        <div className="min-w-0">
+                          <p className="text-sm font-semibold text-ink truncate">{s.subjectName}</p>
+                          <p className="text-[10px] text-ink-soft truncate">
+                            {s.teacherName} · {Math.round(s.attendanceRate * 100)}% attendance · {s.totalTests} test{s.totalTests === 1 ? '' : 's'}
+                          </p>
+                        </div>
+                        <span className={`text-xs font-bold px-2 py-0.5 rounded-full shrink-0 ${badgeColor}`}>
+                          {s.totalTests > 0 ? `${Math.round(pct * 100)}%` : '—'}
+                        </span>
+                      </div>
+                    )
+                  })}
+                </div>
+              )}
+              {!subjectOverviewLoading && subjectOverview && subjectOverview.length === 0 && (
+                <p className="text-sm text-ink-soft">No other subjects found yet</p>
+              )}
             </div>
 
             {/* ── Test results per topic ── */}
@@ -866,7 +1067,7 @@ export default function StudentDetailPage() {
               </div>
             )}
 
-            {/* ── AI insight — on demand, one line only ── */}
+            {/* ── AI insight — summary, strengths, growth, recommendation ── */}
             <div className="rounded-2xl px-4 py-3" style={{ background: '#E9E1F6', border: '1px solid rgba(49,33,92,0.15)' }}>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-1.5">
@@ -889,16 +1090,37 @@ export default function StudentDetailPage() {
                 <div className="mt-2 h-3 rounded-full animate-pulse w-3/4" style={{ background: '#D9CDF0' }} />
               )}
               {!reportLoading && report && (
-                <p className="text-sm text-ink mt-1.5 leading-snug">{report.summary}</p>
+                <div className="mt-1.5 space-y-2">
+                  <p className="text-sm text-ink leading-snug">{report.summary}</p>
+                  {report.strengths && (
+                    <div>
+                      <p className="text-[10px] font-black uppercase tracking-wide" style={{ color: '#5B4A85' }}>Strengths</p>
+                      <p className="text-sm text-ink leading-snug">{report.strengths}</p>
+                    </div>
+                  )}
+                  {report.growth && (
+                    <div>
+                      <p className="text-[10px] font-black uppercase tracking-wide" style={{ color: '#5B4A85' }}>Where to grow</p>
+                      <p className="text-sm text-ink leading-snug">{report.growth}</p>
+                    </div>
+                  )}
+                  {report.recommendation && (
+                    <div>
+                      <p className="text-[10px] font-black uppercase tracking-wide" style={{ color: '#5B4A85' }}>Recommendation</p>
+                      <p className="text-sm text-ink leading-snug">{report.recommendation}</p>
+                    </div>
+                  )}
+                </div>
               )}
               {!reportLoading && !report && (
-                <p className="text-xs mt-1" style={{ color: '#8C7BAE' }}>Tap Generate for a one-line AI summary</p>
+                <p className="text-xs mt-1" style={{ color: '#8C7BAE' }}>Tap Generate for an AI summary</p>
               )}
               {!reportLoading && reportError && (
                 <p className="text-xs text-red-500 mt-1">{reportError}</p>
               )}
             </div>
 
+            </div>
           </div>
         )}
       </div>
