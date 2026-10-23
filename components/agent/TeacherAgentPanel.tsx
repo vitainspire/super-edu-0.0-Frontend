@@ -56,6 +56,16 @@ export default function TeacherAgentPanel() {
   useEffect(() => { load() }, [teacher])
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }) }, [messages.length])
 
+  // Same poll interval as app/(dashboard)/layout.tsx's app-wide one — that
+  // one triggers period briefings regardless of page; this one just means a
+  // teacher actually looking at My Agent sees a new briefing appear live
+  // instead of needing to leave and reopen the page.
+  useEffect(() => {
+    if (!teacher) return
+    const id = setInterval(load, 120_000)
+    return () => clearInterval(id)
+  }, [teacher])
+
   async function send() {
     const content = input.trim()
     if (!content || !teacher || sending) return
@@ -99,6 +109,14 @@ export default function TeacherAgentPanel() {
         }),
       })
       if (!res.ok) throw new Error(`Server returned ${res.status}`)
+      const data = await res.json()
+      // Most actions always succeed or throw, but generate_prep_material can
+      // legitimately refuse (no textbook match) without throwing — show that
+      // as a real error, not a silent "Done".
+      if (data.ok === false) {
+        setError(data?.result?.error || "Couldn't complete that action — try again.")
+        return
+      }
       setMessages(prev => prev.map(m =>
         (m.id ?? m.content) === key ? { ...m, confirmedAt: new Date().toISOString() } : m,
       ))

@@ -2,10 +2,21 @@
 import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useApp } from '@/lib/context'
+import { backendFetch } from '@/lib/backend'
 import BottomNav from '@/components/nav/BottomNav'
 import SideNav from '@/components/nav/SideNav'
 import { GraduationCap } from 'lucide-react'
 import { IconContext } from '@phosphor-icons/react'
+
+// How often to poll while the app is open, app-wide (not just on My Agent)
+// — this is what makes period-by-period briefings actually fire during the
+// day: GET /agent/messages is My Agent's existing "triggered by activity"
+// hook (app/routes/teacher_agent_routes.py), and polling it regardless of
+// which page the teacher is on is the only way a briefing can land without
+// them having My Agent itself open. This backend still has no background
+// scheduler, so a briefing only ever fires within this interval of its due
+// window, and only if the app is open somewhere.
+const AGENT_POLL_MS = 120_000
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { teacher, isLoading } = useApp()
@@ -16,6 +27,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       router.replace('/teacher/login')
     }
   }, [teacher, isLoading, router])
+
+  useEffect(() => {
+    if (!teacher) return
+    const id = setInterval(() => {
+      backendFetch('/api/teacher/agent/messages').catch(() => {})
+    }, AGENT_POLL_MS)
+    return () => clearInterval(id)
+  }, [teacher])
 
   if (isLoading || !teacher) {
     return (

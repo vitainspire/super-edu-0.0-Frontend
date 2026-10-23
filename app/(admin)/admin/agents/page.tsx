@@ -3,12 +3,14 @@ import { useState } from 'react'
 import PageHeader from '@/components/theme/PageHeader'
 import GroupChatPanel from '@/components/admin/GroupChatPanel'
 import IndividualMessagesPanel from '@/components/admin/IndividualMessagesPanel'
+import AgentActivityPanel from '@/components/admin/AgentActivityPanel'
 
-type Tab = 'group' | 'individual'
+type Tab = 'group' | 'individual' | 'activity'
 
 const TABS: { key: Tab; label: string }[] = [
   { key: 'group', label: 'Group Chat' },
   { key: 'individual', label: 'Individual Messages' },
+  { key: 'activity', label: 'Agent to Agent' },
 ]
 
 export default function AgentsPage() {
@@ -22,7 +24,9 @@ export default function AgentsPage() {
         subtitle={
           tab === 'group'
             ? 'Talk to both agents at once in one shared thread — every tool call they make is shown inline.'
-            : 'A private thread with each agent — including what they bring up on their own, twice a day.'
+            : tab === 'individual'
+            ? 'A private thread with each agent — including what they bring up on their own, twice a day.'
+            : "What the agents discuss among themselves — not sent to you directly, but visible here."
         }
         variant="admin"
       />
@@ -46,7 +50,7 @@ export default function AgentsPage() {
           ))}
         </div>
 
-        {tab === 'group' ? <GroupChatPanel /> : <IndividualMessagesPanel />}
+        {tab === 'group' ? <GroupChatPanel /> : tab === 'individual' ? <IndividualMessagesPanel /> : <AgentActivityPanel />}
       </div>
     </div>
   )
