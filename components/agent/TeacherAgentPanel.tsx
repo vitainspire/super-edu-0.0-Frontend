@@ -74,7 +74,7 @@ export default function TeacherAgentPanel() {
     setError(null)
     setInput('')
     const optimistic: ChatMessage = {
-      id: null, sender: 'teacher', content, trace: [], pendingConfirmation: null, link: null,
+      id: null, sender: 'teacher', content, trace: [], pendingConfirmation: null, link: null, sourcePersona: null,
       feedbackRequest: null, feedbackSubmittedAt: null, confirmedAt: null, createdAt: null,
     }
     setMessages(prev => [...prev, optimistic])

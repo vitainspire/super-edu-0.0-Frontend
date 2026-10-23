@@ -47,6 +47,12 @@ export interface ChatMessage {
   trace: TraceStep[]
   pendingConfirmation: PendingConfirmation | null
   link: MessageLink | null
+  // Separate from `sender`: a performance-watch coaching message is still
+  // sent as this teacher's own agent (sender stays 'teacher_agent', so it
+  // lands in their one thread like everything else), but it originated from
+  // the Headmaster Agent's own sweep. This is what lets the bubble below be
+  // color-coded by where it actually came from, not just who's "speaking."
+  sourcePersona: 'headmaster' | null
   feedbackRequest: FeedbackRequest | null
   feedbackSubmittedAt: string | null
   confirmedAt: string | null
@@ -224,24 +230,29 @@ export default function ChatHistory({
         const outgoing = m.sender === 'admin' || m.sender === 'teacher'
         const traceExpanded = !!expandedTraces[key]
         const traceColor = outgoing ? 'rgba(255,255,255,0.75)' : 'var(--ink-faint)'
+        const fromHeadmaster = !outgoing && m.sourcePersona === 'headmaster'
 
         return (
           <div key={key} className={`flex items-end gap-2 ${outgoing ? 'flex-row-reverse' : 'flex-row'}`}>
-            {!outgoing && <Avatar sender={m.sender} />}
+            {!outgoing && <Avatar sender={fromHeadmaster ? 'headmaster_agent' : m.sender} />}
 
             <div className="flex flex-col max-w-[78%]" style={{ alignItems: outgoing ? 'flex-end' : 'flex-start' }}>
-              {showSenderLabel && !outgoing && (
+              {!outgoing && (fromHeadmaster ? (
+                <span className="text-[10px] font-black uppercase tracking-wide mb-0.5 ml-1" style={{ color: SENDER_META.headmaster_agent.color }}>
+                  {SENDER_META.headmaster_agent.label}
+                </span>
+              ) : showSenderLabel && (
                 <span className="text-[10px] font-black uppercase tracking-wide mb-0.5 ml-1" style={{ color: meta.color }}>
                   {meta.label}
                 </span>
-              )}
+              ))}
 
               <div
                 className="px-3.5 py-2.5 text-sm leading-snug whitespace-pre-wrap"
                 style={{
-                  background: outgoing ? 'var(--admin-accent)' : 'white',
+                  background: outgoing ? 'var(--admin-accent)' : fromHeadmaster ? 'var(--admin-accent-soft)' : 'white',
                   color: outgoing ? 'white' : 'var(--ink)',
-                  border: outgoing ? 'none' : '1px solid var(--admin-border)',
+                  border: outgoing ? 'none' : fromHeadmaster ? '1.5px solid var(--admin-accent)' : '1px solid var(--admin-border)',
                   borderRadius: 16,
                   borderBottomRightRadius: outgoing ? 4 : 16,
                   borderBottomLeftRadius: outgoing ? 16 : 4,
