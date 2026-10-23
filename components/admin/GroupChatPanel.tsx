@@ -42,7 +42,8 @@ export default function GroupChatPanel() {
     setError(null)
     setInput('')
     const optimistic: ChatMessage = {
-      id: null, sender: 'admin', content, trace: [], pendingConfirmation: null, confirmedAt: null, createdAt: null,
+      id: null, sender: 'admin', content, trace: [], pendingConfirmation: null, link: null,
+      feedbackRequest: null, feedbackSubmittedAt: null, confirmedAt: null, createdAt: null,
     }
     setMessages(prev => [...prev, optimistic])
 

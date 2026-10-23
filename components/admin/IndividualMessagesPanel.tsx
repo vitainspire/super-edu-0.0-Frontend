@@ -64,7 +64,8 @@ export default function IndividualMessagesPanel() {
     setError(null)
     setInput('')
     const optimistic: ChatMessage = {
-      id: null, sender: 'admin', content, trace: [], pendingConfirmation: null, confirmedAt: null, createdAt: null,
+      id: null, sender: 'admin', content, trace: [], pendingConfirmation: null, link: null,
+      feedbackRequest: null, feedbackSubmittedAt: null, confirmedAt: null, createdAt: null,
     }
     setThreads(prev => ({ ...prev, [active]: { ...prev[active], messages: [...prev[active].messages, optimistic] } }))
 

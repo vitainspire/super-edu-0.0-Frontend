@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Send } from 'lucide-react'
 import { useApp } from '@/lib/context'
 import { backendFetch } from '@/lib/backend'
-import ChatHistory, { type ChatMessage } from '@/components/ui/ChatHistory'
+import ChatHistory, { type ChatMessage, type FeedbackSubmission } from '@/components/ui/ChatHistory'
 
 interface MemoryNote {
   id: string
@@ -17,12 +17,13 @@ interface MemoryNote {
 // the admin side's GroupChatPanel (load/send/confirm, optimistic send,
 // ChatHistory + ConfirmCard), pointed at /api/teacher/agent/* instead.
 export default function TeacherAgentPanel() {
-  const { teacher } = useApp()
+  const { teacher, saveLessonFeedback } = useApp()
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [loading, setLoading] = useState(true)
   const [input, setInput] = useState('')
   const [sending, setSending] = useState(false)
   const [confirmingKey, setConfirmingKey] = useState<string | null>(null)
+  const [submittingFeedbackKey, setSubmittingFeedbackKey] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [notes, setNotes] = useState<MemoryNote[]>([])
   const [memoryOpen, setMemoryOpen] = useState(false)
@@ -73,7 +74,8 @@ export default function TeacherAgentPanel() {
     setError(null)
     setInput('')
     const optimistic: ChatMessage = {
-      id: null, sender: 'teacher', content, trace: [], pendingConfirmation: null, confirmedAt: null, createdAt: null,
+      id: null, sender: 'teacher', content, trace: [], pendingConfirmation: null, link: null,
+      feedbackRequest: null, feedbackSubmittedAt: null, confirmedAt: null, createdAt: null,
     }
     setMessages(prev => [...prev, optimistic])
 
@@ -135,6 +137,33 @@ export default function TeacherAgentPanel() {
     ))
   }
 
+  // The actual save (lesson_feedback, the interpret-feedback-only-when-flagged
+  // cost rule, classes.feedback_profile) goes through the exact same
+  // saveLessonFeedback Classroom Mode's own reflection screen already uses
+  // (lib/context.tsx) — this just also tells the backend to mark the chat
+  // message answered so the card doesn't keep rendering as interactive.
+  async function submitFeedback(message: ChatMessage, submission: FeedbackSubmission) {
+    if (!teacher || !message.id) return
+    const key = message.id ?? message.content
+    setSubmittingFeedbackKey(key)
+    try {
+      await saveLessonFeedback(submission)
+      await backendFetch('/api/teacher/agent/feedback-submitted', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ messageId: message.id }),
+      })
+      setMessages(prev => prev.map(m =>
+        (m.id ?? m.content) === key ? { ...m, feedbackSubmittedAt: new Date().toISOString() } : m,
+      ))
+    } catch (err) {
+      console.error('[TeacherAgentPanel] submitFeedback failed:', err)
+      setError("Couldn't save that feedback — try again.")
+    } finally {
+      setSubmittingFeedbackKey(null)
+    }
+  }
+
   // h-full, not its own height calc — the parent (app/(dashboard)/agent/page.tsx)
   // is now a fixed-viewport flex column that hands this exactly the space
   // above BottomNav, so there's one source of truth for the math instead of
@@ -192,6 +221,8 @@ export default function TeacherAgentPanel() {
             onConfirm={confirm}
             onCancelConfirm={cancelConfirm}
             confirmingId={confirmingKey}
+            onSubmitFeedback={submitFeedback}
+            submittingFeedbackId={submittingFeedbackKey}
             showSenderLabel={false}
           />
         )}

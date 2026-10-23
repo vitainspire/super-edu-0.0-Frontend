@@ -1,6 +1,6 @@
 'use client'
-import { useMemo, useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useEffect, useMemo, useState } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { useApp } from '@/lib/context'
 import { BookOpenCheck, Repeat } from 'lucide-react'
 import { CalendarDays, ClipboardList, Sparkles, BookOpen } from '@/components/ui/icons'
@@ -117,7 +117,24 @@ function CoverageTag({ entry, compact = false }: { entry: TimetableEntry; compac
 export default function TimetablePage() {
   const { timetableEntries, classes, getTaughtTopicToday, getCurrentPeriod } = useApp()
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [prepModal, setPrepModal] = useState<{ classId: string; subject: string; grade: string; periodNumber: number } | null>(null)
+
+  // Lets a link elsewhere in the app (e.g. My Agent's "prep material is
+  // ready" message) open this exact modal directly, instead of landing a
+  // teacher on the bare page to go find it themselves — the normal path
+  // (clicking a period card below) is untouched, this just gives the same
+  // state a second way to get set.
+  useEffect(() => {
+    const classId = searchParams.get('classId')
+    const subject = searchParams.get('subject')
+    const grade = searchParams.get('grade')
+    const periodNumber = searchParams.get('periodNumber')
+    if (classId && subject && grade && periodNumber) {
+      setPrepModal({ classId, subject, grade, periodNumber: Number(periodNumber) })
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const hhmm   = `${String(new Date().getHours()).padStart(2, '0')}:${String(new Date().getMinutes()).padStart(2, '0')}`
   const todayN = todayDayNum()
