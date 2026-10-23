@@ -135,8 +135,12 @@ export default function TeacherAgentPanel() {
     ))
   }
 
+  // h-full, not its own height calc — the parent (app/(dashboard)/agent/page.tsx)
+  // is now a fixed-viewport flex column that hands this exactly the space
+  // above BottomNav, so there's one source of truth for the math instead of
+  // two numbers that have to agree.
   return (
-    <div className="admin-card flex flex-col overflow-hidden h-[calc(100dvh-230px)] md:h-[70vh]">
+    <div className="admin-card flex flex-col overflow-hidden h-full">
       <div className="flex items-center gap-3 px-5 py-3.5" style={{ borderBottom: '1px solid var(--card-border)' }}>
         <div
           className="w-9 h-9 rounded-full flex items-center justify-center shrink-0 text-[13px] font-black text-white"
