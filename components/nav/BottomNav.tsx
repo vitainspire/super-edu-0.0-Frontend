@@ -1,20 +1,22 @@
 'use client'
 import { useMemo } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
-import { Home, LayoutGrid, CalendarDays, ClipboardList, MoreHorizontal } from '@/components/ui/icons'
+import { Home, LayoutGrid, ClipboardList, MoreHorizontal, Sparkles } from '@/components/ui/icons'
 import clsx from 'clsx'
 import { useApp } from '@/lib/context'
 import { computeHomeAlerts } from '@/lib/logic/home-alerts'
 
+// Timetable moved to the More menu to make room for My Agent in the primary
+// bar — still reachable, just one tap further, same as Profile/Settings/etc.
 const NAV_ITEMS = [
   { href: '/home',      label: 'Home',      Icon: Home,          match: (p: string) => p === '/home' },
   { href: '/classes',   label: 'Classes',   Icon: LayoutGrid,    match: (p: string) => p.startsWith('/classes') },
-  { href: '/timetable', label: 'Timetable', Icon: CalendarDays,  match: (p: string) => p.startsWith('/timetable') },
+  { href: '/agent',     label: 'My Agent',  Icon: Sparkles,      match: (p: string) => p.startsWith('/agent') },
   { href: '/tests',     label: 'Tests',     Icon: ClipboardList, match: (p: string) => p.startsWith('/tests') },
   { href: '/more',      label: 'More',      Icon: MoreHorizontal, match: (p: string) =>
       p.startsWith('/more') || p.startsWith('/settings') || p.startsWith('/profile') ||
       p.startsWith('/support') || p.startsWith('/announcements') || p.startsWith('/alerts') ||
-      p.startsWith('/agent') },
+      p.startsWith('/timetable') },
 ]
 
 export default function BottomNav() {

@@ -7,6 +7,7 @@ import { Sticker, NotebookSticker, GearSticker, ChatQuestionSticker } from '@/co
 
 const ROWS = [
   { href: '/profile',           label: 'Profile',           Icon: NotebookSticker,      tone: 'coral' as const },
+  { href: '/timetable',         label: 'Timetable',         Icon: CalendarDays,         tone: 'blue' as const, lucide: true },
   { href: '/academic-calendar', label: 'Academic Calendar', Icon: CalendarDays,         tone: 'blue' as const, lucide: true },
   { href: '/settings',          label: 'Settings',          Icon: GearSticker,          tone: 'cream' as const },
   { href: '/announcements',     label: 'Announcements',     Icon: Megaphone,            tone: 'blue' as const, lucide: true },

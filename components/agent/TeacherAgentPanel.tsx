@@ -136,7 +136,7 @@ export default function TeacherAgentPanel() {
   }
 
   return (
-    <div className="admin-card flex flex-col overflow-hidden" style={{ height: '70vh' }}>
+    <div className="admin-card flex flex-col overflow-hidden h-[calc(100dvh-230px)] md:h-[70vh]">
       <div className="flex items-center gap-3 px-5 py-3.5" style={{ borderBottom: '1px solid var(--card-border)' }}>
         <div
           className="w-9 h-9 rounded-full flex items-center justify-center shrink-0 text-[13px] font-black text-white"
